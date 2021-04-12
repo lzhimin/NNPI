@@ -1,0 +1,20 @@
+#main_view_menu {
+    /*border: 1px solid gray;*/
+    width: 95%;
+    /*margin: 5px;*/
+    margin-top: 20px;
+    margin-left: 25px;
+    /*background-color: #dddddd1f;*/
+    /*border-radius: 25px;*/
+}
+
+.main_view_menu_div {
+    margin-left: 10px;
+}
+
+
+
+.main_view_menu_label {
+    width: 20%;
+    display: inline-block;
+}

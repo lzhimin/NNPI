@@ -1,0 +1,11 @@
+.lm_header {
+    background-color: whitesmoke;
+}
+
+.lm_content {
+    background-color: white !important;
+}
+
+.lm_content::-webkit-scrollbar {
+    width: 0px;
+}

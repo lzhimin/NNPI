@@ -6,7 +6,7 @@ function fetch_data(json) {
         data: JSON.stringify(json),
         dataType: 'json',
         success: function (data) {
-            publish("Data", data)
+            publish("DATASET", data)
         }
     });
 }

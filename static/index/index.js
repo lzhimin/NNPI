@@ -1,10 +1,12 @@
+
 let myLayout = new GoldenLayout(config);
 
-
+let _main_view;
 
 myLayout.registerComponent('MainView', function (container, state) {
     $(container.getElement()[0]).load('../static/MainView/MainView.html');
     //program Tree view, subscribe to data event
+    _main_view = new MainView(container);
 });
 
 myLayout.registerComponent('SideView', function (container, state) {
@@ -21,10 +23,6 @@ myLayout.on('itemCreated', (item) => {
 myLayout.init();
 
 // define global function
-//function changeFile() {
-//    let filename = $('#program_TreeView_file_selector').val();
-//    fetchDataset(filename);
-
-    //public source code file
-//    publish('SOURCECODE', filename);
-//}
+function loadData() {
+    fetch_data({});
+}

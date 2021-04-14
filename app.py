@@ -1,7 +1,8 @@
 import random
 from flask import Flask, render_template, request, json, jsonify
 import sys
-from python import dataloader
+from python import data
+
 app = Flask(__name__)
 
 
@@ -14,9 +15,7 @@ def index():
 def _fetch_data():
     json_request = request.get_json()
 
-    print(json_request)
-
-    return json.dumps({'data': [1, 2, 3, 4, 5]})
+    return json.dumps(data.getdata())
 
 
 if __name__ == '__main__':

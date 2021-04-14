@@ -9,7 +9,6 @@ class MainView extends BasicView {
         subscribe('DATASET', this.setData.bind(this))
     }
 
-
     init() {
         super.init();
 
@@ -23,10 +22,17 @@ class MainView extends BasicView {
 
     draw() {
         this.init();
+
+        this.chart.append('circle')
+            .attr('cx', 100)
+            .attr('cy', 100)
+            .attr('r', 20)
+            .style("fill", "steelblue");
     }
 
     setData(msg, data) {
         console.log(msg);
+        this.dataManager.setData(data);
     }
 
 }

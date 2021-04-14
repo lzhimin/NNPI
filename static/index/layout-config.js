@@ -3,7 +3,7 @@ let config = {
         type: 'row',
         content: [{
             type: 'stack',
-            width: 55,
+            width: 80,
             content: [{
                 type: 'component',
                 componentName: 'MainView',

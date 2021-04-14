@@ -10,4 +10,8 @@ class MainViewData {
     setData(data) {
         this.data = data;
     }
+
+    calculate_density_plot() {
+        
+    }
 }

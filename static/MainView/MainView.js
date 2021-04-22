@@ -31,8 +31,9 @@ class MainView extends BasicView {
     }
 
     setData(msg, data) {
-        console.log(msg);
         this.dataManager.setData(data);
+
+        this.draw();
     }
 
 }

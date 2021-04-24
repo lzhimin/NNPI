@@ -29,8 +29,8 @@ class MainView extends BasicView {
          
         let labels = Object.keys(this.dataManager.data);
         let data;
-        let pixel_w = 1;
-        let pixel_h = 1;
+        let pixel_w = 3;
+        let pixel_h = 3;
         let padding = 2;
         for (let i = 0; i < labels.length; i++){
             data = this.dataManager.data[labels[i]];

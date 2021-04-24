@@ -1,12 +1,12 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from prune import PruningModule, MaskedLinear
+from python.prune import PruningModule, MaskedLinear
 
 
 class LeNet(PruningModule):
     def __init__(self, mask=False):
         super(LeNet, self).__init__()
-        linear = nn.Linear
+        linear = MaskedLinear if mask else nn.Linear
 
         self.fc1 = linear(784, 300)
         self.fc2 = linear(300, 100)

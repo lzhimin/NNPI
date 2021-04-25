@@ -2,6 +2,7 @@ import torch
 from sklearn_extra.cluster import KMedoids
 import numpy as np
 from torchvision import datasets
+from torch.autograd import Variable
 
 
 from python import SaliencyMap
@@ -20,7 +21,7 @@ def load_init_input_data(model_path='data/model/LetNet/letnet300.pt'):
     mnist = datasets.MNIST(root='data/', train=False)
 
     # number of presentitive
-    num = 10
+    num = 5
 
     # load model
     use_cuda = torch.cuda.is_available()
@@ -47,10 +48,20 @@ def load_init_input_data(model_path='data/model/LetNet/letnet300.pt'):
         kmedoids = KMedoids(n_clusters=num, random_state=0).fit(dict_data[i])
         rep_data[i] = kmedoids.cluster_centers_.reshape(num, 28, 28).tolist()
 
-    gd = SaliencyMap.getMap(
-        model, torch.tensor(rep_data[1][0], dtype=torch.float).to(device), 1)
+    # salient map data
+    salient_data = {}
 
-    return rep_data
+    for i in rep_data.keys():
+        salient_data[i] = []
+        for j in range(len(rep_data[i])):
+            img = torch.tensor(
+                np.array(rep_data[i][j])/255, dtype=torch.float).to(device)
+            img = Variable(img, requires_grad=True)
+            gd = SaliencyMap.getMap(
+                model, img, i)
+            salient_data[i].append(gd[0].reshape(28, 28).tolist())
+
+    return {'representative': rep_data, 'salient': salient_data}
 
 
 def load_wrong_predict_samples():

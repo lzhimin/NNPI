@@ -18,8 +18,7 @@ class VanillaBackprop():
 
     def hook_layers(self):
         def hook_function(module, grad_in, grad_out):
-            print(grad_in)
-            self.gradients = grad_in[0]
+            self.gradients = grad_in[1]
 
         first_layer = list(self.model._modules.items())[0][1]
         first_layer.register_backward_hook(hook_function)
@@ -28,7 +27,6 @@ class VanillaBackprop():
         # Forward
         model_output = self.model(input_image)
 
-        print(model_output)
         # Zero grads
         self.model.zero_grad()
         # Target for backprop
@@ -41,6 +39,7 @@ class VanillaBackprop():
         # Convert Pytorch variable to numpy array
         # [0] to get rid of the first channel (1,3,224,224)
         gradients_as_arr = self.gradients.data.cpu().numpy()
+
         return gradients_as_arr
 
 

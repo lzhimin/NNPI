@@ -9,11 +9,11 @@ from python import SaliencyMap
 from python.model import LeNet, LeNet_5
 
 
-def getdata():
-    return load_init_input_data()
+def getdata(percentage):
+    return load_init_input_data(percentage)
 
 
-def load_init_input_data(model_path='data/model/LetNet/letnet300.pt'):
+def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'):
     # load data model
     # model = torch.load(model_path)
 
@@ -48,9 +48,12 @@ def load_init_input_data(model_path='data/model/LetNet/letnet300.pt'):
         kmedoids = KMedoids(n_clusters=num, random_state=0).fit(dict_data[i])
         rep_data[i] = kmedoids.cluster_centers_.reshape(num, 28, 28).tolist()
 
+    print('####################################################################')
+    print(type(percentage))
+    print('####################################################################')
     # salient map data
+    model.prune_by_percentile(int(percentage))
     salient_data = {}
-
     for i in rep_data.keys():
         salient_data[i] = []
         for j in range(len(rep_data[i])):

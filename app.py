@@ -16,7 +16,7 @@ def index():
 def _fetch_data():
     json_request = request.get_json()
 
-    return json.dumps(data.getdata())
+    return json.dumps(data.getdata(json_request['percentage']))
 
 
 if __name__ == '__main__':

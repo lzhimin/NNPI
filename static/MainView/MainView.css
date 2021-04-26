@@ -12,9 +12,12 @@
     margin-left: 10px;
 }
 
-
-
 .main_view_menu_label {
     width: 20%;
     display: inline-block;
+}
+
+/* The slider itself */
+#pruning_precentage {
+    width: 55%;
 }

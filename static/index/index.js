@@ -24,5 +24,5 @@ myLayout.init();
 
 // define global function
 function loadData() {
-    fetch_data({});
+    fetch_data({'percentage':0});
 }

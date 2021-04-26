@@ -2,6 +2,7 @@
 let myLayout = new GoldenLayout(config);
 
 let _main_view;
+let _prediction_summary_view;
 
 myLayout.registerComponent('MainView', function (container, state) {
     $(container.getElement()[0]).load('../static/MainView/MainView.html');
@@ -9,9 +10,10 @@ myLayout.registerComponent('MainView', function (container, state) {
     _main_view = new MainView(container);
 });
 
-myLayout.registerComponent('SideView', function (container, state) {
-    $(container.getElement()[0]).load('../static/SideView/SideView.html');
+myLayout.registerComponent('PredictionSummary', function (container, state) {
+    $(container.getElement()[0]).load('../static/PredictionSummary/PredictionSummary.html');
     //program Tree view, subscribe to data event
+    _prediction_summary_view = new PredictionSummaryView(container);
 });
 
 myLayout.on('itemCreated', (item) => {

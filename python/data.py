@@ -1,7 +1,7 @@
 import torch
 from sklearn_extra.cluster import KMedoids
 import numpy as np
-from torchvision import datasets
+from torchvision import datasets, transforms
 from torch.autograd import Variable
 
 
@@ -18,10 +18,12 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
     # model = torch.load(model_path)
 
     # load dataset
-    mnist = datasets.MNIST(root='data/', train=False)
+    mnist = datasets.MNIST(root='data/', train=False, transform=transforms.Compose([
+        transforms.ToTensor()
+    ]))
 
     # number of presentitive
-    num = 5
+    num = 6
 
     # load model
     use_cuda = torch.cuda.is_available()
@@ -48,11 +50,8 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
         kmedoids = KMedoids(n_clusters=num, random_state=0).fit(dict_data[i])
         rep_data[i] = kmedoids.cluster_centers_.reshape(num, 28, 28).tolist()
 
-    print('####################################################################')
-    print(type(percentage))
-    print('####################################################################')
     # salient map data
-    model.prune_by_percentile(int(percentage))
+    model.prune_by_percentile(float(percentage))
     salient_data = {}
     for i in rep_data.keys():
         salient_data[i] = []
@@ -64,8 +63,27 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
                 model, img, i)
             salient_data[i].append(gd[0].reshape(28, 28).tolist())
 
-    return {'representative': rep_data, 'salient': salient_data}
+    # current prediction summary over the test dataset
+    prediction_summary = test(model, mnist, dict_data.keys())
+
+    return {'representative': rep_data, 'salient': salient_data, 'summary': prediction_summary}
 
 
 def load_wrong_predict_samples():
     pass
+
+
+def test(model, dataset, labels):
+
+    confusionMatrix = np.zeros((len(labels), len(labels)))
+
+    test_loader = torch.utils.data.DataLoader(dataset)
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to('cuda'), target.to('cuda')
+            output = model(data)
+            # get the index of the max log-probability
+            pred = output.data.max(1, keepdim=True)[1]
+            confusionMatrix[target[0]][pred[0][0]] += 1
+
+    return confusionMatrix.tolist()

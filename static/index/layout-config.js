@@ -3,7 +3,7 @@ let config = {
         type: 'row',
         content: [{
             type: 'stack',
-            width: 80,
+            width: 60,
             content: [{
                 type: 'component',
                 componentName: 'MainView',
@@ -13,8 +13,8 @@ let config = {
             type: 'stack',
             content: [{
                 type: 'component',
-                componentName: 'SideView',
-                title: 'Side View'
+                componentName: 'PredictionSummary',
+                title: 'Prediction Summary View'
             }]
         }]
     }]

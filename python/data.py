@@ -23,7 +23,7 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
     ]))
 
     # number of presentitive
-    num = 6
+    num = 4
 
     # load model
     use_cuda = torch.cuda.is_available()
@@ -51,7 +51,8 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
         rep_data[i] = kmedoids.cluster_centers_.reshape(num, 28, 28).tolist()
 
     # salient map data
-    model.prune_by_percentile(float(percentage))
+    # model.prune_by_percentile(float(percentage))
+    model.prune_by_percentile_left(float(percentage))
     salient_data = {}
     for i in rep_data.keys():
         salient_data[i] = []

@@ -38,7 +38,26 @@ class PruningModule(Module):
 
     # prune the weight > q
     def prune_by_percentile_left(self, q=80.0):
-        pass
+
+        alive_parameters = []
+        for name, p in self.named_parameters():
+            # We do not pruen bias term
+            if 'bias' in name or 'mask' in name:
+                continue
+
+            tensor = p.data.cpu().numpy()
+            alive = tensor[np.nonzero(tensor)]
+            alive_parameters.append(alive)
+
+        all_alive = np.concatenate(alive_parameters)
+        # return the q-th percentile of the array elements
+        percentile_value = np.percentile(abs(all_alive), q)
+
+        for name, params in self.named_parameters():
+            if 'bias' in name or 'mask' in name:
+                continue
+            mask = torch.abs(params.data) > percentile_value
+            params.data[mask] = 0
 
     def prune_by_std(self, s=0.25):
         """

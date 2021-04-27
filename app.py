@@ -15,7 +15,6 @@ def index():
 @app.route("/_fetch_data", methods=["GET", "POST"])
 def _fetch_data():
     json_request = request.get_json()
-
     return json.dumps(data.getdata(json_request['percentage']))
 
 

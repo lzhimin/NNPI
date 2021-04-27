@@ -10,6 +10,7 @@ import sys
 
 class PruningModule(Module):
 
+    # prune the weight < q
     def prune_by_percentile(self, q=80.0):
         # Calculate percentile value
         alive_parameters = []
@@ -34,6 +35,10 @@ class PruningModule(Module):
         for name, module in self.named_modules():
             if name in ['fc1', 'fc2', 'fc3']:
                 module.prune(threshold=percentile_value)
+
+    # prune the weight > q
+    def prune_by_percentile_left(self, q=80.0):
+        pass
 
     def prune_by_std(self, s=0.25):
         """

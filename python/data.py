@@ -78,6 +78,8 @@ def test(model, dataset, labels):
 
     confusionMatrix = np.zeros((len(labels), len(labels)))
 
+    # return confusionMatrix.tolist()
+
     test_loader = torch.utils.data.DataLoader(dataset)
     with torch.no_grad():
         for data, target in test_loader:

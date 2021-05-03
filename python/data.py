@@ -75,6 +75,7 @@ def load_wrong_predict_samples():
 def test(model, dataset, labels):
 
     confusionMatrix = np.zeros((len(labels), len(labels)))
+    error_prediction = {}
 
     # return confusionMatrix.tolist()
 
@@ -86,5 +87,11 @@ def test(model, dataset, labels):
             # get the index of the max log-probability
             pred = output.data.max(1, keepdim=True)[1]
             confusionMatrix[target[0]][pred[0][0]] += 1
+            print(data)
+            if target[0] != pred[0][0]:
+                if target[0] in error_prediction:
+                    error_prediction[target[0]].append(data)
+                else:
+                    error_prediction[target[0]] = [data]
 
     return confusionMatrix.tolist()

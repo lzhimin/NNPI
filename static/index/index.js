@@ -3,6 +3,7 @@ let myLayout = new GoldenLayout(config);
 
 let _main_view;
 let _prediction_summary_view;
+let _error_analysis_view;
 
 myLayout.registerComponent('MainView', function (container, state) {
     $(container.getElement()[0]).load('../static/MainView/MainView.html');
@@ -15,6 +16,13 @@ myLayout.registerComponent('PredictionSummary', function (container, state) {
     //program Tree view, subscribe to data event
     _prediction_summary_view = new PredictionSummaryView(container);
 });
+
+myLayout.registerComponent('ErrorAnalysis', function (container, state) {
+    $(container.getElement()[0]).load('../static/ErrorAnalysis/ErrorAnalysisView.html');
+    //program Tree view, subscribe to data event
+    _error_analysis_view = new ErrorAnalysisView(container);
+});
+
 
 myLayout.on('itemCreated', (item) => {
     if (item.config.cssClass) {

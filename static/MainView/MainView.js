@@ -84,7 +84,11 @@ class MainView extends BasicView {
         
         for (let i = 0; i < d.length; i++) {
             for (let j = 0; j < d[i].length; j++) {
+
+                //if (d[i][j] < 0)
                 this.canvas.fillStyle = d3.interpolateRdBu(scale_func(d[i][j]));
+                //else
+                //    this.canvas.fillStyle = 'white';
                 this.canvas.fillRect(x + j * pixel_w, y + i * pixel_h, pixel_w, pixel_h);
             }
         }

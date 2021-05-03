@@ -10,11 +10,16 @@ let config = {
                 title: 'Projection View'
             }]
         }, {
-            type: 'stack',
+            type: 'column',
             content: [{
                 type: 'component',
+                height: 30,
                 componentName: 'PredictionSummary',
                 title: 'Prediction Summary View'
+            },{
+                type: 'component',
+                componentName: 'ErrorAnalysis',
+                title: 'Error Analysis View'
             }]
         }]
     }]

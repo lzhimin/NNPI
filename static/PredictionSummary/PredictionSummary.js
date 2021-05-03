@@ -99,6 +99,19 @@ class PredictionSummaryView extends BasicView {
             .style('fill', (d, index) => {
                     return index == 0 ? '#4575b4' : '#d73027';
             });
+        
+        this.chart.selectAll('.predictionSummaryLabel')
+            .data(['correct', 'Error'])
+            .enter()
+            .append('text')
+            .attr('x', x + (bar_width + padding) * 11 + annotation_rect_w * 2)
+            .attr('y', (d, i) => {
+                return this.margin.top + (annotation_rect_h + 10) * i + annotation_rect_h / 2;
+            })
+            .text(d => d)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central');
+
 
 
     }

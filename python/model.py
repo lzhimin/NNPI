@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from python.prune import PruningModule, MaskedLinear
+from prune import PruningModule, MaskedLinear
 
 
 class LeNet(PruningModule):

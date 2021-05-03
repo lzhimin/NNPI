@@ -3,8 +3,6 @@ from sklearn_extra.cluster import KMedoids
 import numpy as np
 from torchvision import datasets, transforms
 from torch.autograd import Variable
-
-
 from python import SaliencyMap
 from python.model import LeNet, LeNet_5
 

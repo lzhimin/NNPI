@@ -65,7 +65,7 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
     # current prediction summary over the test dataset
     prediction_summary = test(model, mnist, dict_data.keys())
 
-    return {'representative': rep_data, 'salient': salient_data, 'summary': prediction_summary}
+    return {'representative': rep_data, 'salient': salient_data, 'summary': prediction_summary[0], 'error_prediction': prediction_summary[1]}
 
 
 def load_wrong_predict_samples():
@@ -82,16 +82,18 @@ def test(model, dataset, labels):
     test_loader = torch.utils.data.DataLoader(dataset)
     with torch.no_grad():
         for data, target in test_loader:
-            data, target = data.to('cuda'), target.to('cuda')
-            output = model(data)
+            device_data, device_target = data.to('cuda'), target.to('cuda')
+            output = model(device_data)
             # get the index of the max log-probability
             pred = output.data.max(1, keepdim=True)[1]
-            confusionMatrix[target[0]][pred[0][0]] += 1
-            print(data)
-            if target[0] != pred[0][0]:
-                if target[0] in error_prediction:
-                    error_prediction[target[0]].append(data)
+            confusionMatrix[device_target[0]][pred[0][0]] += 1
+            key = str(target.item())
+            if device_target[0] != pred[0][0]:
+                if key in error_prediction:
+                    error_prediction[key].append(
+                        data.tolist()[0][0])
                 else:
-                    error_prediction[target[0]] = [data]
+                    error_prediction[key] = [
+                        data.tolist()[0][0]]
 
-    return confusionMatrix.tolist()
+    return confusionMatrix.tolist(), error_prediction

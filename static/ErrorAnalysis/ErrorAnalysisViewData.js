@@ -5,6 +5,6 @@ class ErrorAnalysisViewData {
     }
 
     setData(data) {
-       
+        this.data = data;
     }
 }

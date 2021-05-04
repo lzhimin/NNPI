@@ -4,23 +4,38 @@ class ErrorAnalysisView extends BasicView {
         super(container);
 
         this.dataManager = new ErrorAnalysisViewData();
+
+        subscribe('errorPrediction', this.setData.bind(this))
+
     }
 
     init() {
 
         super.init();
 
-        d3.select("#error_analysis_view_panel").html("");
-
-        //add svg 
-        this.chart = d3.select('#error_analysis_view_panel')
-            .append('svg')
+        //add canvas 
+        d3.select('#error_analysis_view_canvas')
             .attr('width', this.width)
-            .attr("height", this.height)
-            .append('g');
+            .attr("height", this.height);
         
-        //update margin value
-        this.margin.left = 60;
+        
+
+
+        // rescale the size of canvas
+        let max_length = 0;
+        let padding = 2;
+        let labels = Object.keys(this.dataManager.data);
+        for (let i = 0; i < labels.length; i++) {
+            if (max_length < this.dataManager.data[labels[i]].length)
+                max_length = this.dataManager.data[labels[i]].length;
+        }
+
+        max_length = Math.min(max_length, 100);
+        d3.select('#error_analysis_view_canvas')
+            .attr("height", max_length * this.dataManager.data[labels[0]].length + padding * max_length + 50);
+
+        
+        this.canvas = $('#error_analysis_view_canvas')[0].getContext('2d');
     }
 
     draw() {
@@ -28,95 +43,41 @@ class ErrorAnalysisView extends BasicView {
 
         let x = this.margin.left;
         let y = this.margin.top;
-        let bar_height = 200;
-        let bar_width = 20;
-        let padding = 15;
+        let pixel_w = 1;
+        let pixel_h = 1;
+        let padding = 2;
+        let data = undefined;
+        let labels = Object.keys(this.dataManager.data);
+        let max_length = 0;
 
-        for (let i = 0; i < this.dataManager.confusionMatrix.length; i++){
-            let prediction_result = [0, 0];//[0] is correct prediction and [1] is wrong prediction
-            for (let j = 0; j < this.dataManager.confusionMatrix[i].length; j++) {
-                if (i == j)
-                    prediction_result[0] = this.dataManager.confusionMatrix[i][j];
-                else
-                    prediction_result[1] += this.dataManager.confusionMatrix[i][j];
+        for (let i = 0; i < labels.length; i++){
+            data = this.dataManager.data[labels[i]];
+            for (let j = 0; j < data.length && j < 100; j++) {
+
+                this.draw_image(this.margin.left + i * data[j].length * pixel_w + padding * i,
+                    this.margin.top + j * data[j][0].length * pixel_h + padding * j, pixel_w, pixel_h, data[j]);
             }
-
-            //summary prediction bar for each label
-            let sum_of_prediction = d3.sum(prediction_result);
-            this.chart.selectAll('.confusionMatrix')
-                .data(prediction_result)
-                .enter()
-                .append('rect')
-                .attr('width', bar_width)
-                .attr('height', (d) => {
-                    return d / sum_of_prediction * bar_height;
-                })
-                .attr('x', () => {
-                    return x + i * bar_width + i * padding;
-                })
-                .attr('y', (d, index) => {
-                    return index == 0 ? y : (y + prediction_result[0] / sum_of_prediction * bar_height);
-                })
-                .style('fill', (d, index) => {
-                    return index == 0 ? '#4575b4' : '#d73027';
-                });
-            
-            this.chart.append('text')
-                .attr('x', () => {
-                    return x + i * bar_width + i * padding + bar_width / 2;
-                })
-                .attr('y', () => {
-                    return y + bar_height + padding;
-                })
-                .text(i)
-                .attr('text-anchor', 'middle')
-                .attr('dominant-baseline', 'central')
-                .style('font-size', '20px');
         }
+    }
 
-
-        //y-axis for the label bar chart
-        let stackbar_chart_axis = d3.scaleLinear().domain([0, 1]).range([0, bar_height]);
-        this.chart.append('g')
-            .attr('class', 'axis axis--x')
-            .attr("transform", "translate(" + (this.margin.left- 2) + "," + y + ")")
-            .call(d3.axisLeft(stackbar_chart_axis).ticks(5));
-        
-        //label annoatation
-        let annotation_rect_w = 30, annotation_rect_h = 30;
-        this.chart.selectAll('.predictionSummaryLabel')
-            .data(['correct', 'Error'])
-            .enter()
-            .append('rect')
-            .attr('width', annotation_rect_w)
-            .attr('height', annotation_rect_h)
-            .attr('x', x + (bar_width + padding) * 11)
-            .attr('y', (d, i) => {
-                return this.margin.top + (annotation_rect_h + 10) * i;
-            })
-            .style('fill', (d, index) => {
-                    return index == 0 ? '#4575b4' : '#d73027';
-            });
-        
-        this.chart.selectAll('.predictionSummaryLabel')
-            .data(['correct', 'Error'])
-            .enter()
-            .append('text')
-            .attr('x', x + (bar_width + padding) * 11 + annotation_rect_w * 2)
-            .attr('y', (d, i) => {
-                return this.margin.top + (annotation_rect_h + 10) * i + annotation_rect_h / 2;
-            })
-            .text(d => d)
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central');
-
-
-
+    draw_image(x, y, pixel_w, pixel_h, d) {
+        for (let i = 0; i < d.length; i++) {
+            for (let j = 0; j < d[i].length; j++) {
+                if (d[i][j] == 0)
+                    this.canvas.fillStyle = 'black';
+                else
+                    this.canvas.fillStyle = 'white';
+                this.canvas.fillRect(x + j * pixel_w, y + i * pixel_h, pixel_w, pixel_h);
+            }
+        }        
     }
 
     setData(msg, data) {
         this.dataManager.setData(data);
         
+
+
+
         this.draw();
     }
 }

@@ -7,7 +7,8 @@ function fetch_data(json) {
         dataType: 'json',
         success: function (data) {
             publish("DATASET", data);
-            publish('confusionMatrix', data.summary);
+            publish("confusionMatrix", data.summary);
+            publish("errorPrediction", data.error_prediction)
         }
     });
 }

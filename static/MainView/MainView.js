@@ -19,9 +19,6 @@ class MainView extends BasicView {
     init() {
         super.init();
 
-        //clean the panel
-        $('#main_view_canvas').html('');
-
         //add canvas 
         d3.select('#main_view_canvas')
             .attr('width', this.width)
@@ -75,9 +72,7 @@ class MainView extends BasicView {
                     this.canvas.fillStyle = 'white';
                 this.canvas.fillRect(x + j * pixel_w, y + i * pixel_h, pixel_w, pixel_h);
             }
-        }
-        
-        
+        }        
     }
 
     draw_heatmap(scale_func, x, y, pixel_w, pixel_h, d) {

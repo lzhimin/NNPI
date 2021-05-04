@@ -21,7 +21,7 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
     ]))
 
     # number of presentitive
-    num = 6
+    num = 10
 
     # load model
     use_cuda = torch.cuda.is_available()
@@ -93,7 +93,7 @@ def test(model, dataset, labels):
                     error_prediction[key].append(
                         data.tolist()[0][0])
                 else:
-                    error_prediction[key] = [
+                    error_prediction[str(target.item())] = [
                         data.tolist()[0][0]]
 
     return confusionMatrix.tolist(), error_prediction

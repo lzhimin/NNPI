@@ -34,8 +34,8 @@ class MainView extends BasicView {
         this.init();
 
         let data;
-        let pixel_w = 3;
-        let pixel_h = 3;
+        let pixel_w = 1.5;
+        let pixel_h = 1.5;
         let padding = 2;
         let block_padding = 50;
 

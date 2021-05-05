@@ -4,6 +4,7 @@ let myLayout = new GoldenLayout(config);
 let _main_view;
 let _prediction_summary_view;
 let _error_analysis_view;
+let _projection_view;
 
 myLayout.registerComponent('MainView', function (container, state) {
     $(container.getElement()[0]).load('../static/MainView/MainView.html');
@@ -23,6 +24,11 @@ myLayout.registerComponent('ErrorAnalysis', function (container, state) {
     _error_analysis_view = new ErrorAnalysisView(container);
 });
 
+myLayout.registerComponent('ProjectionView', function (container, state) {
+    $(container.getElement()[0]).load('../static/ProjectView/ProjectView.html');
+    //program Tree view, subscribe to data event
+    _projection_view = new ProjectView(container);
+});
 
 myLayout.on('itemCreated', (item) => {
     if (item.config.cssClass) {

@@ -1,6 +1,9 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from python.prune import PruningModule, MaskedLinear
+from sklearn.decomposition import PCA
+import numpy as np
 
 
 class LeNet(PruningModule):
@@ -12,6 +15,11 @@ class LeNet(PruningModule):
         self.fc2 = linear(300, 100)
         self.fc3 = linear(100, 10)
 
+        self.input_embedding = []
+        self.fc1_embedding = []
+        self.fc2_embedding = []
+        self.fc3_embedding = []
+
     def forward(self, x):
         x = x.view(-1, 784)
         x = F.relu(self.fc1(x))
@@ -19,6 +27,65 @@ class LeNet(PruningModule):
         x = F.log_softmax(self.fc3(x), dim=1)
 
         return x
+
+    def getLayerActivatioData(self, dataset):
+        pass
+
+    def layerActivationEmbedding(self, dataset):
+
+        input_projection = None
+        first_layer_projection = None
+        second_layer_projection = None
+        third_layer_projection = None
+
+        layer1_activation = []
+        layer2_activation = []
+        layer3_activation = []
+
+        for i in range(len(dataset)):
+            x = F.relu(self.fc1(torch.tensor(dataset[i])))
+            layer1_activation.append(x.tolist())
+            x = F.relu(self.fc2(x))
+            layer2_activation.append(x.tolist())
+            x = self.fc3(x)
+            layer3_activation.append(x.tolist())
+
+        # embedding method
+        pca = PCA(n_components=2)
+
+        # input embedding
+        if len(self.input_embedding) == 0:
+            input_projection = pca.fit_transform(dataset)
+            self.input_embedding = pca.components_
+        else:
+            input_projection = self.input_embedding * dataset
+
+        # first layer embedding
+        if len(self.fc1_embedding) == 0:
+            first_layer_projection = pca.fit_transform(layer1_activation)
+            self.fc1_embedding = pca.components_
+        else:
+            first_layer_projection = self.fc1_embedding * layer1_activation
+        # second layer embedding
+        if len(self.fc2_embedding) == 0:
+            second_layer_projection = pca.fit_transform(layer2_activation)
+            self.fc2_embedding = pca.components_
+        else:
+            second_layer_projection = self.fc2_embedding * layer2_activation
+
+        # second layer embedding
+        if len(self.fc3_embedding) == 0:
+            third_layer_projection = pca.fit_transform(layer3_activation)
+            self.fc3_embedding = pca.components_
+        else:
+            third_layer_projection = self.fc3_embedding * layer3_activation
+
+        result = {}
+        result['input_embedding'] = input_projection.tolist()
+        result['fc1_embedding'] = first_layer_projection.tolist()
+        result['fc2_embedding'] = second_layer_projection.tolist()
+        result['fc3_embedding'] = third_layer_projection.tolist()
+        return result
 
 
 class LeNet_5(PruningModule):

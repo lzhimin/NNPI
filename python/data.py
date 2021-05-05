@@ -21,11 +21,11 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
     ]))
 
     # number of presentitive
-    num = 10
+    num = 15
 
     # load model
     use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else 'cpu')
+    device = torch.device('cpu')
     model = LeNet(mask=True).to(device)
     model.load_state_dict(torch.load('data/model/LetNet/letnet300.pt'))
     model.eval()
@@ -64,36 +64,45 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
 
     # current prediction summary over the test dataset
     prediction_summary = test(model, mnist, dict_data.keys())
+    embedding = model.layerActivationEmbedding(prediction_summary[2])
 
-    return {'representative': rep_data, 'salient': salient_data, 'summary': prediction_summary[0], 'error_prediction': prediction_summary[1]}
-
-
-def load_wrong_predict_samples():
-    pass
+    return {'representative': rep_data, 'salient': salient_data, 'summary': prediction_summary[0], 'error_prediction': prediction_summary[1], 'embedding': embedding}
 
 
 def test(model, dataset, labels):
 
     confusionMatrix = np.zeros((len(labels), len(labels)))
     error_prediction = {}
-
+    test_subset = {}
+    subset = []
     # return confusionMatrix.tolist()
+    # sample 10% of the testing dataset
 
     test_loader = torch.utils.data.DataLoader(dataset)
     with torch.no_grad():
         for data, target in test_loader:
-            device_data, device_target = data.to('cuda'), target.to('cuda')
+            device_data, device_target = data.to('cpu'), target.to('cpu')
             output = model(device_data)
             # get the index of the max log-probability
             pred = output.data.max(1, keepdim=True)[1]
             confusionMatrix[device_target[0]][pred[0][0]] += 1
             key = str(target.item())
             if device_target[0] != pred[0][0]:
-                if key in error_prediction:
+                if key in error_prediction and len(error_prediction[key]) < 30:
                     error_prediction[key].append(
                         data.tolist()[0][0])
                 else:
-                    error_prediction[str(target.item())] = [
+                    error_prediction[key] = [
                         data.tolist()[0][0]]
 
-    return confusionMatrix.tolist(), error_prediction
+            if key not in test_subset:
+                test_subset[key] = 1
+                subset.append(
+                    np.array(data.tolist()[0][0]).flatten().tolist())
+            else:
+                if test_subset[key] < 100:
+                    test_subset[key] += 1
+                    subset.append(
+                        np.array(data.tolist()[0][0]).flatten().tolist())
+
+    return confusionMatrix.tolist(), error_prediction, subset

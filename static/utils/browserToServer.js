@@ -9,6 +9,7 @@ function fetch_data(json) {
             publish("DATASET", data);
             publish("confusionMatrix", data.summary);
             publish("errorPrediction", data.error_prediction)
+            publish("embedding", data.embedding)
         }
     });
 }

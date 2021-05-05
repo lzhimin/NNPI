@@ -1,41 +1,24 @@
-class ErrorAnalysisView extends BasicView {
+class ProjectView extends BasicView {
 
     constructor(container) {
         super(container);
 
-        this.dataManager = new ErrorAnalysisViewData();
-
-        subscribe('errorPrediction', this.setData.bind(this))
-
+        this.dataManager = new ProjectViewData();
+        subscribe('embedding', this.setData.bind(this));
     }
 
     init() {
-
         super.init();
 
+        this.margin.left = 50;
+        this.margin.top = 50;
+
+        d3.select("#project_view_panel").html("");
         //add canvas 
-        d3.select('#error_analysis_view_canvas')
+        this.svg = d3.select('#project_view_panel')
+            .append('svg')
             .attr('width', this.width)
             .attr("height", this.height);
-        
-        
-
-
-        // rescale the size of canvas
-        let max_length = 0;
-        let padding = 2;
-        let labels = Object.keys(this.dataManager.data);
-        for (let i = 0; i < labels.length; i++) {
-            if (max_length < this.dataManager.data[labels[i]].length)
-                max_length = this.dataManager.data[labels[i]].length;
-        }
-
-        max_length = Math.min(max_length, 100);
-        d3.select('#error_analysis_view_canvas')
-            .attr("height", max_length * this.dataManager.data[labels[0]].length + padding * max_length + 50);
-
-        
-        this.canvas = $('#error_analysis_view_canvas')[0].getContext('2d');
     }
 
     draw() {
@@ -43,41 +26,52 @@ class ErrorAnalysisView extends BasicView {
 
         let x = this.margin.left;
         let y = this.margin.top;
-        let pixel_w = 1;
-        let pixel_h = 1;
-        let padding = 2;
-        let data = undefined;
-        let labels = Object.keys(this.dataManager.data);
-        let max_length = 0;
 
-        for (let i = 0; i < labels.length; i++){
-            data = this.dataManager.data[labels[i]];
-            for (let j = 0; j < data.length && j < 100; j++) {
+        let width = 200;
+        let height = 200;
+        let padding = 80;
 
-                this.draw_image(this.margin.left + i * data[j].length * pixel_w + padding * i,
-                    this.margin.top + j * data[j][0].length * pixel_h + padding * j, pixel_w, pixel_h, data[j]);
-            }
-        }
+        this.draw_embedding(x, y, width, height, this.dataManager.data.input_embedding);
+        this.draw_embedding(x + width + padding, y, width, height, this.dataManager.data.fc1_embedding);
+        this.draw_embedding(x + width * 2 + padding * 2, y, width, height, this.dataManager.data.fc2_embedding);
+        this.draw_embedding(x + width * 3 + padding * 3, y, width, height, this.dataManager.data.fc3_embedding);
     }
 
-    draw_image(x, y, pixel_w, pixel_h, d) {
-        for (let i = 0; i < d.length; i++) {
-            for (let j = 0; j < d[i].length; j++) {
-                if (d[i][j] == 0)
-                    this.canvas.fillStyle = 'black';
-                else
-                    this.canvas.fillStyle = 'white';
-                this.canvas.fillRect(x + j * pixel_w, y + i * pixel_h, pixel_w, pixel_h);
-            }
-        }        
+    draw_embedding(x, y, width, height, data) {
+        let x_max, x_min, y_max, y_min;
+
+        [x_min, x_max] = d3.extent(data, (d) => { return d[0] });
+        [y_min, y_max] = d3.extent(data, (d) => { return d[1] });
+        
+        let x_axis = d3.scaleLinear().domain([x_min , x_max * 1.1]).range([x, x + width]);
+        let y_axis = d3.scaleLinear().domain([y_max * 1.1, y_min ]).range([y, y + height]);
+
+        this.svg.append('g')
+            .attr('class', 'embedding_axis')
+            .attr("transform", "translate(0" + ',' + (y+height) + ")")
+            .call(d3.axisBottom(x_axis).ticks(10));
+        
+        this.svg.append('g')
+            .attr('class', 'embedding_axis')
+            .attr("transform", "translate(" + x + " ,0)")
+            .call(d3.axisLeft(y_axis).ticks(10));
+        
+        this.svg.selectAll('.embedding_points')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('cx', (d) => {
+                return x_axis(d[0]);
+            })
+            .attr('cy', (d) => {
+                return y_axis(d[1]);
+            })
+            .attr('r', 3)
+            .style('fill', 'steelblue');
     }
 
     setData(msg, data) {
         this.dataManager.setData(data);
-        
-
-
-
         this.draw();
     }
 }

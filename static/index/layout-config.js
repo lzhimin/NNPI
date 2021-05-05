@@ -2,11 +2,16 @@ let config = {
     content: [{
         type: 'row',
         content: [{
-            type: 'stack',
+            type: 'column',
             width: 60,
             content: [{
                 type: 'component',
+                height: 50,
                 componentName: 'MainView',
+                title: 'Projection View'
+            },{
+                type: 'component',
+                componentName: 'ProjectionView',
                 title: 'Projection View'
             }]
         }, {

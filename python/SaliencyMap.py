@@ -31,7 +31,7 @@ class VanillaBackprop():
         self.model.zero_grad()
         # Target for backprop
         one_hot_output = torch.FloatTensor(
-            1, model_output.size()[-1]).zero_().to('cuda')
+            1, model_output.size()[-1]).zero_().to('cpu')
         one_hot_output[0][target_class] = 1
 
         # Backward pass

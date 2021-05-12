@@ -4,6 +4,14 @@ class ProjectView extends BasicView {
         super(container);
 
         this.dataManager = new ProjectViewData();
+
+        //the scatter plot points over the interface
+        this.embedding_views = {};
+
+        //the x-axis and y-axis
+        this.emebdding_axis = {};
+
+
         subscribe('embedding', this.setData.bind(this));
     }
 
@@ -14,7 +22,8 @@ class ProjectView extends BasicView {
         this.margin.top = 50;
 
         d3.select("#project_view_panel").html("");
-        //add canvas 
+
+        //add canvas
         this.svg = d3.select('#project_view_panel')
             .append('svg')
             .attr('width', this.width)
@@ -31,20 +40,39 @@ class ProjectView extends BasicView {
         let height = 200;
         let padding = 80;
 
-        this.draw_embedding(x, y, width, height, this.dataManager.data.input_embedding);
-        this.draw_embedding(x + width + padding, y, width, height, this.dataManager.data.fc1_embedding);
-        this.draw_embedding(x + width * 2 + padding * 2, y, width, height, this.dataManager.data.fc2_embedding);
-        this.draw_embedding(x + width * 3 + padding * 3, y, width, height, this.dataManager.data.fc3_embedding);
+        let keys = Object.keys(this.dataManager.data);
+        for (let i = 0; i < keys.length; i++) {
+            this.draw_embedding(keys[i], x + width * i + padding * i, y, width, height, this.dataManager.data[keys[i]]);
+        }
     }
 
-    draw_embedding(x, y, width, height, data) {
+    redraw() {
+
+        let keys = Object.keys(this.embedding_views);
+        for (let i = 0; i < keys.length; i++) {
+            this.embedding_views[keys[i]]
+                .data(this.dataManager.data[keys[i]])
+                .transition()
+                .duration(10000)
+                .attr('cx', (d) => {
+                    return this.emebdding_axis[keys[i]]['x'](d[0]);
+                })
+                .attr('cy', (d) => {
+                    return this.emebdding_axis[keys[i]]['y'](d[1]);
+                });
+        }
+    }
+
+    draw_embedding(name, x, y, width, height, data) {
         let x_max, x_min, y_max, y_min;
 
         [x_min, x_max] = d3.extent(data, (d) => { return d[0] });
         [y_min, y_max] = d3.extent(data, (d) => { return d[1] });
         
         let x_axis = d3.scaleLinear().domain([x_min , x_max * 1.1]).range([x, x + width]);
-        let y_axis = d3.scaleLinear().domain([y_max * 1.1, y_min ]).range([y, y + height]);
+        let y_axis = d3.scaleLinear().domain([y_max * 1.1, y_min]).range([y, y + height]);
+        
+        this.emebdding_axis[name] = { 'x': x_axis, 'y': y_axis };
 
         this.svg.append('g')
             .attr('class', 'embedding_axis')
@@ -56,7 +84,7 @@ class ProjectView extends BasicView {
             .attr("transform", "translate(" + x + " ,0)")
             .call(d3.axisLeft(y_axis).ticks(10));
         
-        this.svg.selectAll('.embedding_points')
+        this.embedding_views[name] = this.svg.selectAll('.embedding_points')
             .data(data)
             .enter()
             .append('circle')
@@ -71,7 +99,14 @@ class ProjectView extends BasicView {
     }
 
     setData(msg, data) {
-        this.dataManager.setData(data);
-        this.draw();
+        if (this.dataManager.data == undefined) {
+            this.dataManager.setData(data);
+            this.draw();
+        }
+        else {
+            this.dataManager.setData(data);
+            this.redraw();
+        }
+        
     }
 }

@@ -2,29 +2,32 @@ let config = {
     content: [{
         type: 'row',
         content: [{
-            type: 'column',
-            width: 60,
+            type: 'stack',
             content: [{
                 type: 'component',
-                height: 50,
-                componentName: 'MainView',
-                title: 'Projection View'
+                componentName: 'ErrorAnalysis',
+                title: 'Error Analysis View'
+            }]
+        },{
+            type: 'column',
+            width: 75,
+            content: [{
+                type: 'stack',
+                height: 65,
+                content: [{
+                    type: 'component',
+                    componentName: 'MainView',
+                    title: 'Projection View'
+                },{
+                type: 'component',
+                componentName: 'PredictionSummary',
+                title: 'Prediction Summary View'
+            }]
+                
             },{
                 type: 'component',
                 componentName: 'ProjectionView',
                 title: 'Projection View'
-            }]
-        }, {
-            type: 'column',
-            content: [{
-                type: 'component',
-                height: 30,
-                componentName: 'PredictionSummary',
-                title: 'Prediction Summary View'
-            },{
-                type: 'component',
-                componentName: 'ErrorAnalysis',
-                title: 'Error Analysis View'
             }]
         }]
     }]

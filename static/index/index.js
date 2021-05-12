@@ -19,9 +19,9 @@ myLayout.registerComponent('PredictionSummary', function (container, state) {
 });
 
 myLayout.registerComponent('ErrorAnalysis', function (container, state) {
-    $(container.getElement()[0]).load('../static/ErrorAnalysis/ErrorAnalysisView.html');
+    $(container.getElement()[0]).load('../static/NetworkArchitecture/NetworkArchitecture.html');
     //program Tree view, subscribe to data event
-    _error_analysis_view = new ErrorAnalysisView(container);
+    _error_analysis_view = new NetworkArchitecture(container);
 });
 
 myLayout.registerComponent('ProjectionView', function (container, state) {

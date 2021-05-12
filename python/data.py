@@ -43,30 +43,30 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
             dict_data[label] = [numpy_data[i].astype(np.int).flatten()]
 
     # fetch the representive data samples
-    rep_data = {}
-    for i in dict_data.keys():
-        kmedoids = KMedoids(n_clusters=num, random_state=0).fit(dict_data[i])
-        rep_data[i] = kmedoids.cluster_centers_.reshape(num, 28, 28).tolist()
+    #rep_data = {}
+    # for i in dict_data.keys():
+    #    kmedoids = KMedoids(n_clusters=num, random_state=0).fit(dict_data[i])
+    #    rep_data[i] = kmedoids.cluster_centers_.reshape(num, 28, 28).tolist()
 
     # salient map data
     model.prune_by_percentile(float(percentage))
     # model.prune_by_percentile_left(float(percentage))
-    salient_data = {}
-    for i in rep_data.keys():
-        salient_data[i] = []
-        for j in range(len(rep_data[i])):
-            img = torch.tensor(
-                np.array(rep_data[i][j])/255, dtype=torch.float).to(device)
-            img = Variable(img, requires_grad=True)
-            gd = SaliencyMap.getMap(
-                model, img, i)
-            salient_data[i].append(gd[0].reshape(28, 28).tolist())
+    #salient_data = {}
+    # for i in rep_data.keys():
+    #    salient_data[i] = []
+    #    for j in range(len(rep_data[i])):
+    #        img = torch.tensor(
+    #            np.array(rep_data[i][j])/255, dtype=torch.float).to(device)
+    #        img = Variable(img, requires_grad=True)
+    #        gd = SaliencyMap.getMap(
+    #            model, img, i)
+    #        salient_data[i].append(gd[0].reshape(28, 28).tolist())
 
     # current prediction summary over the test dataset
     prediction_summary = test(model, mnist, dict_data.keys())
     embedding = model.layerActivationEmbedding(prediction_summary[2])
 
-    return {'representative': rep_data, 'salient': salient_data, 'summary': prediction_summary[0], 'error_prediction': prediction_summary[1], 'embedding': embedding}
+    return {'modelSummary': getModelSummary(model), 'summary': prediction_summary[0], 'error_prediction': prediction_summary[1], 'embedding': embedding}
 
 
 def test(model, dataset, labels):
@@ -106,3 +106,13 @@ def test(model, dataset, labels):
                         np.array(data.tolist()[0][0]).flatten().tolist())
 
     return confusionMatrix.tolist(), error_prediction, subset
+
+
+def getModelSummary(model):
+    model_summary = {}
+    for name, param in model.named_parameters():
+        if 'weight' in name:
+            # collect the information of a neural network layer
+            model_summary[name.split('.')[0]] = {"weight": param.tolist(
+            ), "shape": str(param.shape[0])+"x"+str(param.shape[1])}
+    return model_summary

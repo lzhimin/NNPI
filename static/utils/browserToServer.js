@@ -8,7 +8,7 @@ function fetch_data(json) {
         success: function (data) {
             publish("DATASET", data);
             publish("confusionMatrix", data.summary);
-            publish("errorPrediction", data.error_prediction)
+            publish("modelsummary", data.modelSummary)
             publish("embedding", data.embedding)
         }
     });

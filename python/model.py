@@ -66,6 +66,7 @@ class LeNet(PruningModule):
             self.fc1_embedding = pca.components_
         else:
             first_layer_projection = self.fc1_embedding * layer1_activation
+
         # second layer embedding
         if len(self.fc2_embedding) == 0:
             second_layer_projection = pca.fit_transform(layer2_activation)
@@ -81,10 +82,10 @@ class LeNet(PruningModule):
             third_layer_projection = self.fc3_embedding * layer3_activation
 
         result = {}
-        result['input_embedding'] = input_projection.tolist()
-        result['fc1_embedding'] = first_layer_projection.tolist()
-        result['fc2_embedding'] = second_layer_projection.tolist()
-        result['fc3_embedding'] = third_layer_projection.tolist()
+        result['1_input_embedding'] = input_projection.tolist()
+        result['2_fc1_embedding'] = first_layer_projection.tolist()
+        result['3_fc2_embedding'] = second_layer_projection.tolist()
+        result['4_fc3_embedding'] = third_layer_projection.tolist()
         return result
 
 

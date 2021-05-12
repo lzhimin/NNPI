@@ -1,4 +1,4 @@
-class ErrorAnalysisViewData {
+class NetworkArchitectureData {
 
     constructor() {
 

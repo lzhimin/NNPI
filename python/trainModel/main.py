@@ -113,18 +113,18 @@ def main():
     test(model, device)
     model.prune_by_percentile(95)
 
-    model.fc1.weight.requires_grad = False
-    model.fc1.bias.requires_grad = False
+    #model.fc1.weight.requires_grad = False
+    #model.fc1.bias.requires_grad = False
 
-    model.fc2.weight.requires_grad = False
-    model.fc2.bias.requires_grad = False
+    #model.fc2.weight.requires_grad = False
+    #model.fc2.bias.requires_grad = False
 
     #model.fc3.weight.requires_grad = False
     #model.fc3.bias.requires_grad = False
 
     test(model, device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0001)
-    train(1, model, device, optimizer)
+    train(50, model, device, optimizer)
     test(model, device)
     # print(model.parameters)
 

@@ -5,8 +5,8 @@ let config = {
             type: 'stack',
             content: [{
                 type: 'component',
-                componentName: 'ErrorAnalysis',
-                title: 'Error Analysis View'
+                componentName: 'NetworkArchitecture',
+                title: 'Network Architecture'
             }]
         },{
             type: 'column',

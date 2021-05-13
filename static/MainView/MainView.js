@@ -105,6 +105,6 @@ class MainView extends BasicView {
 
     setData(msg, data) {
         //this.dataManager.setData(data);
-        //this.draw();
+        this.draw();
     }
 }

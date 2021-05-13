@@ -18,7 +18,7 @@ myLayout.registerComponent('PredictionSummary', function (container, state) {
     _prediction_summary_view = new PredictionSummaryView(container);
 });
 
-myLayout.registerComponent('ErrorAnalysis', function (container, state) {
+myLayout.registerComponent('NetworkArchitecture', function (container, state) {
     $(container.getElement()[0]).load('../static/NetworkArchitecture/NetworkArchitecture.html');
     //program Tree view, subscribe to data event
     _error_analysis_view = new NetworkArchitecture(container);

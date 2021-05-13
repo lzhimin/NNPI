@@ -1,0 +1,9 @@
+.layerview_background {
+    stroke: black;
+    fill: white;
+    fill-opacity: 0.1;
+}
+
+.layer_label {
+    text-anchor: middle;
+}

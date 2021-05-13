@@ -7,7 +7,7 @@ class NetworkArchitecture extends BasicView {
 
         this.architecture = {};
 
-        subscribe('ModelSummary', this.setData.bind(this))
+        subscribe('modelsummary', this.setData.bind(this))
 
     }
 
@@ -15,16 +15,24 @@ class NetworkArchitecture extends BasicView {
 
         super.init();
 
+        //clean the panel
+        d3.select("#network_architecture_panel").html("");
+
         //add svg 
-        d3.select('#network_view_panel')
+        this.svg = d3.select('#network_architecture_panel')
             .append('svg')
             .attr('width', this.width)
             .attr("height", this.height);
         
+        //margin
+
+        this.margin.left = 100;
+        this.margin.top = 100;
+        
         // construct data for each neural network layer
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
-            this.architecture[layer_names[i]] = new LayerView(layer_names[i], this.dataManager.data[layer_names[i]])
+            this.architecture[layer_names[i]] = new LayerView(layer_names[i], this.dataManager.data[layer_names[i]], this.svg)
         }
    }
 
@@ -34,9 +42,9 @@ class NetworkArchitecture extends BasicView {
         //draw the network architecture
         let x = this.margin.left;
         let y = this.margin.top;
-        let width = 200;
-        let height = 50;
-        let padding = 10;
+        let width = 100;
+        let height = 80;
+        let padding = 100;
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
             let key = layer_names[i];

@@ -43,7 +43,7 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
             dict_data[label] = [numpy_data[i].astype(np.int).flatten()]
 
     # fetch the representive data samples
-    #rep_data = {}
+    # rep_data = {}
     # for i in dict_data.keys():
     #    kmedoids = KMedoids(n_clusters=num, random_state=0).fit(dict_data[i])
     #    rep_data[i] = kmedoids.cluster_centers_.reshape(num, 28, 28).tolist()
@@ -51,7 +51,7 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
     # salient map data
     model.prune_by_percentile(float(percentage))
     # model.prune_by_percentile_left(float(percentage))
-    #salient_data = {}
+    # salient_data = {}
     # for i in rep_data.keys():
     #    salient_data[i] = []
     #    for j in range(len(rep_data[i])):
@@ -77,6 +77,10 @@ def test(model, dataset, labels):
     subset = []
     # return confusionMatrix.tolist()
     # sample 10% of the testing dataset
+    # subset_indices = [0]  # select your indices here as a list
+    #subset_indices = np.random.rand(1500) * len(dataset)
+    #subset_indices = subset_indices.astype(int)
+    #subdataset = torch.utils.data.Subset(dataset, subset_indices)
 
     test_loader = torch.utils.data.DataLoader(dataset)
     with torch.no_grad():
@@ -113,6 +117,10 @@ def getModelSummary(model):
     for name, param in model.named_parameters():
         if 'weight' in name:
             # collect the information of a neural network layer
-            model_summary[name.split('.')[0]] = {"weight": param.tolist(
-            ), "shape": str(param.shape[0])+"x"+str(param.shape[1])}
+            prune_ratio = torch.sum(param == 0) / \
+                param.shape[0] * param.shape[1]
+
+            # model summary
+            model_summary[name.split('.')[0]] = {"weight": param.detach().numpy().flatten().tolist(
+            ), "shape": str(param.shape[0])+"x"+str(param.shape[1]), 'prune_ratio': prune_ratio.item()}
     return model_summary

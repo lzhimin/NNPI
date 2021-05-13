@@ -33,7 +33,7 @@ class LayerView {
                 else if (i == 1)
                     return "Shape: " + this.dataManager.data.shape;
                 else if (i == 2)
-                    return "Prune: " + this.dataManager.data.prune_ratio;
+                    return "Prune: " + (this.dataManager.data.prune_ratio *100).toFixed(2)+"%";
             })
             .attr('x', this.x + this.width + 10)
             .attr('y', (d, i) => {

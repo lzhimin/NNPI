@@ -5,6 +5,7 @@ class NetworkArchitectureData {
     }
 
     setData(data) {
-        this.data = data;
+        this.data = data[0];
+        this.confusionMatrix = data[1];
     }
 }

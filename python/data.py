@@ -117,10 +117,12 @@ def getModelSummary(model):
     for name, param in model.named_parameters():
         if 'weight' in name:
             # collect the information of a neural network layer
-            prune_ratio = torch.sum(param == 0) / \
-                param.shape[0] * param.shape[1]
+            prune_ratio = torch.sum(param == 0).item() / \
+                float(param.shape[0] * param.shape[1])
 
+            print(torch.sum(param == 0),
+                  param.shape[0], param.shape[1], prune_ratio)
             # model summary
             model_summary[name.split('.')[0]] = {"weight": param.detach().numpy().flatten().tolist(
-            ), "shape": str(param.shape[0])+"x"+str(param.shape[1]), 'prune_ratio': prune_ratio.item()}
+            ), "shape": str(param.shape[0])+"x"+str(param.shape[1]), 'prune_ratio': prune_ratio}
     return model_summary

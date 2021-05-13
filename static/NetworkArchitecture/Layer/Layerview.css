@@ -1,7 +1,8 @@
 .layerview_background {
     stroke: black;
-    fill: white;
+    fill: gray;
     fill-opacity: 0.1;
+    border-radius: 25px;
 }
 
 .layer_label {

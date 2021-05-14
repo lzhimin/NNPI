@@ -75,6 +75,7 @@ def test(model, dataset, labels):
     error_prediction = {}
     test_subset = {}
     subset = []
+    subset_label = []
     # return confusionMatrix.tolist()
     # sample 10% of the testing dataset
     # subset_indices = [0]  # select your indices here as a list

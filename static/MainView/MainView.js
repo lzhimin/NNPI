@@ -19,7 +19,7 @@ class MainView extends BasicView {
     init() {
         super.init();
 
-        d3.select("#project_view_panel").html("");
+        d3.select("#main_view_canvas").html("");
 
         //add canvas 
         d3.select('#main_view_canvas')

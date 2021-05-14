@@ -72,14 +72,14 @@ class NetworkArchitecture extends BasicView {
 
     draw_prediction_summary(x, y) {
 
-        let bar_height = 200;
+        let bar_height = 100;
         let bar_width = 15;
         let padding = 10;
 
         //y-axis for the label bar chart
         let stackbar_chart_axis = d3.scaleLinear()
-            .domain([d3.max(this.dataManager.confusionMatrix, (d) => { return d3.sum(d);}), 0])
-            .range([bar_height,0]);
+            .domain([0, d3.max(this.dataManager.confusionMatrix, (d) => { return d3.sum(d);})])
+            .range([0, bar_height]);
 
         for (let i = 0; i < this.dataManager.confusionMatrix.length; i++){
             let prediction_result = [0, 0];//[0] is correct prediction and [1] is wrong prediction
@@ -120,7 +120,7 @@ class NetworkArchitecture extends BasicView {
                 .text(i)
                 .attr('text-anchor', 'middle')
                 .attr('dominant-baseline', 'central')
-                .style('font-size', '20px');
+                .style('font-size', '15px');
         }
         
         this.svg.append('g')

@@ -17,12 +17,8 @@ let config = {
                 content: [{
                     type: 'component',
                     componentName: 'MainView',
-                    title: 'Projection View'
-                },{
-                type: 'component',
-                componentName: 'PredictionSummary',
-                title: 'Prediction Summary View'
-            }]
+                    title: 'Main View'
+                }]
                 
             },{
                 type: 'component',

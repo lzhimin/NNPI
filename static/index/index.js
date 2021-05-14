@@ -12,11 +12,11 @@ myLayout.registerComponent('MainView', function (container, state) {
     _main_view = new MainView(container);
 });
 
-myLayout.registerComponent('PredictionSummary', function (container, state) {
-    $(container.getElement()[0]).load('../static/PredictionSummary/PredictionSummary.html');
+//myLayout.registerComponent('PredictionSummary', function (container, state) {
+//    $(container.getElement()[0]).load('../static/PredictionSummary/PredictionSummary.html');
     //program Tree view, subscribe to data event
-    _prediction_summary_view = new PredictionSummaryView(container);
-});
+//    _prediction_summary_view = new PredictionSummaryView(container);
+//});
 
 myLayout.registerComponent('NetworkArchitecture', function (container, state) {
     $(container.getElement()[0]).load('../static/NetworkArchitecture/NetworkArchitecture.html');

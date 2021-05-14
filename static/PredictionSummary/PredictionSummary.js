@@ -30,7 +30,7 @@ class PredictionSummaryView extends BasicView {
 
         let x = this.margin.left;
         let y = this.margin.top;
-        let bar_height = 200;
+        let bar_height = 100;
         let bar_width = 20;
         let padding = 15;
 

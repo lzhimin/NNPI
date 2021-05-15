@@ -28,6 +28,10 @@ class ProjectView extends BasicView {
             .append('svg')
             .attr('width', this.width)
             .attr("height", this.height);
+        
+        //dataset 
+        let colordomain = Array.from(new Set(this.dataManager.embedding_labels))
+        this.colormap = d3.scaleOrdinal().domain(colordomain).range(d3.schemeSet3);
     }
 
     draw() {
@@ -40,9 +44,9 @@ class ProjectView extends BasicView {
         let height = 200;
         let padding = 80;
 
-        let keys = Object.keys(this.dataManager.data);
+        let keys = Object.keys(this.dataManager.embedding);
         for (let i = 0; i < keys.length; i++) {
-            this.draw_embedding(keys[i], x + width * i + padding * i, y, width, height, this.dataManager.data[keys[i]]);
+            this.draw_embedding(keys[i], x + width * i + padding * i, y, width, height, this.dataManager.embedding[keys[i]]);
         }
     }
 
@@ -51,7 +55,7 @@ class ProjectView extends BasicView {
         let keys = Object.keys(this.embedding_views);
         for (let i = 0; i < keys.length; i++) {
             this.embedding_views[keys[i]]
-                .data(this.dataManager.data[keys[i]])
+                .data(this.dataManager.embedding[keys[i]])
                 .transition()
                 .duration(10000)
                 .attr('cx', (d) => {
@@ -95,11 +99,13 @@ class ProjectView extends BasicView {
                 return y_axis(d[1]);
             })
             .attr('r', 3)
-            .style('fill', 'steelblue');
+            .style('fill', (d, i) => {
+                return this.colormap(this.dataManager.embedding_labels[i])
+            });
     }
 
     setData(msg, data) {
-        if (this.dataManager.data == undefined) {
+        if (this.dataManager.embedding == undefined) {
             this.dataManager.setData(data);
             this.draw();
         }

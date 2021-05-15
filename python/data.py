@@ -66,11 +66,17 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
     prediction_summary = test(model, mnist, dict_data.keys())
     embedding = model.layerActivationEmbedding(prediction_summary[2])
 
-    return {'modelSummary': getModelSummary(model), 'summary': prediction_summary[0], 'error_prediction': prediction_summary[1], 'embedding': embedding}
+    result = {}
+    result['modelSummary'] = getModelSummary(model)
+    result['summary'] = prediction_summary[0]
+    result['error_prediction'] = prediction_summary[1]
+    result['embedding'] = embedding
+    result['embedding_label'] = prediction_summary[3]
+
+    return result
 
 
 def test(model, dataset, labels):
-
     confusionMatrix = np.zeros((len(labels), len(labels)))
     error_prediction = {}
     test_subset = {}
@@ -104,13 +110,15 @@ def test(model, dataset, labels):
                 test_subset[key] = 1
                 subset.append(
                     np.array(data.tolist()[0][0]).flatten().tolist())
+                subset_label.append(device_target[0].item())
             else:
                 if test_subset[key] < 100:
                     test_subset[key] += 1
                     subset.append(
                         np.array(data.tolist()[0][0]).flatten().tolist())
+                    subset_label.append(device_target[0].item())
 
-    return confusionMatrix.tolist(), error_prediction, subset
+    return confusionMatrix.tolist(), error_prediction, subset, subset_label
 
 
 def getModelSummary(model):

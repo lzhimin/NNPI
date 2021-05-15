@@ -1,10 +1,11 @@
 class ProjectViewData {
 
     constructor() {
-        this.data = undefined;
+        this.embedding = undefined;
     }
 
     setData(data) {
-        this.data = data;
+        this.embedding = data[0];
+        this.embedding_labels = data[1];
     }
 }

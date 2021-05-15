@@ -50,6 +50,7 @@ class LeNet(PruningModule):
             x = self.fc3(x)
             layer3_activation.append(x.tolist())
 
+        print(layer1_activation[0])
         # embedding method
         pca = PCA(n_components=2)
 

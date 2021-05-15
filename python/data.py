@@ -129,9 +129,10 @@ def getModelSummary(model):
             prune_ratio = torch.sum(param == 0).item() / \
                 float(param.shape[0] * param.shape[1])
 
-            print(torch.sum(param == 0),
-                  param.shape[0], param.shape[1], prune_ratio)
+            weight = param.detach().numpy().flatten()
+            weight = weight[weight != 0]
+
             # model summary
-            model_summary[name.split('.')[0]] = {"weight": param.detach().numpy().flatten().tolist(
+            model_summary[name.split('.')[0]] = {"weight": weight.tolist(
             ), "shape": str(param.shape[0])+"x"+str(param.shape[1]), 'prune_ratio': prune_ratio}
     return model_summary

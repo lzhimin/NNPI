@@ -22,7 +22,7 @@ class NetworkArchitecture extends BasicView {
         this.svg = d3.select('#network_architecture_panel')
             .append('svg')
             .attr('width', this.width)
-            .attr("height", this.height);
+            .attr("height", 1000);
         
         //margin
 
@@ -45,16 +45,24 @@ class NetworkArchitecture extends BasicView {
         let width = 100;
         let height = 80;
         let padding = 100;
+
+        //draw input data distribution
+        this.draw_input_summary(x, y, width, height);
+
+
+
+        //draw innere layer
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
             let key = layer_names[i];
 
-            this.architecture[key].setlocation(x, y + (height + padding) * i);
+            this.architecture[key].setlocation(x, y + (height + padding) * (i+1));
             this.architecture[key].setScale(width, height);
             this.architecture[key].draw();
         }
 
-        this.draw_prediction_summary(x-width/2, y + (height + padding) * layer_names.length);
+        //draw output prediction
+        this.draw_prediction_summary(x-width/4, y + (height + padding) * (layer_names.length+1), width, height);
        
     }
 
@@ -69,12 +77,17 @@ class NetworkArchitecture extends BasicView {
         }
     }
 
+    draw_input_summary(x, y, width, height) {
+        
+    }
 
-    draw_prediction_summary(x, y) {
+    draw_prediction_summary(x, y, width, height) {
 
         let bar_height = 100;
         let bar_width = 15;
         let padding = 10;
+
+        height = bar_height + padding;
 
         //y-axis for the label bar chart
         let stackbar_chart_axis = d3.scaleLinear()
@@ -129,16 +142,18 @@ class NetworkArchitecture extends BasicView {
             .call(d3.axisLeft(stackbar_chart_axis).ticks(5));
         
         //label annoatation
-        let annotation_rect_w = 20, annotation_rect_h = 20;
+        let annotation_rect_w = 10, annotation_rect_h = 10;
         this.svg.selectAll('.predictionSummaryLabel')
             .data(['correct', 'error'])
             .enter()
             .append('rect')
             .attr('width', annotation_rect_w)
             .attr('height', annotation_rect_h)
-            .attr('x', x + (bar_width + padding) * 11)
+            .attr('x', (d, i) => {
+                return x + (bar_width + padding) * (3 + i * 3);
+            })
             .attr('y', (d, i) => {
-                return y + (annotation_rect_h + 10) * i;
+                return y - padding*2;
             })
             .style('fill', (d, index) => {
                     return index == 0 ? '#4575b4' : '#d73027';
@@ -148,16 +163,24 @@ class NetworkArchitecture extends BasicView {
             .data(['correct', 'error'])
             .enter()
             .append('text')
-            .attr('x', x + (bar_width + padding) * 12 + annotation_rect_w * 2)
+            .attr('x', (d, i) => {
+                return x + (bar_width + padding) * (3 + i * 3) + annotation_rect_w * 4;
+            })
             .attr('y', (d, i) => {
-                return y + (annotation_rect_h + 10) * i + annotation_rect_h / 2;
+                return y - padding * 2 + annotation_rect_h/2;
             })
             .text(d => d)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central');
+        
+        this.svg.append('rect')
+            .attr('x', x-40)
+            .attr('y', y-30)
+            .attr('width', width * 3.3)
+            .attr('height', height * 1.4)
+            .attr('class', 'layerview_background');
     }
   
-
     setData(msg, data) {
         this.dataManager.setData(data);
         this.draw();

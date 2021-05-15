@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from python.prune import PruningModule, MaskedLinear
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 import numpy as np
 
 
@@ -50,7 +51,6 @@ class LeNet(PruningModule):
             x = self.fc3(x)
             layer3_activation.append(x.tolist())
 
-        print(layer1_activation[0])
         # embedding method
         pca = PCA(n_components=2)
 
@@ -82,12 +82,19 @@ class LeNet(PruningModule):
         else:
             third_layer_projection = self.fc3_embedding * layer3_activation
 
+        # input summary tsne embedding
+
         result = {}
         result['1_input_embedding'] = input_projection.tolist()
         result['2_fc1_embedding'] = first_layer_projection.tolist()
         result['3_fc2_embedding'] = second_layer_projection.tolist()
         result['4_fc3_embedding'] = third_layer_projection.tolist()
+
         return result
+
+    def inputEmbedding(self, dataset):
+        X_embedded = TSNE(n_components=2).fit_transform(dataset)
+        return X_embedded
 
 
 class LeNet_5(PruningModule):

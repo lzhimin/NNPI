@@ -65,11 +65,12 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
     # current prediction summary over the test dataset
     prediction_summary = test(model, mnist, dict_data.keys())
     embedding = model.layerActivationEmbedding(prediction_summary[2])
+    input_summary_embedding = model.inputEmbedding(prediction_summary[2])
 
     result = {}
     result['modelSummary'] = getModelSummary(model)
-    result['summary'] = prediction_summary[0]
-    result['error_prediction'] = prediction_summary[1]
+    result['input_summary'] = input_summary_embedding.tolist()
+    result['prediction_summary'] = prediction_summary[0]
     result['embedding'] = embedding
     result['embedding_label'] = prediction_summary[3]
 
@@ -135,4 +136,5 @@ def getModelSummary(model):
             # model summary
             model_summary[name.split('.')[0]] = {"weight": weight.tolist(
             ), "shape": str(param.shape[0])+"x"+str(param.shape[1]), 'prune_ratio': prune_ratio}
+
     return model_summary

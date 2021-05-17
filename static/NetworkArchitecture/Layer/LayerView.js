@@ -27,25 +27,7 @@ class LayerView {
     }
 
     draw() {
-        this.chart.selectAll('.layerview_label')
-            .data([this.name, this.dataManager.data.shape,
-            this.dataManager.data.prune_ratio])
-            .enter()
-            .append('text')
-            .text((d, i) => {
-                if (i == 0)
-                    return "Name:  " + this.name;
-                else if (i == 1)
-                    return "Shape: " + this.dataManager.data.shape;
-                else if (i == 2)
-                    return "Prune: " + (this.dataManager.data.prune_ratio *100).toFixed(2)+"%";
-            })
-            .attr('x', this.x + this.width + 10)
-            .attr('y', (d, i) => {
-                return this.y + i * this.width / 5 + 10;
-            })
-            .attr('dominant-baseline', 'dominant-baseline');
-
+       
         //backgroud
         this.background_width = this.width * 3;
         this.background_height = this.height * 1.4;
@@ -60,7 +42,95 @@ class LayerView {
         this.draw_menu();
 
         this.display_vis = this.chart.append('g');
+
+        //draw the current selected visualization
+        if (this.display_option == 'weight')
+            this.draw_pruning_distribution();
+        else if (this.display_option == 'active')
+            this.draw_activation_pattern();
         
+        
+        
+    }
+
+    draw_menu() {
+
+        let padding = 5;
+        let width = 60;
+        let height = 30;
+
+        this.menu = this.chart.append('g').selectAll('.layerview_menu_rect')
+            .data([this.name+'_weight', this.name+'_activation'])
+            .enter()
+            .append('rect')
+            .text((d) => d)
+            .attr('x', this.x + this.background_width - this.width / 2)
+            .attr('y', (d, i) => {
+                return this.y + i * (height + padding) - 15;
+            })
+            .attr('width', width)
+            .attr('height', height)
+            .attr('class', (d)=>d)
+            .classed("active_menu_active", (d, i) => {
+                return i == 0 ? true : false;
+            })
+            .classed("active_menu", (d, i) => {
+                return i == 0 ? false : true;
+            })
+            .on('click', (d, i, node) => {
+                this.menu.classed("active_menu_active", false);
+                this.menu.classed("active_menu", true);
+                d3.selectAll('.' + i).classed("active_menu_active", true);
+
+                if (i.includes('activation'))
+                    this.display_option = 'activation';
+                else if (i.includes('weight'))
+                    this.display_option = 'weight';
+                this.redraw();
+            });
+        
+        this.chart.selectAll('.layerview_menu')
+            .data(['Weight', 'Activation'])
+            .enter()
+            .append('text')
+            .text((d)=>d)
+            .attr('x', this.x + this.background_width - this.width / 2 + width / 2)
+            .attr('y', (d, i) => {
+                return this.y + i * (height + padding) - 10 + height / 2;
+            })
+            .attr('dominant-baseline', 'dominant-baseline')
+            .attr("text-anchor", "middle")
+            .attr('class', 'active_menu_text')
+    }
+
+    draw_pruning_distribution() {
+
+        //clean the drawing panel
+        this.display_vis.html('');
+        
+        //text label
+        this.display_vis.selectAll('.layerview_label')
+        .data([this.name, this.dataManager.data.shape,
+        this.dataManager.data.prune_ratio])
+        .enter()
+        .append('text')
+        .text((d, i) => {
+            if (i == 0)
+                return "Name:  " + this.name;
+            else if (i == 1)
+                return "Shape: " + this.dataManager.data.shape;
+            else if (i == 2)
+                return "Prune: " + (this.dataManager.data.prune_ratio *100).toFixed(2)+"%";
+        })
+        .attr('x', this.x + this.width + 10)
+        .attr('y', (d, i) => {
+            return this.y + i * this.width / 5 + 10;
+        })
+        .attr('dominant-baseline', 'dominant-baseline');
+
+
+
+
         //distribution of the weight 
         let x_scale = d3.scaleLinear()
             .domain(d3.extent(this.dataManager.data.weight))
@@ -103,61 +173,17 @@ class LayerView {
         this.display_vis.append("g")
             .attr("transform", "translate("+this.x+"," + (this.y) + ")")
             .call(d3.axisLeft(y_scale).ticks(4));
-        
     }
 
-    draw_menu() {
-
-        let padding = 5;
-        let width = 60;
-        let height = 30;
-
-        this.menu = this.chart.append('g').selectAll('.layerview_menu_rect')
-            .data([this.name+'_weight', this.name+'_activation'])
-            .enter()
-            .append('rect')
-            .text((d) => d)
-            .attr('x', this.x + this.background_width - this.width / 2)
-            .attr('y', (d, i) => {
-                return this.y + i * (height + padding) - 15;
-            })
-            .attr('width', width)
-            .attr('height', height)
-            .attr('class', (d)=>d)
-            .classed("active_menu_active", (d, i) => {
-                return i == 0 ? true : false;
-            })
-            .classed("active_menu", (d, i) => {
-                return i == 0 ? false : true;
-            })
-            .on('click', (d, i, node) => {
-                this.menu.classed("active_menu_active", false);
-                this.menu.classed("active_menu", true);
-                d3.selectAll('.' + i).classed("active_menu_active", true);
-
-                this.redraw();
-            });
-        
-        this.chart.selectAll('.layerview_menu')
-            .data(['Weight', 'Activation'])
-            .enter()
-            .append('text')
-            .text((d)=>d)
-            .attr('x', this.x + this.background_width - this.width / 2 + width / 2)
-            .attr('y', (d, i) => {
-                return this.y + i * (height + padding) - 10 + height / 2;
-            })
-            .attr('dominant-baseline', 'dominant-baseline')
-            .attr("text-anchor", "middle")
-            .attr('class', 'active_menu_text')
-    }
-
-    draw_pruning_distribution() {
-        
+    draw_activation_pattern() {
+        this.display_vis.html('');
     }
 
     redraw() {
-        //this.draw();
+        if (this.display_option == 'weight')
+            this.draw_pruning_distribution();
+        else if (this.display_option == 'activation')
+            this.draw_activation_pattern();
     }
 
 

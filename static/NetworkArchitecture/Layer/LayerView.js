@@ -26,6 +26,10 @@ class LayerView {
         this.height = height;
     }
 
+    setActivation_pattern(pattern) {
+        this.dataManager.setActivation_Pattern(pattern);
+    }
+
     draw() {
        
         //backgroud
@@ -110,23 +114,23 @@ class LayerView {
         
         //text label
         this.display_vis.selectAll('.layerview_label')
-        .data([this.name, this.dataManager.data.shape,
-        this.dataManager.data.prune_ratio])
-        .enter()
-        .append('text')
-        .text((d, i) => {
-            if (i == 0)
-                return "Name:  " + this.name;
-            else if (i == 1)
-                return "Shape: " + this.dataManager.data.shape;
-            else if (i == 2)
-                return "Prune: " + (this.dataManager.data.prune_ratio *100).toFixed(2)+"%";
-        })
-        .attr('x', this.x + this.width + 10)
-        .attr('y', (d, i) => {
-            return this.y + i * this.width / 5 + 10;
-        })
-        .attr('dominant-baseline', 'dominant-baseline');
+            .data([this.name, this.dataManager.data.shape,
+            this.dataManager.data.prune_ratio])
+            .enter()
+            .append('text')
+            .text((d, i) => {
+                if (i == 0)
+                    return "Name:  " + this.name;
+                else if (i == 1)
+                    return "Shape: " + this.dataManager.data.shape;
+                else if (i == 2)
+                    return "Prune: " + (this.dataManager.data.prune_ratio *100).toFixed(2)+"%";
+            })
+            .attr('x', this.x + this.width + 10)
+            .attr('y', (d, i) => {
+                return this.y + i * this.width / 5 + 10;
+            })
+            .attr('dominant-baseline', 'dominant-baseline');
 
 
 
@@ -179,6 +183,24 @@ class LayerView {
 
         //clean the drawing panel
         this.display_vis.html('');
+
+        //neuro node
+        this.display_vis.selectAll('.layerview_neuros')
+            .data(this.dataManager.pattern)
+            .enter()
+            .append('rect')
+            .attr('class', 'layerview_neuro')
+            .attr('x', (d, i) => {
+                return this.x + (i % 30) * (8 + 2) - 50
+            })
+            .attr('y', (d, i) => {
+                return this.y + Math.floor(i / 30) * 8 + 10;
+            })
+            .attr('width', 8)
+            .attr('height', 8)
+            .style('fill', (d) => {
+                return d>0.0001?'#69a3b2':'white';
+            });
     }
 
     redraw() {

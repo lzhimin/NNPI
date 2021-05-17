@@ -7,7 +7,7 @@ function fetch_data(json) {
         dataType: 'json',
         success: function (data) {
             publish("DATASET", data);
-            publish("modelsummary", [data.modelSummary, data.prediction_summary, data.input_summary, data.embedding_label])
+            publish("modelsummary", [data.modelSummary, data.prediction_summary, data.input_summary, data.embedding_label, data.activation_pattern])
             publish("input_summary", )
             publish("embedding", [data.embedding, data.embedding_label])
         }

@@ -64,7 +64,8 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
 
     # current prediction summary over the test dataset
     prediction_summary = test(model, mnist, dict_data.keys())
-    embedding = model.layerActivationEmbedding(prediction_summary[2])
+    embedding, activation_pattern = model.layerActivationEmbedding(
+        prediction_summary[2])
     input_summary_embedding = model.inputEmbedding(prediction_summary[2])
 
     result = {}
@@ -73,6 +74,7 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300.pt'
     result['prediction_summary'] = prediction_summary[0]
     result['embedding'] = embedding
     result['embedding_label'] = prediction_summary[3]
+    result['activation_pattern'] = activation_pattern
 
     return result
 
@@ -83,12 +85,6 @@ def test(model, dataset, labels):
     test_subset = {}
     subset = []
     subset_label = []
-    # return confusionMatrix.tolist()
-    # sample 10% of the testing dataset
-    # subset_indices = [0]  # select your indices here as a list
-    #subset_indices = np.random.rand(1500) * len(dataset)
-    #subset_indices = subset_indices.astype(int)
-    #subdataset = torch.utils.data.Subset(dataset, subset_indices)
 
     test_loader = torch.utils.data.DataLoader(dataset)
     with torch.no_grad():

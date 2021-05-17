@@ -51,6 +51,9 @@ class LeNet(PruningModule):
             x = self.fc3(x)
             layer3_activation.append(x.tolist())
 
+        # get activation summary
+        print()
+
         # embedding method
         pca = PCA(n_components=2)
 
@@ -90,7 +93,15 @@ class LeNet(PruningModule):
         result['3_fc2_embedding'] = second_layer_projection.tolist()
         result['4_fc3_embedding'] = third_layer_projection.tolist()
 
-        return result
+        activation_summary = {}
+        activation_summary['fc1'] = np.sum(
+            layer1_activation, axis=0).tolist()
+        activation_summary['fc2'] = np.sum(
+            layer2_activation, axis=0).tolist()
+        activation_summary['fc3'] = np.sum(
+            layer3_activation, axis=0).tolist()
+
+        return result, activation_summary
 
     def inputEmbedding(self, dataset):
         X_embedded = TSNE(n_components=2).fit_transform(dataset)

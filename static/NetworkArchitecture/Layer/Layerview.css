@@ -24,3 +24,9 @@
 .active_menu_text {
     pointer-events: none;
 }
+
+.layerview_neuro {
+    stroke: gray;
+    stroke-opacity: 0.9;
+
+}

@@ -176,6 +176,8 @@ class LayerView {
     }
 
     draw_activation_pattern() {
+
+        //clean the drawing panel
         this.display_vis.html('');
     }
 
@@ -185,6 +187,4 @@ class LayerView {
         else if (this.display_option == 'activation')
             this.draw_activation_pattern();
     }
-
-
 }

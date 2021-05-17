@@ -1,8 +1,14 @@
 class LayerView {
+
     constructor(name, params, svg) {
         this.name = name;
         this.dataManager = new LayerViewData(params);
         this.chart = svg.append('g');
+
+        // display option 
+        // 1. weight
+        // 2. activation 
+        this.display_option = 'weight';
     }
 
     init() {
@@ -21,7 +27,6 @@ class LayerView {
     }
 
     draw() {
-
         this.chart.selectAll('.layerview_label')
             .data([this.name, this.dataManager.data.shape,
             this.dataManager.data.prune_ratio])
@@ -41,15 +46,20 @@ class LayerView {
             })
             .attr('dominant-baseline', 'dominant-baseline');
 
-
         //backgroud
+        this.background_width = this.width * 3;
+        this.background_height = this.height * 1.4;
         this.chart.append('rect')
             .attr('class', 'layerview_background')
             .attr('x', this.x - this.width/2)
             .attr('y', this.y - 15)
-            .attr('width', this.width * 3)
-            .attr('height', this.height * 1.4);
+            .attr('width', this.background_width)
+            .attr('height', this.background_height);
         
+        //menu
+        this.draw_menu();
+
+        this.display_vis = this.chart.append('g');
         
         //distribution of the weight 
         let x_scale = d3.scaleLinear()
@@ -66,38 +76,88 @@ class LayerView {
 
         y_scale.domain([0, d3.max(bins, function (d) { return d.length; })]);
         
-        this.chart.selectAll("rect")
-        .data(bins)
-        .enter()
-        .append("rect")
-        .attr("class", "bar")
-        .attr("x", 1)
-        .attr("transform", (d)=> {
-            return "translate(" + (x_scale(d.x0) + this.x) + "," + (y_scale(d.length)+this.y) + ")";
-        })
-        .attr("width",  (d)=> {
-            return x_scale(d.x1) - x_scale(d.x0) - 1;
-        })
-        .attr("height",  (d)=> {
-            return this.height - y_scale(d.length);
-        })
-        .style('fill', 'steelblue');
+        this.display_vis.selectAll("rect")
+            .data(bins)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", 1)
+            .attr("transform", (d)=> {
+                return "translate(" + (x_scale(d.x0) + this.x) + "," + (y_scale(d.length)+this.y) + ")";
+            })
+            .attr("width",  (d)=> {
+                return x_scale(d.x1) - x_scale(d.x0) - 1;
+            })
+            .attr("height",  (d)=> {
+                return this.height - y_scale(d.length);
+            })
+            .style('fill', 'steelblue');
 
 
         // add the x Axis
-        this.chart.append("g")
+        this.display_vis.append("g")
             .attr("transform", "translate("+this.x+"," + (this.y + this.height) + ")")
             .call(d3.axisBottom(x_scale).ticks(4));
 
         // add the y Axis
-        this.chart.append("g")
+        this.display_vis.append("g")
             .attr("transform", "translate("+this.x+"," + (this.y) + ")")
             .call(d3.axisLeft(y_scale).ticks(4));
         
     }
 
+    draw_menu() {
+
+        let padding = 5;
+        let width = 60;
+        let height = 30;
+
+        this.menu = this.chart.append('g').selectAll('.layerview_menu_rect')
+            .data([this.name+'_weight', this.name+'_activation'])
+            .enter()
+            .append('rect')
+            .text((d) => d)
+            .attr('x', this.x + this.background_width - this.width / 2)
+            .attr('y', (d, i) => {
+                return this.y + i * (height + padding) - 15;
+            })
+            .attr('width', width)
+            .attr('height', height)
+            .attr('class', (d)=>d)
+            .classed("active_menu_active", (d, i) => {
+                return i == 0 ? true : false;
+            })
+            .classed("active_menu", (d, i) => {
+                return i == 0 ? false : true;
+            })
+            .on('click', (d, i, node) => {
+                this.menu.classed("active_menu_active", false);
+                this.menu.classed("active_menu", true);
+                d3.selectAll('.' + i).classed("active_menu_active", true);
+
+                this.redraw();
+            });
+        
+        this.chart.selectAll('.layerview_menu')
+            .data(['Weight', 'Activation'])
+            .enter()
+            .append('text')
+            .text((d)=>d)
+            .attr('x', this.x + this.background_width - this.width / 2 + width / 2)
+            .attr('y', (d, i) => {
+                return this.y + i * (height + padding) - 10 + height / 2;
+            })
+            .attr('dominant-baseline', 'dominant-baseline')
+            .attr("text-anchor", "middle")
+            .attr('class', 'active_menu_text')
+    }
+
+    draw_pruning_distribution() {
+        
+    }
+
     redraw() {
-        this.draw();
+        //this.draw();
     }
 
 

@@ -199,7 +199,7 @@ class LayerView {
             .attr('width', 8)
             .attr('height', 8)
             .style('fill', (d) => {
-                return d>0.0001?'#69a3b2':'white';
+                return d>0.05?'#69a3b2':'white';
             });
     }
 

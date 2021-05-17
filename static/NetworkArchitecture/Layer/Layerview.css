@@ -28,5 +28,5 @@
 .layerview_neuro {
     stroke: gray;
     stroke-opacity: 0.9;
-
+    border-radius: 5;
 }

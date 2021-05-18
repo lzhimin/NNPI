@@ -194,7 +194,7 @@ class LayerView {
                 return this.x + (i % 30) * (8 + 2) - 50
             })
             .attr('y', (d, i) => {
-                return this.y + Math.floor(i / 30) * 8 + 10;
+                return this.y + Math.floor(i / 30) * 8 - 12;
             })
             .attr('width', 8)
             .attr('height', 8)

@@ -15,7 +15,7 @@ class PruningModule(Module):
         # Calculate percentile value
         alive_parameters = []
         for name, p in self.named_parameters():
-            # We do not pruen bias term
+            # We do not prune bias term
             if 'bias' in name or 'mask' in name:
                 continue
 

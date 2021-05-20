@@ -29,9 +29,6 @@ class LeNet(PruningModule):
 
         return x
 
-    def getLayerActivatioData(self, dataset):
-        pass
-
     def layerActivationEmbedding(self, dataset):
 
         input_projection = None
@@ -102,6 +99,27 @@ class LeNet(PruningModule):
             layer3_activation, axis=0).tolist()
 
         return result, activation_summary
+
+    def activationPruning(self, dataset):
+        layer1_activation = []
+        layer2_activation = []
+
+        for i in range(len(dataset)):
+            x = F.relu(self.fc1(torch.tensor(dataset[i])))
+            layer1_activation.append(x.tolist())
+            x = F.relu(self.fc2(x))
+            layer2_activation.append(x.tolist())
+
+        layer1 = np.sum(layer1_activation, axis=0)
+        layer2 = np.sum(layer2_activation, axis=0)
+        self.fc1.mask[[layer1 == 0]] = 0
+        self.fc2.mask[[layer2 == 0]] = 0
+
+    def sparsity(self):
+        print(np.sum((self.fc1.mask == 0).tolist()) /
+              len(np.array(self.fc1.mask.tolist()).flatten()))
+        print(np.sum((self.fc2.mask == 0).tolist()) /
+              len(np.array(self.fc2.mask.tolist()).flatten()))
 
     def inputEmbedding(self, dataset):
         X_embedded = TSNE(n_components=2).fit_transform(dataset)

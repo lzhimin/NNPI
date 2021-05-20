@@ -130,7 +130,7 @@ class NetworkArchitecture extends BasicView {
         //y-axis for the label bar chart
         let stackbar_chart_axis = d3.scaleLinear()
             .domain([0, d3.max(this.dataManager.confusionMatrix, (d) => { return d3.sum(d);})])
-            .range([0, bar_height]);
+            .range([0,bar_height]);
 
         for (let i = 0; i < this.dataManager.confusionMatrix.length; i++){
             let prediction_result = [0, 0];//[0] is correct prediction and [1] is wrong prediction

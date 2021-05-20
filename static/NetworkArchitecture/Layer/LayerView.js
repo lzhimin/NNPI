@@ -203,6 +203,11 @@ class LayerView {
             });
     }
 
+    draw_error_propagation() {
+        
+    }
+
+
     redraw() {
         if (this.display_option == 'weight')
             this.draw_pruning_distribution();

@@ -11,6 +11,9 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('..'))
 
+CHECKPOINT_DIR = '../../data/model'  # model checkpoints
+# make checkpoint path directory
+os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
 # Training settings
 parser = argparse.ArgumentParser(
@@ -102,6 +105,12 @@ def test(model, device):
         return accuracy
 
 
+def save(model, name):
+    path = os.path.join(
+        CHECKPOINT_DIR, 'model_{}.pkl'.format(name))
+    torch.save(model.state_dict(), path)
+
+
 def main():
 
     print("--- Initial Training ---")
@@ -109,9 +118,9 @@ def main():
 
     # model
     model = LeNet(mask=True).to(device)
-    model.load_state_dict(torch.load('../../data/model/LetNet/letnet300.pt'))
-    test(model, device)
-    model.prune_by_percentile(95)
+
+    # model.load_state_dict(torch.load('../../data/model/LetNet/letnet300.pt'))
+    # model.prune_by_percentile(95)
 
     #model.fc1.weight.requires_grad = False
     #model.fc1.bias.requires_grad = False
@@ -121,11 +130,12 @@ def main():
 
     #model.fc3.weight.requires_grad = False
     #model.fc3.bias.requires_grad = False
-
+    save(model, 'before')
     test(model, device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0001)
-    train(50, model, device, optimizer)
+    train(30, model, device, optimizer)
     test(model, device)
+    save(model, 'after')
     # print(model.parameters)
 
 

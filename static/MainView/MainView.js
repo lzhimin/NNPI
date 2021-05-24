@@ -24,7 +24,7 @@ class MainView extends BasicView {
         //add canvas 
         d3.select('#main_view_canvas')
             .attr('width', this.width)
-            .attr("height", this.height);
+            .attr("height", this.height*2);
     
         this.canvas = $('#main_view_canvas')[0].getContext('2d');;
         

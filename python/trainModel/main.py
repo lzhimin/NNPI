@@ -11,7 +11,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('..'))
 
-CHECKPOINT_DIR = '../../data/model'  # model checkpoints
+CHECKPOINT_DIR = '../../data/model/LetNet'  # model checkpoints
 # make checkpoint path directory
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
@@ -80,6 +80,8 @@ def train(epochs, model, device, optimizer):
             loss.backward()
             optimizer.step()
 
+        save(model, str(epoch))
+
 
 def test(model, device):
     model.eval()
@@ -130,12 +132,10 @@ def main():
 
     #model.fc3.weight.requires_grad = False
     #model.fc3.bias.requires_grad = False
-    save(model, 'before')
     test(model, device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0001)
     train(30, model, device, optimizer)
     test(model, device)
-    save(model, 'after')
     # print(model.parameters)
 
 

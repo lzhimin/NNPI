@@ -8,6 +8,7 @@ class LayerView {
         // display option 
         // 1. weight
         // 2. activation 
+        // 3. error
         this.display_option = 'weight';
     }
 
@@ -49,12 +50,12 @@ class LayerView {
 
         //draw the current selected visualization
         if (this.display_option == 'weight')
-            this.draw_pruning_distribution();
+            this.draw_weight_distribution();
         else if (this.display_option == 'active')
             this.draw_activation_pattern();
         
-        
-        
+        //labels
+        this.draw_layer_labels();
     }
 
     draw_menu() {
@@ -64,7 +65,7 @@ class LayerView {
         let height = 30;
 
         this.menu = this.chart.append('g').selectAll('.layerview_menu_rect')
-            .data([this.name+'_weight', this.name+'_activation'])
+            .data([this.name+'_weight', this.name+'_activation', this.name+"_error"])
             .enter()
             .append('rect')
             .text((d) => d)
@@ -90,11 +91,13 @@ class LayerView {
                     this.display_option = 'activation';
                 else if (i.includes('weight'))
                     this.display_option = 'weight';
+                else if (i.includes('error'))
+                    this.display_option = 'error';
                 this.redraw();
             });
         
         this.chart.selectAll('.layerview_menu')
-            .data(['Weight', 'Activation'])
+            .data(['Weight', 'Activation', 'Error'])
             .enter()
             .append('text')
             .text((d)=>d)
@@ -107,50 +110,101 @@ class LayerView {
             .attr('class', 'active_menu_text')
     }
 
-    draw_pruning_distribution() {
+    draw_layer_labels() {
 
-        //clean the drawing panel
-        this.display_vis.html('');
-        
+        let width = 80;
+        let height = 50;
+
+        //layer label rectangle
+        /*this.display_vis.append('g')
+            .selectAll('.layerview_labels')
+            .data([this.name,
+            this.dataManager.data.shape,
+            this.dataManager.data.prune_ratio])
+            .enter()
+            .append('rect')
+            .attr('x', (d, i) => {
+                return this.x + i * width;
+            })
+            .attr('y', (d, i) => {
+                return this.y - height;
+            })
+            .attr('width', width)
+            .attr('height', height)
+            .attr('class', 'architecture_labels_rect');*/
+
         //text label
-        this.display_vis.selectAll('.layerview_label')
+        this.display_vis.append('g')
+            .selectAll('.layerview_labels')
             .data([this.name, this.dataManager.data.shape,
             this.dataManager.data.prune_ratio])
             .enter()
             .append('text')
             .text((d, i) => {
                 if (i == 0)
-                    return "Name:  " + this.name;
+                    return this.name;
                 else if (i == 1)
-                    return "Shape: " + this.dataManager.data.shape;
+                    return this.dataManager.data.shape;
                 else if (i == 2)
-                    return "Prune: " + (this.dataManager.data.prune_ratio *100).toFixed(2)+"%";
+                    return (this.dataManager.data.prune_ratio *100).toFixed(2)+"%";
             })
-            .attr('x', this.x + this.width + 10)
+            .attr('x', (d, i) => {
+                return this.x + i * width;
+            })
             .attr('y', (d, i) => {
-                return this.y + i * this.width / 5 + 10;
+                return this.y - height/2;
             })
             .attr('dominant-baseline', 'dominant-baseline');
+    }
 
+    draw_weight_distribution() {
 
-
-
+        //clean the drawing panel
+        this.display_vis.html('');
+        
         //distribution of the weight 
         let x_scale = d3.scaleLinear()
             .domain(d3.extent(this.dataManager.data.weight))
             .range([0, this.width]);
         
         let y_scale = d3.scaleLinear()
+            .domain(d3.extent(this.dataManager.data.untrain_weight))
             .range([this.height, 0]);
         
-        //bin the data
-        let bins = d3.histogram()
-            .value((d) => d)
-            .domain(x_scale.domain())(this.dataManager.data.weight);
-
-        y_scale.domain([0, d3.max(bins, function (d) { return d.length; })]);
+        let x_bin = 20;
+        let y_bin = 20;
+        let x_w = this.width / x_bin;
+        let y_h = this.height / y_bin;
+        let bins = this.dataManager.bining_2d(this.dataManager.data.weight, this.dataManager.data.untrain_weight, x_bin, y_bin);
         
-        this.display_vis.selectAll("rect")
+        let colors = ['#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#08519c', '#08306b'];
+        let colorscale = d3.scaleQuantize().domain([0, d3.max(bins)]).range(colors);
+
+        this.display_vis.append('g').selectAll(".binrect")
+            .data(bins)
+            .enter()
+            .append('rect')
+            .attr('x', (d, i) => {
+                return this.x + (i + 1) % x_bin * x_w;
+            })
+            .attr('y', (d, i) => {
+                return this.y + Math.floor(i  / y_bin) * y_h;
+            })
+            .attr('width', x_w)
+            .attr('height', y_h)
+            .style('fill', (d, i) => {
+                return colorscale(d);
+            });
+
+        //bin the data
+        //let bins = d3.histogram()
+        //    .value((d) => d)
+        //    .domain(x_scale.domain())(this.dataManager.data.weight);
+
+        //y_scale.domain([0, d3.max(bins, function (d) { return d.length; })]);
+        
+        /*
+            this.display_vis.selectAll("rect")
             .data(bins)
             .enter()
             .append("rect")
@@ -166,17 +220,18 @@ class LayerView {
                 return this.height - y_scale(d.length);
             })
             .style('fill', 'steelblue');
+        */
 
 
         // add the x Axis
-        this.display_vis.append("g")
-            .attr("transform", "translate("+this.x+"," + (this.y + this.height) + ")")
-            .call(d3.axisBottom(x_scale).ticks(4));
+        //this.display_vis.append("g")
+        //    .attr("transform", "translate("+this.x+"," + (this.y + this.height) + ")")
+        //    .call(d3.axisBottom(x_scale).ticks(4));
 
         // add the y Axis
-        this.display_vis.append("g")
-            .attr("transform", "translate("+this.x+"," + (this.y) + ")")
-            .call(d3.axisLeft(y_scale).ticks(4));
+        //this.display_vis.append("g")
+        //    .attr("transform", "translate("+this.x+"," + (this.y) + ")")
+        //   .call(d3.axisLeft(y_scale).ticks(4));
     }
 
     draw_activation_pattern() {
@@ -199,7 +254,7 @@ class LayerView {
             .attr('width', 8)
             .attr('height', 8)
             .style('fill', (d) => {
-                return d>0.05?'#69a3b2':'white';
+                return d > 0.05 ?'#69a3b2':'white';
             });
     }
 

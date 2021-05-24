@@ -22,7 +22,7 @@ class NetworkArchitecture extends BasicView {
         this.svg = d3.select('#network_architecture_panel')
             .append('svg')
             .attr('width', this.width)
-            .attr("height", 1200);
+            .attr("height", 1800);
         
         //margin
 
@@ -49,8 +49,8 @@ class NetworkArchitecture extends BasicView {
         let x = this.margin.left;
         let y = this.margin.top;
         let width = 100;
-        let height = 80;
-        let padding = 100;
+        let height = 120;
+        let padding = 130;
 
         //draw input data distribution
         let input_width = 300;
@@ -191,11 +191,12 @@ class NetworkArchitecture extends BasicView {
                 return x + (bar_width + padding) * (3 + i * 3);
             })
             .attr('y', (d, i) => {
-                return y - padding*2;
+                return y - padding * 2;
             })
             .style('fill', (d, index) => {
-                    return index == 0 ? '#4575b4' : '#d73027';
+                return index == 0 ? '#4575b4' : '#d73027';
             });
+            //.style('fill-opacity', 0.3);
         
         this.svg.selectAll('.predictionSummaryLabel')
             .data(['correct', 'error'])

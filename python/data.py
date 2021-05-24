@@ -24,12 +24,16 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300_tra
     num = 10
 
     # load model
-    use_cuda = torch.cuda.is_available()
     device = torch.device('cpu')
     model = LeNet(mask=True).to(device)
     model.load_state_dict(torch.load(
         'data/model/LetNet/letnet300_trained.pkl'))
     model.eval()
+
+    untrain_model = LeNet(mask=True).to(device)
+    untrain_model.load_state_dict(torch.load(
+        'data/model/LetNet/letnet300_untrained.pkl'))
+    untrain_model.eval()
 
     # k-medoids algorithm
     dict_data = {}
@@ -72,7 +76,7 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300_tra
 
     result = {}
     result['MainVis'] = {"salient": salient_data, "representative": rep_data}
-    result['modelSummary'] = getModelSummary(model)
+    result['modelSummary'] = getModelSummary(model, untrain_model)
     result['input_summary'] = input_summary_embedding.tolist()
     result['prediction_summary'] = prediction_summary[0]
     result['embedding'] = embedding
@@ -121,9 +125,16 @@ def test(model, dataset, labels):
     return confusionMatrix.tolist(), error_prediction, subset, subset_label
 
 
-def getModelSummary(model):
+def getModelSummary(train_model, untrain_model):
     model_summary = {}
-    for name, param in model.named_parameters():
+
+    for name, param in untrain_model.named_parameters():
+        if "weight" in name:
+            weight = param.detach().numpy().flatten()
+            model_summary[name.split(
+                '.')[0]] = {'untrain_weight': weight.tolist()}
+
+    for name, param in train_model.named_parameters():
         if 'weight' in name:
             # collect the information of a neural network layer
             prune_ratio = torch.sum(param == 0).item() / \
@@ -133,7 +144,9 @@ def getModelSummary(model):
             weight = weight[weight != 0]
 
             # model summary
-            model_summary[name.split('.')[0]] = {"weight": weight.tolist(
-            ), "shape": str(param.shape[0])+"x"+str(param.shape[1]), 'prune_ratio': prune_ratio}
+            model_summary[name.split('.')[0]]["weight"] = weight.tolist()
+            model_summary[name.split('.')[0]]["shape"] = str(
+                param.shape[0])+"x"+str(param.shape[1])
+            model_summary[name.split('.')[0]]["prune_ratio"] = prune_ratio
 
     return model_summary

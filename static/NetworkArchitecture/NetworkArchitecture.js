@@ -48,7 +48,7 @@ class NetworkArchitecture extends BasicView {
         //draw the network architecture
         let x = this.margin.left;
         let y = this.margin.top;
-        let width = 100;
+        let width = 120;
         let height = 120;
         let padding = 130;
 

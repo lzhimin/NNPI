@@ -139,11 +139,16 @@ def getModelSummary(train_model, untrain_model):
             # collect the information of a neural network layer
             prune_ratio = torch.sum(param == 0).item() / \
                 float(param.shape[0] * param.shape[1])
-
             weight = param.detach().numpy().flatten()
             weight = weight[weight != 0]
 
+            untrain_weight = np.array(model_summary[name.split(
+                '.')[0]]["untrain_weight"])
+            untrain_weight = untrain_weight[untrain_weight != 0]
+
             # model summary
+            model_summary[name.split(
+                '.')[0]]["untrain_weight"] = list(untrain_weight)
             model_summary[name.split('.')[0]]["weight"] = weight.tolist()
             model_summary[name.split('.')[0]]["shape"] = str(
                 param.shape[0])+"x"+str(param.shape[1])

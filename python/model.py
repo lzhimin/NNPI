@@ -92,11 +92,11 @@ class LeNet(PruningModule):
 
         activation_summary = {}
         activation_summary['fc1'] = np.sum(
-            layer1_activation, axis=0).tolist()
+            np.array(layer1_activation) != 0, axis=0).tolist()
         activation_summary['fc2'] = np.sum(
-            layer2_activation, axis=0).tolist()
+            np.array(layer2_activation) != 0, axis=0).tolist()
         activation_summary['fc3'] = np.sum(
-            layer3_activation, axis=0).tolist()
+            np.array(layer3_activation) != 0, axis=0).tolist()
 
         return result, activation_summary
 

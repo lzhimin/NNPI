@@ -240,6 +240,9 @@ class LayerView {
         //clean the drawing panel
         this.display_vis.html('');
 
+        let colors = ['#fef0d9', '#fdd49e', '#fdbb84', '#fc8d59', '#ef6548', '#d7301f', '#990000'];
+        let colorscale = d3.scaleQuantize().domain([0, 1000]).range(colors);
+
         //neuro node
         this.display_vis.selectAll('.layerview_neuros')
             .data(this.dataManager.pattern)
@@ -255,7 +258,7 @@ class LayerView {
             .attr('width', 8)
             .attr('height', 8)
             .style('fill', (d) => {
-                return d > 0.05 ? '#69a3b2':'white';
+                return d==0?"white":colorscale(d);
             });
     }
 

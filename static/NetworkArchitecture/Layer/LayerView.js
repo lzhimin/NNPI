@@ -240,10 +240,11 @@ class LayerView {
         //clean the drawing panel
         this.display_vis.html('');
 
-        let colors = ['#fef0d9', '#fdd49e', '#fdbb84', '#fc8d59', '#ef6548', '#d7301f', '#990000'];
-        let colorscale = d3.scaleQuantize().domain([0, 1000]).range(colors);
+        let colors = ['#fee391', '#fec44f', '#fe9929', '#ec7014', '#cc4c02', '#993404'];
+        let colorscale = d3.scaleQuantize().domain([1, 200, 400, 600, 800, 1000]).range(colors);
 
         //neuro node
+        this.dataManager.pattern.sort(function (a, b) { return b - a;});
         this.display_vis.selectAll('.layerview_neuros')
             .data(this.dataManager.pattern)
             .enter()
@@ -259,7 +260,42 @@ class LayerView {
             .attr('height', 8)
             .style('fill', (d) => {
                 return d==0?"white":colorscale(d);
+            })
+            .style('stroke', '1px')
+            .style('stroke-opacity', (d) => {
+                return d == 0 ? 0.4 : 1
             });
+        
+        
+        this.display_vis.append('g').selectAll('.layerview_neuros')
+            .data(colors)
+            .enter()
+            .append('rect')
+            .attr('class', 'layerview_neuro')
+            .attr('x', (d, i) => {
+                return this.x + i * (8 + 2);
+            })
+            .attr('y', (d, i) => {
+                return this.y + 90;
+            })
+            .attr('width', 8)
+            .attr('height', 8)
+            .style('fill', (d) => {
+                return d;
+            });
+            
+        this.display_vis.append('g').selectAll('.layerview_neuros')
+            .data([1, 600, 1000])
+            .enter()
+            .append('text')
+            .text((d) => d)
+            .attr('x', (d, i) => {
+                return this.x + i * 20;
+            })
+            .attr('y', (d, i) => {
+                return this.y + 115;
+            })
+            .style("font", "10px times")
     }
 
     draw_error_propagation() {

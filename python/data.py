@@ -125,6 +125,10 @@ def test(model, dataset, labels):
     return confusionMatrix.tolist(), error_prediction, subset, subset_label
 
 
+def visualization(model):
+    pass
+
+
 def getModelSummary(train_model, untrain_model):
     model_summary = {}
 

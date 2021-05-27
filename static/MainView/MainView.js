@@ -40,8 +40,6 @@ class MainView extends BasicView {
     draw() {
         this.init();
 
-
-
         let data;
         let pixel_w = 2;
         let pixel_h = 2;
@@ -49,17 +47,17 @@ class MainView extends BasicView {
         let block_padding = 50;
 
         //draw presentative image
-        let labels = Object.keys(this.dataManager.data.representative);
+        /*let labels = Object.keys(this.dataManager.data.representative);
         for (let i = 0; i < labels.length; i++){
             data = this.dataManager.data.representative[labels[i]];
             for (let j = 0; j < data.length; j++) {
                 this.draw_image(null, this.margin.left + j * data[j].length * pixel_w + padding * j,
                     this.margin.top + i * data[j][0].length * pixel_h + padding * i, pixel_w, pixel_h, data[j]);
             }
-        }
+        }*/
 
         //draw saliency heatmap
-        let x = this.margin.left + data[0].length * pixel_w * data.length + block_padding;
+        /*let x = this.margin.left + data[0].length * pixel_w * data.length + block_padding;
         for (let i = 0; i < labels.length; i++){
             data = this.dataManager.data.salient[labels[i]];
             for (let j = 0; j < data.length; j++) {
@@ -69,7 +67,7 @@ class MainView extends BasicView {
                 let rescale_func = d3.scaleLinear().domain([max_pixel, min_pixel]).range([0, 1]);
                 this.draw_heatmap(rescale_func, x+j * data[j].length * pixel_w + padding * j, this.margin.top + i * data[j][0].length * pixel_h + padding * i, pixel_w, pixel_h, data[j]);
             } 
-        }
+        }*/
     }
 
     

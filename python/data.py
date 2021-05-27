@@ -3,7 +3,7 @@ from sklearn_extra.cluster import KMedoids
 import numpy as np
 from torchvision import datasets, transforms
 from torch.autograd import Variable
-from python import SaliencyMap
+from python import SaliencyMap, FeatureVisualization
 from python.model import LeNet, LeNet_5
 
 
@@ -29,6 +29,8 @@ def load_init_input_data(percentage, model_path='data/model/LetNet/letnet300_tra
     model.load_state_dict(torch.load(
         'data/model/LetNet/letnet300_trained.pkl'))
     model.eval()
+
+    FeatureVisualization.getFeatureVisualization(model, 1, 1)
 
     untrain_model = LeNet(mask=True).to(device)
     untrain_model.load_state_dict(torch.load(

@@ -8,6 +8,7 @@ class MainViewData {
     }
 
     setData(data) {
-        this.data = data;
+        this.embedding = data[0];
+        this.embedding_labels = data[1];
     }
 }

@@ -41,7 +41,6 @@ class CNNLayerVisualization():
             x = processed_image
             x = x.view(-1, 784)
             x = F.relu(self.model.fc1(x))
-            print(-x[0][self.selected_neuron])
             loss = -x[0][self.selected_neuron]
 
             # backward

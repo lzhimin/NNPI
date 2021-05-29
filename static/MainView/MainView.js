@@ -6,70 +6,104 @@ class MainView extends BasicView {
 
         this.dataManager = new MainViewData();
 
-        this.margin = { 'left': 20, 'right': 20, 'top': 20 };
-
+        
         // the percentage of weight is pruned in the neural network
         this.pruning_precentage = 0;
 
-        subscribe('MainVis', this.setData.bind(this))
-
-        
+        //subscribe('MainVis', this.setData.bind(this))
+        subscribe("MainVis", this.setData.bind(this))
     }
 
     init() {
         super.init();
 
-        d3.select("#main_view_canvas").html("");
+        this.margin = { 'left': 150, 'right': 20, 'top': 20 };
+
+        d3.select("#main_view_panel").html("");
 
         //add canvas 
-        d3.select('#main_view_canvas')
+        this.svg = d3.select('#main_view_panel')
+            .append('svg')
             .attr('width', this.width)
-            .attr("height", this.height*2);
-    
-        this.canvas = $('#main_view_canvas')[0].getContext('2d');;
+            .attr("height", this.height * 2);    
         
         //binding the user event
         this.bindingEvent();
+
+        //color map
+        let colordomain = Array.from(new Set(this.dataManager.embedding_labels))
+        this.colormap = d3.scaleOrdinal().domain(colordomain).range(d3.schemeSet3);
     }
-
-    //draw() {
-    //    this.init();
-    //}
-
     
     draw() {
         this.init();
 
-        let data;
-        let pixel_w = 2;
-        let pixel_h = 2;
-        let padding = 2;
-        let block_padding = 50;
-
-        //draw presentative image
-        /*let labels = Object.keys(this.dataManager.data.representative);
-        for (let i = 0; i < labels.length; i++){
-            data = this.dataManager.data.representative[labels[i]];
-            for (let j = 0; j < data.length; j++) {
-                this.draw_image(null, this.margin.left + j * data[j].length * pixel_w + padding * j,
-                    this.margin.top + i * data[j][0].length * pixel_h + padding * i, pixel_w, pixel_h, data[j]);
-            }
-        }*/
-
-        //draw saliency heatmap
-        /*let x = this.margin.left + data[0].length * pixel_w * data.length + block_padding;
-        for (let i = 0; i < labels.length; i++){
-            data = this.dataManager.data.salient[labels[i]];
-            for (let j = 0; j < data.length; j++) {
-                //colormap
-                let max_pixel = d3.max(data[j], (d) => { return d3.max(d); });
-                let min_pixel = d3.min(data[j], (d) => { return d3.min(d); });
-                let rescale_func = d3.scaleLinear().domain([max_pixel, min_pixel]).range([0, 1]);
-                this.draw_heatmap(rescale_func, x+j * data[j].length * pixel_w + padding * j, this.margin.top + i * data[j][0].length * pixel_h + padding * i, pixel_w, pixel_h, data[j]);
-            } 
-        }*/
+        // the size of embedding
+        let width = 750;
+        let height = 450;
+        this.draw_embedding(this.margin.left, this.margin.top, width, height, this.dataManager.embedding)
     }
 
+    draw_embedding(x, y, width, height, data) {
+         let x_max, x_min, y_max, y_min;
+
+        [x_min, x_max] = d3.extent(data, (d) => { return d[0] });
+        [y_min, y_max] = d3.extent(data, (d) => { return d[1] });
+        
+        let x_axis = d3.scaleLinear().domain([x_min , x_max * 1.1]).range([x, x + width]);
+        let y_axis = d3.scaleLinear().domain([y_max * 1.1, y_min]).range([y, y + height]);
+
+        this.svg.append('g')
+            .attr('class', 'embedding_axis')
+            .attr("transform", "translate(0" + ',' + (y + height) + ")")
+            .call(d3.axisBottom(x_axis).ticks(10));
+        
+        this.svg.append('g')
+            .attr('class', 'embedding_axis')
+            .attr("transform", "translate(" + x + " ,0)")
+            .call(d3.axisLeft(y_axis).ticks(10));
+        
+        this.svg.selectAll('.embedding_points')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('class', 'embedding_points')
+            .attr('cx', (d) => {
+                return x_axis(d[0]);
+            })
+            .attr('cy', (d) => {
+                return y_axis(d[1]);
+            })
+            .attr('r', 3)
+            .style('fill', (d, i) => {
+                return this.colormap(this.dataManager.embedding_labels[i])
+            });
+        
+        //lasso event area
+        let lasso_area = this.svg.append('g')
+            .append('rect')
+            .attr('x', x)
+            .attr('y', y)
+            .attr('width', width)
+            .attr('height', height)
+            .style("opacity", 0);
+        
+        // Define the lasso
+        let lasso = d3.lasso()
+            .closePathDistance(75) // max distance for the lasso loop to be closed
+            .closePathSelect(true) // can items be selected by closing the path?
+            .hoverSelect(true) // can items by selected by hovering over them?
+            .area(lasso_area) // area where the lasso can be started
+            .on("start", function(){
+                
+            }) // lasso start function
+            .on("end", function(){
+                
+            }); // lasso end function
+        
+        this.svg.call(lasso);
+        lasso.items(d3.selectAll(".embedding_points"));
+    }
     
     draw_image(colormap, x, y, pixel_w, pixel_h, d) {
         for (let i = 0; i < d.length; i++) {

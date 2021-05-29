@@ -30,7 +30,6 @@ class LeNet(PruningModule):
         return x
 
     def layerActivationEmbedding(self, dataset):
-
         input_projection = None
         first_layer_projection = None
         second_layer_projection = None

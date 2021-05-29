@@ -107,11 +107,11 @@ class ProjectView extends BasicView {
     setData(msg, data) {
         if (this.dataManager.embedding == undefined) {
             this.dataManager.setData(data);
-            this.draw();
+            //this.draw();
         }
         else {
             this.dataManager.setData(data);
-            this.redraw();
+            //this.redraw();
         }
         
     }

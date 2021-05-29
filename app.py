@@ -1,6 +1,5 @@
 import random
 from flask import Flask, render_template, request, json, jsonify
-import sys
 from python import data
 
 
@@ -15,6 +14,9 @@ def index():
 @app.route("/_fetch_data", methods=["GET", "POST"])
 def _fetch_data():
     json_request = request.get_json()
+
+    # return json.dumps({"a": 1})
+    # print(json_request)
     return json.dumps(data.getdata(json_request['percentage']))
 
 

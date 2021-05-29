@@ -244,7 +244,7 @@ class LayerView {
         let colorscale = d3.scaleQuantize().domain([1, 200, 400, 600, 800, 1000]).range(colors);
 
         //neuro node
-        //this.dataManager.pattern.sort(function (a, b) { return b - a;});
+        this.dataManager.pattern.sort(function (a, b) { return b - a;});
         this.display_vis.selectAll('.layerview_neuros')
             .data(this.dataManager.pattern)
             .enter()

@@ -35,7 +35,7 @@ class CNNLayerVisualization():
 
         # Define optimizer for the image
         optimizer = Adam([processed_image], lr=0.1, weight_decay=1e-6)
-        for i in range(1, 31):
+        for i in range(1, 51):
             optimizer.zero_grad()
             # Assign create image to a varaible to move forward in the model
             x = processed_image

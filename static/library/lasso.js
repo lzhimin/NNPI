@@ -1,375 +1,147 @@
-d3.lasso = function() {
+//function handleLassoStart(lassoPolygon) {
+//    updateSelectedPoints([]);
+//}
 
-    var items = null,
-        closePathDistance = 75,
-        closePathSelect = true,
-        isPathClosed = false,
-        hoverSelect = true,
-        points = [],
-        area = null,
-        on = {start:function(){}, draw: function(){}, end: function(){}};
+//function handleLassoEnd(lassoPolygon) {
+//    let selectedPoints = points.filtre(d => {
+//        return d3.polygonContains(lassoPolygon, [d.x, d.y]);
+//    });
 
-    function lasso(d,i,nodes) {
+//    updateSelectedPoints(selectedPoints);
+//}
 
-        // the element where the lasso was called
-        var _this = d3.select(d["_groups"][0][0]);
+/*function updateSelectedPoints(selectedPoints) {
+    
+    if (!selectedPoints.length) {
+        points.forEach(d => {
+            d.color = 'tomato';
+        });
+    } else {
+        points.forEach(d => {
+            d.color = '#eee';
+        });
 
-        // add a new group for the lasso
-        var g = _this.append("g")
-                    .attr("class","lasso");
+        selectedPoints.forEach(d => {
+            d.color = '#000';
+        });
+    }
 
-        // add the drawn path for the lasso
-        var dyn_path = g.append("path")
-            .attr("class","drawn");
+    drawPoints();
+}*/
 
-        // add a path used for calculations
-        var calc_path = g.append("path")
-            .attr("display","none");
 
-        // add a closed path
-        var close_path = g.append("path")
-            .attr("class","loop_close");
 
-        // add a close path used for calculations
-        var calc_close_path = g.append("path")
-            .attr("display","none");
+function polygonToPath(polygon) {
+    return ("M" + (polygon.map(function (d) { return d.join(','); }).join('L')));
+}
 
-        // add an origin node
-        var origin_node = g.append("circle")
-            .attr("class","origin");
+function distance(pt1, pt2) {
+  return Math.sqrt(Math.pow( (pt2[0] - pt1[0]), 2 ) + Math.pow( (pt2[1] - pt1[1]), 2 ));
+}
 
-        // The lasso path for calculations
-        var path;
+function lasso(x, y, width, height) {
+    let dispatch = d3.dispatch('start', 'end');
 
-        // The transformed lasso path for rendering
-        var tpath;
+    let closeDistance = 75;
 
-        // The lasso origin for calculations
-        var origin;
-
-        // The transformed lasso origin for rendering
-        var torigin;
-
-        // The last known point on the lasso during drag - needed for evaluating edges
-        var last_known_point;
-
-        // The starting point for evaluating the path
-        var path_length_start;
-
-          // Apply drag behaviors
-        var drag = d3.drag()
-            .on("start",dragstart)
-            .on("drag",dragmove)
-            .on("end",dragend);
-
-        // Call drag
+    function lasso(root) {
+        const g = root.append('g').attr('class', 'lasso-group');
+        const area = g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'tomato')
+            .attr('opacity', 0);
+        
+        const drag = d3.drag()
+            .on('start', handleDragStart)
+            .on('drag', handleDrag)
+            .on('end', handleDragEnd);
+        
         area.call(drag);
 
-        function dragstart() {
-            // Initialize paths
-            path="";
-            tpath = "";
-            dyn_path.attr("d",null);
-            close_path.attr("d",null);
+        let lassoPolygon;
+        let lassoPath;
+        let closePath;
 
-            // Set path length start
-            path_length_start = 0;
+        function handleDragStart(event) {
+            const point = d3.pointer(event);
+            //point[0] -= x;
+            point[1] += 5;
 
-            // Set every item to have a false selection and reset their center point and counters
-            items[0].forEach(function(d) {
-                d.hoverSelected = false;
-                d.loopSelected = false;
-                var box = d.getBoundingClientRect();
-                d.lassoPoint = {
-                    cx: Math.round(box.left + box.width/2),
-                    cy: Math.round(box.top + box.height/2),
-                    edges: {top:0,right:0,bottom:0,left:0},
-                    close_edges: {left: 0, right: 0}
-                };
-
-
-            });
-
-            // if hover is on, add hover function
-            if(hoverSelect===true) {
-                d3.selectAll(items[0]).on("mouseover.lasso",function() {
-                    // if hovered, change lasso selection attribute to true
-                    d3.select(this)['_groups'][0][0].hoverSelected = true;
-                });
+            lassoPolygon = [point];
+            if (lassoPath) {
+                lassoPath.remove();
             }
 
-            // Run user defined start function
-            on.start();
-        }
-
-        function dragmove() {
-            // Get mouse position within body, used for calculations
-            var x = d3.event.sourceEvent.clientX;
-            var y = d3.event.sourceEvent.clientY;
-            // Get mouse position within drawing area, used for rendering
-            var tx = d3.mouse(this)[0];
-            var ty = d3.mouse(this)[1];
-
-            // Initialize the path or add the latest point to it
-            if (path==="") {
-                path = path + "M " + x + " " + y;
-                tpath = tpath + "M " + tx + " " + ty;
-                origin = [x,y];
-                torigin = [tx,ty];
-                // Draw origin node
-                origin_node
-                    .attr("cx",tx)
-                    .attr("cy",ty)
-                    .attr("r",7)
-                    .attr("display",null);
-            }
-            else {
-                path = path + " L " + x + " " + y;
-                tpath = tpath + " L " + tx + " " + ty;
-            }
-
-            // Reset closed edges counter
-            items[0].forEach(function(d) {
-                d.lassoPoint.close_edges = {left:0,right:0};
-            });
-
-            // Calculate the current distance from the lasso origin
-            var distance = Math.sqrt(Math.pow(x-origin[0],2)+Math.pow(y-origin[1],2));
-
-            // Set the closed path line
-            var close_draw_path = "M " + tx + " " + ty + " L " + torigin[0] + " " + torigin[1];
-
-            // Set the calc closed path line
-            var calc_close_draw_path = "M " + x + " " + y + " L " + origin[0] + " " + origin[1];
-
-            // Draw the lines
-            dyn_path.attr("d",tpath);
-
-            // path for calcs
-            calc_path.attr("d",path);
-
-            calc_close_path.attr("d",calc_close_draw_path);
-
-            // Check if the path is closed
-            isPathClosed = distance<=closePathDistance ? true : false;
-
-            // If within the closed path distance parameter, show the closed path. otherwise, hide it
-            if(isPathClosed) {
-                close_path.attr("display",null);
-            }
-            else {
-                close_path.attr("display","none");
-            }
-
-
-            // Get path length
-            var path_node = calc_path.node();
-            var path_length_end = path_node.getTotalLength();
-            // Get the ending point of the path
-            var last_pos = path_node.getPointAtLength(path_length_start-1);
+            lassoPath = g.append('path')
+                .attr('fill', '#0bb')
+                .attr('fill-opacity', 0.1)
+                .attr('stroke', '#0bb')
+                .attr('stroke-dasharray', '3, 3');
             
-            // Iterate through each point on the path
-            for (var i = path_length_start; i<=path_length_end; i++) {
-                // Get the current coordinates on the path
-                var cur_pos = path_node.getPointAtLength(i);
-                var cur_pos_obj = {
-                    x:Math.round(cur_pos.x*100)/100,
-                    y:Math.round(cur_pos.y*100)/100,
-                };
-                // Get the prior coordinates on the path
-                var prior_pos = path_node.getPointAtLength(i-1);
-                var prior_pos_obj = {
-                    x:Math.round(prior_pos.x*100)/100,
-                    y:Math.round(prior_pos.y*100)/100,
-                };
-
-                // Iterate through each item
-                items[0].filter(function(d) {
-                    var a;
-                    // If we are on the same y position as the item and we weren't on this y before,
-                    // mark as the last known point. Return false - we don't need to count an edge yet
-                    if(d.lassoPoint.cy === cur_pos_obj.y && d.lassoPoint.cy != prior_pos_obj.y) {
-                        last_known_point = {
-                            x: prior_pos_obj.x,
-                            y: prior_pos_obj.y
-                        };
-                        a=false;
-                    }
-                    // If we are on the same y position as the item and we were on this y before,
-                    // return false - we don't need to count an edge yet
-                    else if (d.lassoPoint.cy === cur_pos_obj.y && d.lassoPoint.cy === prior_pos_obj.y) {
-                        a = false;
-                    }
-                    // If we are not on the same y position as the item but we were previously,
-                    // determine if we passed by the item or came up to it and turned around.
-                    // Return true if we passed it so that we can evaluate for an edge
-                    else if (d.lassoPoint.cy != cur_pos_obj.y && d.lassoPoint.cy === prior_pos_obj.y) {
-                        a = sign(d.lassoPoint.cy-cur_pos_obj.y)!=sign(d.lassoPoint.cy-last_known_point.y);
-                    }
-                    // Else, mark a last known point and check for a crossing.
-                    // If we crossed, we need to evaluate for edges
-                    else {
-                        last_known_point = {
-                            x: prior_pos_obj.x,
-                            y: prior_pos_obj.y
-                        };
-                        a = sign(d.lassoPoint.cy-cur_pos_obj.y)!=sign(d.lassoPoint.cy-prior_pos_obj.y);
-                    }
-                    return a;
-                }).forEach(function(d) {
-                    // Iterate through each object and add an edge to the left or right
-                    if(cur_pos_obj.x>d.lassoPoint.cx) {
-                        d.lassoPoint.edges.right = d.lassoPoint.edges.right+1;
-                    }
-                    if(cur_pos_obj.x<d.lassoPoint.cx) {
-                        d.lassoPoint.edges.left = d.lassoPoint.edges.left+1;
-                    }
-                });
-            }
-
-            // If the path is closed and close select is set to true, draw the closed paths and count edges
-             if(isPathClosed === true && closePathSelect === true) {
-                close_path.attr("d",close_draw_path);
-                close_path_node =calc_close_path.node();
-                var close_path_length = close_path_node.getTotalLength();
-                var close_path_edges = {left:0,right:0};
-                for (var i = 0; i<=close_path_length; i++) {
-                    var cur_pos = close_path_node.getPointAtLength(i);
-                    var prior_pos = close_path_node.getPointAtLength(i-1);
-
-                    items[0].filter(function(d) {return d.lassoPoint.cy==Math.round(cur_pos.y);}).forEach(function(d) {
-                        if(Math.round(cur_pos.y)!=Math.round(prior_pos.y) && Math.round(cur_pos.x)>d.lassoPoint.cx) {
-                            d.lassoPoint.close_edges.right = 1;
-                        }
-                        if(Math.round(cur_pos.y)!=Math.round(prior_pos.y) && Math.round(cur_pos.x)<d.lassoPoint.cx) {
-                            d.lassoPoint.close_edges.left = 1;
-                        }
-                    });
-
-                }
-
-                // Check and see if the points have at least one edge to the left, and an odd # of edges to the right. If so, mark as selected.
-                items[0].forEach(function(a) {
-                    if((a.lassoPoint.edges.left+a.lassoPoint.close_edges.left)>0 && (a.lassoPoint.edges.right + a.lassoPoint.close_edges.right)%2 ==1) {
-                        a.loopSelected = true;
-                    }
-                    else {
-                        a.loopSelected = false;
-                    }
-                });
-            }
-            else {
-                items[0].forEach(function(d) {
-                    d.loopSelected = false;
-                });
-            }
+            closePath = g.append('line')
+                .attr('x2', lassoPolygon[0][0])
+                .attr('y2', lassoPolygon[0][1])
+                .attr('stroke', '#0bb')
+                .attr('stroke-dasharray', '3, 3')
+                .attr('opacity', 0);
             
-            // Tag possible items
-            d3.selectAll(items[0].filter(function(d) {return (d.loopSelected && isPathClosed) || d.hoverSelected;}))
-                .each(function(d) { d.possible = true;});
-
-            d3.selectAll(items[0].filter(function(d) {return !((d.loopSelected && isPathClosed) || d.hoverSelected);}))
-                .each(function(d) {d.possible = false;});
-
-            on.draw();
-
-            // Continue drawing path from where it left off
-            path_length_start = path_length_end+1;
-        }
-
-        function dragend() {
-            // Remove mouseover tagging function
-             d3.selectAll(items[0]).on("mouseover.lasso",null);
-
-            // Tag selected items
-            items.filter(function(d) {return d.possible === true;})
-                .each(function(d) {d.selected = true;});
-
-            items.filter(function(d) {return d.possible === false;})
-                .each(function(d) {d.selected = false;});
-
-            // Reset possible items
-            items
-                .each(function(d) {d.possible = false;});
-
-            // Clear lasso
-            dyn_path.attr("d",null);
-            close_path.attr("d",null);
-            origin_node.attr("display","none");
-
-            // Run user defined end function
-            on.end();
+            dispatch.call('start', lasso, lassoPolygon);
             
         }
 
-      
+        function handleDrag(event) {
+            const point = d3.pointer(event);
+            //point[0] -= x;
+            point[1] -= (y + 80);
+
+            lassoPolygon.push(point);
+            lassoPath.attr('d', polygonToPath(lassoPolygon))
+
+
+            // if we are within closing distance
+            if (distance(lassoPolygon[0], lassoPolygon[lassoPolygon.length - 1]) < closeDistance) {
+                closePath
+                    .attr('x1', point[0])
+                    .attr('y1', point[1])
+                    .attr('opacity', 1);
+            } else {
+                closePath.attr('opacity', 0);
+            }
+        }
+
+        function handleDragEnd(event) {
+            closePath.remove();
+            closePath = null;
+
+            if (distance(lassoPolygon[0], lassoPolygon[lassoPolygon.length - 1]) < closeDistance) {
+                lassoPath.attr('d', polygonToPath(lassoPolygon) + 'Z');
+                dispatch.call('end', lasso, lassoPolygon);
+            } else {
+                lassoPath.remove();
+                lassoPath = null;
+                lassoPolygon = null;
+            }
+        }
+
+        lasso.reset = () => {
+            if (lassoPath) {
+                lassoPath.remove();
+                lassoPath = null;
+            }
+
+            lassoPolygon = null;
+            if (closePath) {
+                closePath.remove();
+                closePath = null;
+            }
+        };    
     }
 
-    lasso.items  = function(_) {
-
-        if (!arguments.length) return items;
-        items = _['_groups'];
-        items[0].forEach(function(d) {
-            var item = d3.select(d);
-            if(typeof item.datum() === 'undefined') {
-                item.datum({possible:false,selected:false});
-            }
-            else {
-                //item.attr("d",function(e) {e.possible = false; e.selected = false; return e;});
-                var e = item.datum();
-                e.possible = false;
-                e.selected = false;
-                item.datum(e);
-            }
-        });
+    lasso.on = (type, callback) => {
+        dispatch.on(type, callback);
         return lasso;
     };
-
-    lasso.closePathDistance  = function(_) {
-        if (!arguments.length) return closePathDistance;
-        closePathDistance = _;
-        return lasso;
-    };
-
-    lasso.closePathSelect = function(_) {
-        if (!arguments.length) return closePathSelect;
-        closePathSelect = _===true ? true : false;
-        return lasso;
-    };
-
-    lasso.isPathClosed = function(_) {
-        if (!arguments.length) return isPathClosed;
-        isPathClosed = _===true ? true : false;
-        return lasso;
-    };
-
-    lasso.hoverSelect = function(_) {
-        if (!arguments.length) return hoverSelect;
-        hoverSelect = _===true ? true : false;
-        return lasso;
-    };
-
-    lasso.on = function(type,_) {
-        if(!arguments.length) return on;
-        if(arguments.length===1) return on[type];
-        var types = ["start","draw","end"];
-        if(types.indexOf(type)>-1) {
-            on[type] = _;
-        }
-        return lasso;
-    };
-
-    lasso.area = function(_) {
-        if(!arguments.length) return area;
-        area=_;
-        return lasso;
-    };
-
-    function sign(x) {
-        return x?x<0?-1:1:0;
-    }
-
 
     return lasso;
-
-};
+}

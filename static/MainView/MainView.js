@@ -63,7 +63,8 @@ class MainView extends BasicView {
             .attr("transform", "translate(" + x + " ,0)")
             .call(d3.axisLeft(y_axis).ticks(10));
         
-        this.svg.selectAll('.embedding_points')
+        this.points = this.svg.append('g')
+            .selectAll('.embedding_points')
             .data(data)
             .enter()
             .append('circle')
@@ -74,56 +75,56 @@ class MainView extends BasicView {
             .attr('cy', (d) => {
                 return y_axis(d[1]);
             })
-            .attr('r', 3)
+            .attr('r', 5)
             .style('fill', (d, i) => {
                 return this.colormap(this.dataManager.embedding_labels[i])
-            });
+            })
+            .style('fill-opacity', 0.5);
         
-        //lasso event area
-        let lasso_area = this.svg.append('g')
-            .append('rect')
-            .attr('x', x)
-            .attr('y', y)
-            .attr('width', width)
-            .attr('height', height)
-            .style("opacity", 0);
+        const lassoInstance = lasso(x, y, width, height)
+            .on('end', this.handleLassoEnd.bind(this))
+            .on('start', this.handleLassoStart.bind(this));
         
-        // Define the lasso
-        let lasso = d3.lasso()
-            .closePathDistance(75) // max distance for the lasso loop to be closed
-            .closePathSelect(true) // can items be selected by closing the path?
-            .hoverSelect(true) // can items by selected by hovering over them?
-            .area(lasso_area) // area where the lasso can be started
-            .on("start", function(){
-                
-            }) // lasso start function
-            .on("end", function(){
-                
-            }); // lasso end function
-        
-        this.svg.call(lasso);
-        lasso.items(d3.selectAll(".embedding_points"));
-    }
-    
-    draw_image(colormap, x, y, pixel_w, pixel_h, d) {
-        for (let i = 0; i < d.length; i++) {
-            for (let j = 0; j < d[i].length; j++) {
-                if (d[i][j] == 0)
-                    this.canvas.fillStyle = 'black';
-                else
-                    this.canvas.fillStyle = 'white';
-                this.canvas.fillRect(x + j * pixel_w, y + i * pixel_h, pixel_w, pixel_h);
-            }
-        }        
+        this.svg.call(lassoInstance);        
     }
 
-    draw_heatmap(scale_func, x, y, pixel_w, pixel_h, d) {
-        for (let i = 0; i < d.length; i++) {
-            for (let j = 0; j < d[i].length; j++) {
-                this.canvas.fillStyle = d3.interpolateRdBu(scale_func(d[i][j]));
-                this.canvas.fillRect(x + j * pixel_w, y + i * pixel_h, pixel_w, pixel_h);
-            }
-        }
+    handleLassoEnd(lassoPolygon) {
+        /*const selectedPoints = points.filter(d => {
+            // note we have to undo any transforms done to the x and y to match with the
+            // coordinate system in the svg.
+            const x = d.x + padding.left;
+            const y = d.y + padding.top;
+
+            return d3.polygonContains(lassoPolygon, [x, y]);
+        });
+
+        updateSelectedPoints(selectedPoints);*/
+    }
+
+    // reset selected points when starting a new polygon
+    handleLassoStart(lassoPolygon) {
+        this.updateSelectedPoints([]);
+    }
+
+    // when we have selected points, update the colors and redraw
+    updateSelectedPoints(selectedPoints) {
+        // if no selected points, reset to all tomato
+        /*if (!selectedPoints.length) {
+            // reset all
+            points.forEach(d => {
+            d.color = 'tomato';
+            });
+
+            // otherwise gray out selected and color selected black
+        } else {
+            points.forEach(d => {
+            d.color = '#eee';
+            });
+            selectedPoints.forEach(d => {
+            d.color = '#000';
+            });
+        }*/
+
     }
 
     //binding the interactive event

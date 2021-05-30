@@ -2,13 +2,6 @@ let config = {
     content: [{
         type: 'row',
         content: [{
-            type: 'stack',
-            content: [{
-                type: 'component',
-                componentName: 'NetworkArchitecture',
-                title: 'Network Architecture'
-            }]
-        },{
             type: 'column',
             width: 75,
             content: [{
@@ -24,6 +17,13 @@ let config = {
                 type: 'component',
                 componentName: 'ProjectionView',
                 title: 'Projection View'
+            }]
+        },{
+            type: 'stack',
+            content: [{
+                type: 'component',
+                componentName: 'NetworkArchitecture',
+                title: 'Network Architecture'
             }]
         }]
     }]

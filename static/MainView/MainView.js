@@ -17,7 +17,7 @@ class MainView extends BasicView {
     init() {
         super.init();
 
-        this.margin = { 'left': 150, 'right': 20, 'top': 20 };
+        this.margin = { 'left': 50, 'right': 20, 'top': 20 };
 
         d3.select("#main_view_panel").html("");
 
@@ -79,7 +79,13 @@ class MainView extends BasicView {
             .style('fill', (d, i) => {
                 return this.colormap(d[1]);
             })
-            .style('fill-opacity', 0.9);
+            .style('fill-opacity', 0.9)
+            .on('mouseover', function (d, i) {
+                d3.select(this).attr('r', 10);
+            })
+            .on('mouseout', function (d, i) {
+                d3.select(this).attr('r', 5);
+            })
         
         const lassoInstance = lasso(x, y, width, height)
             .on('end', this.handleLassoEnd.bind(this))
@@ -112,9 +118,7 @@ class MainView extends BasicView {
         // if no selected points, reset to all tomato
         if (!selectedPoints["_groups"][0].length) {
             // reset all
-            this.points.style('fill-opacity', 0.9)
-
-            // otherwise gray out selected and color selected black
+            this.points.style('fill-opacity', 0.9);
         } else {
             this.points.style('fill-opacity', 0.2);
             selectedPoints.style('fill-opacity',0.9);

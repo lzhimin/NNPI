@@ -2,3 +2,13 @@
     border-radius: 25px;
     fill: white;
 }
+
+.network_architecture_menu_div {
+    margin-top: 20px;
+    margin-left: 25px;
+}
+
+.network_architecture_menu_label {
+    width: 20%;
+    display: inline-block;
+}

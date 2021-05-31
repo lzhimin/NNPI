@@ -1,36 +1,3 @@
-//function handleLassoStart(lassoPolygon) {
-//    updateSelectedPoints([]);
-//}
-
-//function handleLassoEnd(lassoPolygon) {
-//    let selectedPoints = points.filtre(d => {
-//        return d3.polygonContains(lassoPolygon, [d.x, d.y]);
-//    });
-
-//    updateSelectedPoints(selectedPoints);
-//}
-
-/*function updateSelectedPoints(selectedPoints) {
-    
-    if (!selectedPoints.length) {
-        points.forEach(d => {
-            d.color = 'tomato';
-        });
-    } else {
-        points.forEach(d => {
-            d.color = '#eee';
-        });
-
-        selectedPoints.forEach(d => {
-            d.color = '#000';
-        });
-    }
-
-    drawPoints();
-}*/
-
-
-
 function polygonToPath(polygon) {
     return ("M" + (polygon.map(function (d) { return d.join(','); }).join('L')));
 }
@@ -68,7 +35,7 @@ function lasso(x, y, width, height) {
         function handleDragStart(event) {
             const point = d3.pointer(event);
             //point[0] -= x;
-            point[1] += 5;
+            //point[1] -= 5;
 
             lassoPolygon = [point];
             if (lassoPath) {
@@ -95,7 +62,7 @@ function lasso(x, y, width, height) {
         function handleDrag(event) {
             const point = d3.pointer(event);
             //point[0] -= x;
-            point[1] -= (y + 80);
+            point[1] -= (y + 50);
 
             lassoPolygon.push(point);
             lassoPath.attr('d', polygonToPath(lassoPolygon))

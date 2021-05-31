@@ -8,7 +8,8 @@ class MainViewData {
     }
 
     setData(data) {
-        this.embedding = data[0];
-        this.embedding_labels = data[1];
+        this.embedding = data[0].map(function (d, i){
+            return [d, data[1][i]];
+        });
     }
 }

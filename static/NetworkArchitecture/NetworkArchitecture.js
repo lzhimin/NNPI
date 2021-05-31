@@ -102,12 +102,14 @@ class NetworkArchitecture extends BasicView {
             .attr('height', height)
             .style('rx', 10)
             .style('fill', (d, i) =>{
-                return d == 'full' ? "orange" : 'gray';
+                return d == 'full' ? "orange" : 'white';
             })
             .on('click', function (d) {
-                d3.selectAll('.architectureMenu').style('fill', 'gray');
+                d3.selectAll('.architectureMenu').style('fill', 'white');
                 d3.select(this).style('fill', 'orange');
             })
+            .attr('stroke', '#2378ae')
+            .attr('stroke-width', '1')
         
             
         this.svg.append('g').selectAll('.architectureMenuLabels')

@@ -47,21 +47,21 @@ class MainView extends BasicView {
     draw_embedding(x, y, width, height, data) {
          let x_max, x_min, y_max, y_min;
 
-        [x_min, x_max] = d3.extent(data, (d) => { return d[0] });
-        [y_min, y_max] = d3.extent(data, (d) => { return d[1] });
+        [x_min, x_max] = d3.extent(data, (d) => { return d[0][0] });
+        [y_min, y_max] = d3.extent(data, (d) => { return d[0][1] });
         
-        let x_axis = d3.scaleLinear().domain([x_min , x_max * 1.1]).range([x, x + width]);
-        let y_axis = d3.scaleLinear().domain([y_max * 1.1, y_min]).range([y, y + height]);
+        this.x_axis = d3.scaleLinear().domain([x_min , x_max * 1.1]).range([x, x + width]);
+        this.y_axis = d3.scaleLinear().domain([y_max * 1.1, y_min]).range([y, y + height]);
 
         this.svg.append('g')
             .attr('class', 'embedding_axis')
             .attr("transform", "translate(0" + ',' + (y + height) + ")")
-            .call(d3.axisBottom(x_axis).ticks(10));
+            .call(d3.axisBottom(this.x_axis).ticks(10));
         
         this.svg.append('g')
             .attr('class', 'embedding_axis')
             .attr("transform", "translate(" + x + " ,0)")
-            .call(d3.axisLeft(y_axis).ticks(10));
+            .call(d3.axisLeft(this.y_axis).ticks(10));
         
         this.points = this.svg.append('g')
             .selectAll('.embedding_points')
@@ -70,16 +70,16 @@ class MainView extends BasicView {
             .append('circle')
             .attr('class', 'embedding_points')
             .attr('cx', (d) => {
-                return x_axis(d[0]);
+                return this.x_axis(d[0][0]);
             })
             .attr('cy', (d) => {
-                return y_axis(d[1]);
+                return this.y_axis(d[0][1]);
             })
             .attr('r', 5)
             .style('fill', (d, i) => {
-                return this.colormap(this.dataManager.embedding_labels[i])
+                return this.colormap(d[1]);
             })
-            .style('fill-opacity', 0.8);
+            .style('fill-opacity', 0.9);
         
         const lassoInstance = lasso(x, y, width, height)
             .on('end', this.handleLassoEnd.bind(this))
@@ -89,42 +89,36 @@ class MainView extends BasicView {
     }
 
     handleLassoEnd(lassoPolygon) {
-        /*const selectedPoints = points.filter(d => {
+        const selectedPoints = this.points.filter(d => {
             // note we have to undo any transforms done to the x and y to match with the
             // coordinate system in the svg.
-            const x = d.x + padding.left;
-            const y = d.y + padding.top;
+            const x = this.x_axis(d[0][0]);
+            const y = this.y_axis(d[0][1]);
 
             return d3.polygonContains(lassoPolygon, [x, y]);
         });
 
-        updateSelectedPoints(selectedPoints);*/
+        this.updateSelectedPoints(selectedPoints);
     }
 
     // reset selected points when starting a new polygon
     handleLassoStart(lassoPolygon) {
-        this.updateSelectedPoints([]);
+        let points = {"_groups":[[]]}
+        this.updateSelectedPoints(points);
     }
 
     // when we have selected points, update the colors and redraw
     updateSelectedPoints(selectedPoints) {
         // if no selected points, reset to all tomato
-        /*if (!selectedPoints.length) {
+        if (!selectedPoints["_groups"][0].length) {
             // reset all
-            points.forEach(d => {
-            d.color = 'tomato';
-            });
+            this.points.style('fill-opacity', 0.9)
 
             // otherwise gray out selected and color selected black
         } else {
-            points.forEach(d => {
-            d.color = '#eee';
-            });
-            selectedPoints.forEach(d => {
-            d.color = '#000';
-            });
-        }*/
-
+            this.points.style('fill-opacity', 0.2);
+            selectedPoints.style('fill-opacity',0.9);
+        }
     }
 
     //binding the interactive event

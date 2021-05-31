@@ -116,10 +116,10 @@ def save(model, name):
 def main():
 
     print("--- Initial Training ---")
-    from model import LeNet
+    from model import LeNet, LeNet_5
 
     # model
-    model = LeNet(mask=True).to(device)
+    model = LeNet_5(mask=True).to(device)
 
     # model.load_state_dict(torch.load('../../data/model/LetNet/letnet300.pt'))
     # model.prune_by_percentile(95)
@@ -132,7 +132,7 @@ def main():
 
     #model.fc3.weight.requires_grad = False
     #model.fc3.bias.requires_grad = False
-    test(model, device)
+    #test(model, device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0001)
     train(30, model, device, optimizer)
     test(model, device)

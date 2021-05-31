@@ -25,7 +25,7 @@ class MainView extends BasicView {
         this.svg = d3.select('#main_view_panel')
             .append('svg')
             .attr('width', this.width)
-            .attr("height", this.height * 2);    
+            .attr("height", this.height);    
         
         //binding the user event
         this.bindingEvent();
@@ -79,13 +79,7 @@ class MainView extends BasicView {
             .style('fill', (d, i) => {
                 return this.colormap(d[1]);
             })
-            .style('fill-opacity', 0.9)
-            .on('mouseover', function (d, i) {
-                d3.select(this).attr('r', 10);
-            })
-            .on('mouseout', function (d, i) {
-                d3.select(this).attr('r', 5);
-            })
+            .style('fill-opacity', 0.9);
         
         const lassoInstance = lasso(x, y, width, height)
             .on('end', this.handleLassoEnd.bind(this))

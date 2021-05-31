@@ -79,7 +79,7 @@ class MainView extends BasicView {
             .style('fill', (d, i) => {
                 return this.colormap(this.dataManager.embedding_labels[i])
             })
-            .style('fill-opacity', 0.5);
+            .style('fill-opacity', 0.8);
         
         const lassoInstance = lasso(x, y, width, height)
             .on('end', this.handleLassoEnd.bind(this))

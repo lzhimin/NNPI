@@ -53,9 +53,7 @@ class NetworkArchitecture extends BasicView {
         let padding = 130;
 
         //draw input data distribution
-        let input_width = 300;
-        let input_height = 150;
-        //this.draw_input_summary(x-50, y, input_width, input_height, this.dataManager.input_summary);
+        this.draw_menu(x - 20, y);
 
         //draw innere layer
         let layer_names = Object.keys(this.dataManager.data);
@@ -83,10 +81,51 @@ class NetworkArchitecture extends BasicView {
         }
     }
 
-    draw_input_summary(x, y, width, height, data) {
+    draw_menu(x, y) {
          
-        let labels = ['full',  'remain', 'pruned'];
-
+        let width = 60;
+        let height = 40;
+        let labels = ['Full',  'Remain', 'Pruned'];
+        this.svg.append('g')
+            .selectAll('.architectureMenu')
+            .data(labels)
+            .enter()
+            .append('rect')
+            .attr('class', 'architectureMenu')
+            .attr('x', (d, i) => {
+                return x + i * 80;
+            })
+            .attr('y', (d, i) => {
+                return y;
+            })
+            .attr('width', width)
+            .attr('height', height)
+            .style('rx', 10)
+            .style('fill', (d, i) =>{
+                return d == 'full' ? "orange" : 'gray';
+            })
+            .on('click', function (d) {
+                d3.selectAll('.architectureMenu').style('fill', 'gray');
+                d3.select(this).style('fill', 'orange');
+            })
+        
+            
+        this.svg.append('g').selectAll('.architectureMenuLabels')
+            .data(labels)
+            .enter()
+            .append('text')
+            .attr('class', 'architectureMenuLabels')
+            .attr('x', (d, i) => {
+                return x + i * 80 + width / 2;
+            })
+            .attr('y', (d, i) => {
+                return y + height / 2;
+            })
+            .text((d) => { return d; })
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('pointer-events', 'none');
+            
         
     }
 

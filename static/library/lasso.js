@@ -47,6 +47,8 @@ function lasso(x, y, width, height) {
     function lasso(root) {
         const g = root.append('g').attr('class', 'lasso-group');
         const area = g.append('rect')
+            .attr('x', x)
+            .attr('y', y)
             .attr('width', width)
             .attr('height', height)
             .attr('fill', 'tomato')

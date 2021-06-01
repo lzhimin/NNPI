@@ -24,7 +24,7 @@ parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                     help='input batch size for testing (default: 1000)')
 parser.add_argument('--epochs', type=int, default=100, metavar='N',
                     help='number of epochs to train (default: 100)')
-parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
+parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
                     help='learning rate (default: 0.01)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA training')
@@ -81,6 +81,7 @@ def train(epochs, model, device, optimizer):
             optimizer.step()
 
         save(model, str(epoch))
+        test(model, device)
 
 
 def test(model, device):
@@ -133,9 +134,9 @@ def main():
     #model.fc3.weight.requires_grad = False
     #model.fc3.bias.requires_grad = False
     #test(model, device)
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0001)
-    train(30, model, device, optimizer)
-    test(model, device)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
+    #train(30, model, device, optimizer)
+    #test(model, device)
     # print(model.parameters)
 
 

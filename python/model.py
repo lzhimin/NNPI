@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from prune import PruningModule, MaskedLinear
+from python.prune import PruningModule, MaskedLinear
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import numpy as np
@@ -46,9 +46,6 @@ class LeNet(PruningModule):
             layer2_activation.append(x.tolist())
             x = self.fc3(x)
             layer3_activation.append(x.tolist())
-
-        # get activation summary
-        print()
 
         # embedding method
         pca = PCA(n_components=2)
@@ -158,3 +155,34 @@ class LeNet_5(PruningModule):
         x = F.log_softmax(self.fc3(x), dim=1)
 
         return x
+
+    def activation_pattern(self, dataset):
+
+        conv1_activation = []
+        conv2_activation = []
+        fc1_activation = []
+        fc2_activation = []
+
+        for i in range(len(dataset)):
+            # conv1
+            x = self.conv1(torch.tensor(dataset[i]))
+            x = F.relu(x)
+
+            conv1_activation.append(x.tolist())
+            x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+
+            # Conv2
+            x = self.conv2(x)
+            x = F.relu(x)
+            conv2_activation.append(x.tolist())
+            x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+
+            # Fully-connected
+            x = x.view(x.shape[0], -1)
+            x = self.fc1(x)
+            x = F.relu(x)
+            fc1_activation.append(x.tolist())
+
+            x = self.fc2(x)
+            x = F.relu(x)
+            fc2_activation.append(x.tolist())

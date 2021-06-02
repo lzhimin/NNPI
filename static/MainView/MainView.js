@@ -11,7 +11,7 @@ class MainView extends BasicView {
         this.pruning_precentage = 0;
 
         //subscribe('MainVis', this.setData.bind(this))
-        subscribe("MainVis", this.setData.bind(this))
+        subscribe("input_summary", this.setData.bind(this))
     }
 
     init() {

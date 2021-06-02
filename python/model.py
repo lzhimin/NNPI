@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from python.prune import PruningModule, MaskedLinear
-from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
 import numpy as np
 
 
@@ -29,72 +27,24 @@ class LeNet(PruningModule):
 
         return x
 
-    def layerActivationEmbedding(self, dataset):
-        input_projection = None
-        first_layer_projection = None
-        second_layer_projection = None
-        third_layer_projection = None
+    def activationPattern(self, dataset):
 
         layer1_activation = []
         layer2_activation = []
-        layer3_activation = []
 
         for i in range(len(dataset)):
             x = F.relu(self.fc1(torch.tensor(dataset[i])))
             layer1_activation.append(x.tolist())
             x = F.relu(self.fc2(x))
             layer2_activation.append(x.tolist())
-            x = self.fc3(x)
-            layer3_activation.append(x.tolist())
-
-        # embedding method
-        pca = PCA(n_components=2)
-
-        # input embedding
-        if len(self.input_embedding) == 0:
-            input_projection = pca.fit_transform(dataset)
-            self.input_embedding = pca.components_
-        else:
-            input_projection = self.input_embedding * dataset
-
-        # first layer embedding
-        if len(self.fc1_embedding) == 0:
-            first_layer_projection = pca.fit_transform(layer1_activation)
-            self.fc1_embedding = pca.components_
-        else:
-            first_layer_projection = self.fc1_embedding * layer1_activation
-
-        # second layer embedding
-        if len(self.fc2_embedding) == 0:
-            second_layer_projection = pca.fit_transform(layer2_activation)
-            self.fc2_embedding = pca.components_
-        else:
-            second_layer_projection = self.fc2_embedding * layer2_activation
-
-        # second layer embedding
-        if len(self.fc3_embedding) == 0:
-            third_layer_projection = pca.fit_transform(layer3_activation)
-            self.fc3_embedding = pca.components_
-        else:
-            third_layer_projection = self.fc3_embedding * layer3_activation
-
-        # input summary tsne embedding
-
-        result = {}
-        result['1_input_embedding'] = input_projection.tolist()
-        result['2_fc1_embedding'] = first_layer_projection.tolist()
-        result['3_fc2_embedding'] = second_layer_projection.tolist()
-        result['4_fc3_embedding'] = third_layer_projection.tolist()
 
         activation_summary = {}
         activation_summary['fc1'] = np.sum(
             np.array(layer1_activation) != 0, axis=0).tolist()
         activation_summary['fc2'] = np.sum(
             np.array(layer2_activation) != 0, axis=0).tolist()
-        activation_summary['fc3'] = np.sum(
-            np.array(layer3_activation) != 0, axis=0).tolist()
 
-        return result, activation_summary
+        return activation_summary
 
     def activationPruning(self, dataset):
         layer1_activation = []
@@ -117,9 +67,8 @@ class LeNet(PruningModule):
         print(np.sum((self.fc2.mask == 0).tolist()) /
               len(np.array(self.fc2.mask.tolist()).flatten()))
 
-    def inputEmbedding(self, dataset):
-        X_embedded = TSNE(n_components=2).fit_transform(dataset)
-        return X_embedded
+    def getModelSummary(self):
+        pass
 
 
 class LeNet_5(PruningModule):

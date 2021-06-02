@@ -7,7 +7,7 @@ class NetworkArchitecture extends BasicView {
 
         this.architecture = {};
 
-        subscribe('modelsummary', this.setData.bind(this))
+        subscribe('model_summary', this.setData.bind(this))
 
     }
 
@@ -102,7 +102,7 @@ class NetworkArchitecture extends BasicView {
             .attr('height', height)
             .style('rx', 10)
             .style('fill', (d, i) =>{
-                return d == 'full' ? "orange" : 'white';
+                return d == 'Full' ? "orange" : 'white';
             })
             .on('click', function (d) {
                 d3.selectAll('.architectureMenu').style('fill', 'white');

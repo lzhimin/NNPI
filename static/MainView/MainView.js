@@ -10,6 +10,9 @@ class MainView extends BasicView {
         // the percentage of weight is pruned in the neural network
         this.pruning_precentage = 0;
 
+        //enable lasso
+        this.lasso_selection = 'no';
+
         //subscribe('MainVis', this.setData.bind(this))
         subscribe("input_summary", this.setData.bind(this))
     }
@@ -63,9 +66,13 @@ class MainView extends BasicView {
             .attr("transform", "translate(" + x + " ,0)")
             .call(d3.axisLeft(this.y_axis).ticks(10));
         
+        
+        
         this.points = this.svg.append('g')
             .selectAll('.embedding_points')
-            .data(data)
+            .data(data, (d, i) => {
+                return d.push(i);
+            })
             .enter()
             .append('circle')
             .attr('class', 'embedding_points')
@@ -79,13 +86,21 @@ class MainView extends BasicView {
             .style('fill', (d, i) => {
                 return this.colormap(d[1]);
             })
-            .style('fill-opacity', 0.9);
+            .style('fill-opacity', 0.9)
+            .on('click', function(event, d) {
+                d3.selectAll('.embedding_points').attr('r', 5);
+                d3.select(this).attr('r', 10);
+                fetch_activation({ 'indexs': [d[2]] });
+            })
         
-        const lassoInstance = lasso(x, y, width, height)
-            .on('end', this.handleLassoEnd.bind(this))
-            .on('start', this.handleLassoStart.bind(this));
+        if (this.lasso_selection == 'yes') {
+            const lassoInstance = lasso(x, y, width, height)
+                .on('end', this.handleLassoEnd.bind(this))
+                .on('start', this.handleLassoStart.bind(this));
+            this.svg.call(lassoInstance);  
+        }
         
-        this.svg.call(lassoInstance);        
+              
     }
 
     handleLassoEnd(lassoPolygon) {
@@ -103,8 +118,6 @@ class MainView extends BasicView {
             } else
                 return false;
         });
-
-
 
         this.updateSelectedPoints(selectedPoints);
 
@@ -137,11 +150,11 @@ class MainView extends BasicView {
 
     //binding the interactive event
     bindingEvent() {
-         //setup event
-        d3.select("#pruning_precentage").on('change', () => {
-            this.pruning_precentage = $("#pruning_precentage").val();
-            $('#pruning_precentage_label').html('Pruning Percentage (' + this.pruning_precentage + '%)');
-            fetch_data({'percentage':this.pruning_precentage});
+        //setup event
+        $("input[name='lasso_selection_option']").off('change');
+        $("input[name='lasso_selection_option']").on('change', () => {
+            this.lasso_selection = $("input[type=radio][name='lasso_selection_option']:checked").val();
+            this.draw();
         });
     }
 

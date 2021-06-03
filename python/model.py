@@ -6,6 +6,7 @@ import numpy as np
 
 
 class LeNet(PruningModule):
+
     def __init__(self, mask=False):
         super(LeNet, self).__init__()
         linear = MaskedLinear if mask else nn.Linear
@@ -106,8 +107,7 @@ class LeNet_5(PruningModule):
 
         return x
 
-    def activation_pattern(self, dataset):
-
+    def activationPattern(self, dataset):
         conv1_activation = []
         conv2_activation = []
         fc1_activation = []

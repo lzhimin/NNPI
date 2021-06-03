@@ -40,3 +40,8 @@
     fill: #3399FF;
     fill-opacity: .5;
 }
+
+.embedding_points {
+    stroke: gray;
+    stroke-width: 1px;
+}

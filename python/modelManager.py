@@ -13,15 +13,15 @@ class ModelManager:
 
         # load train model
         self.train_model = self.loadModel(
-            'data/model/LetNet/letnet300_trained.pkl')
+            'data/model/LetNet/letnet_5_trained.pkl')
         # load untrained model
         self.untrain_model = self.loadModel(
-            'data/model/LetNet/letnet300_untrained.pkl')
+            'data/model/LetNet/letnet_5_untrained.pkl')
 
         self.datasets = self.loadValidationData()
 
     def loadModel(self, path):
-        model = LeNet(mask=True).to(self.device)
+        model = LeNet_5(mask=True).to(self.device)
         model.load_state_dict(torch.load(path))
         model.eval()
 
@@ -36,12 +36,12 @@ class ModelManager:
 
         # select your indices here as a list
         subset_indices = (np.random.rand(1500) * len(mnist)).astype('int')
-
         mnist = torch.utils.data.Subset(mnist, subset_indices)
 
         return mnist
 
     def fetch_activation_pattern(self, indexs):
+
         dataset = torch.utils.data.Subset(self.datasets, indexs)
         test_loader = torch.utils.data.DataLoader(dataset)
         subset = []
@@ -51,4 +51,5 @@ class ModelManager:
             subset.append(
                 np.array(device_data.tolist()[0]).flatten().tolist())
 
-        return self.train_model.activationPattern(subset)
+        result = self.train_model.activationPattern(subset)
+        return result

@@ -173,7 +173,6 @@ class LayerView {
         
         let x_bin = 30;
         let y_bin = 30;
-        let padding = 50;
         let x_w = this.width / x_bin;
         let y_h = this.height / y_bin;
         let bins = this.dataManager.bining_2d(this.dataManager.data.weight, this.dataManager.data.untrain_weight, x_bin, y_bin);
@@ -197,33 +196,7 @@ class LayerView {
                 return d == 0?'white':colorscale(d);
             });
 
-        //bin the data
-        //let bins = d3.histogram()
-        //    .value((d) => d)
-        //    .domain(x_scale.domain())(this.dataManager.data.weight);
-
-        //y_scale.domain([0, d3.max(bins, function (d) { return d.length; })]);
         
-        /*
-            this.display_vis.selectAll("rect")
-            .data(bins)
-            .enter()
-            .append("rect")
-            .attr("class", "bar")
-            .attr("x", 1)
-            .attr("transform", (d)=> {
-                return "translate(" + (x_scale(d.x0) + this.x) + "," + (y_scale(d.length)+this.y) + ")";
-            })
-            .attr("width",  (d)=> {
-                return x_scale(d.x1) - x_scale(d.x0) - 1;
-            })
-            .attr("height",  (d)=> {
-                return this.height - y_scale(d.length);
-            })
-            .style('fill', 'steelblue');
-        */
-
-
         // add the x Axis
         this.display_vis.append("g")
             .attr("transform", "translate(" + (this.x ) + "," + (this.y + this.height) + ")")
@@ -241,7 +214,16 @@ class LayerView {
         this.display_vis.html('');
 
         let colors = ['#fee391', '#fec44f', '#fe9929', '#ec7014', '#cc4c02', '#993404'];
-        let colorscale = d3.scaleQuantize().domain([1, 200, 400, 600, 800, 1000]).range(colors);
+
+        let max = d3.max(this.dataManager.pattern)
+        let domains = [1];
+        let n = 6;
+        for (let i = 1; i < n; i++){
+            domains.push(parseInt(max/n * i))
+        }
+        domains.push(max);
+
+        let colorscale = d3.scaleQuantize().domain(domains).range(colors);
 
         //neuro node
         //this.dataManager.pattern.sort(function (a, b) { return b - a;});
@@ -285,7 +267,7 @@ class LayerView {
             });
             
         this.display_vis.append('g').selectAll('.layerview_neuros')
-            .data([1, 600, 1000])
+            .data([domains[0], domains[3], domains[6]])
             .enter()
             .append('text')
             .text((d) => d)
@@ -308,8 +290,6 @@ class LayerView {
             this.draw_layer_labels();
         } 
         else if (this.display_option == 'activation')
-            this.draw_activation_pattern();
-        
-        
+            this.draw_activation_pattern();        
     }
 }

@@ -11,4 +11,8 @@ class NetworkArchitectureData {
         this.embedding_labels = data[3]
         this.activation_pattern = data[4];
     }
+
+    setActivationPattern(data) {
+        this.activation_pattern = data;
+    }
 }

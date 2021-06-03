@@ -89,16 +89,32 @@ class MainView extends BasicView {
     }
 
     handleLassoEnd(lassoPolygon) {
-        const selectedPoints = this.points.filter(d => {
+
+        let selectedindexs = [];
+        const selectedPoints = this.points.filter((d, index) => {
             // note we have to undo any transforms done to the x and y to match with the
             // coordinate system in the svg.
             const x = this.x_axis(d[0][0]);
             const y = this.y_axis(d[0][1]);
 
-            return d3.polygonContains(lassoPolygon, [x, y]);
+            if (d3.polygonContains(lassoPolygon, [x, y])) {
+                selectedindexs.push(index);
+                return true;
+            } else
+                return false;
         });
 
+
+
         this.updateSelectedPoints(selectedPoints);
+
+        //fetch the new activation pattern.
+        if (selectedindexs.length == 0) {
+            for (let i = 0; i < this.points["_groups"][0].length; i++){
+                selectedindexs.push(i);
+            }
+        }
+        fetch_activation({ 'indexs': selectedindexs });
     }
 
     // reset selected points when starting a new polygon

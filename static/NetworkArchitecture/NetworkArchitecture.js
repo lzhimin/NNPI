@@ -8,6 +8,7 @@ class NetworkArchitecture extends BasicView {
         this.architecture = {};
 
         subscribe('model_summary', this.setData.bind(this))
+        subscribe('activation_pattern', this.setActivationPattern.bind(this))
 
     }
 
@@ -25,7 +26,6 @@ class NetworkArchitecture extends BasicView {
             .attr("height", 1800);
         
         //margin
-
         this.margin.left = 100;
         this.margin.top = 50;
         
@@ -71,10 +71,6 @@ class NetworkArchitecture extends BasicView {
     }
 
     redraw() {
-        //draw the network architecture
-        let x = this.margin.left;
-        let y = this.margin.top;
-
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
             this.architecture[layer_names[i]].redraw();
@@ -235,5 +231,15 @@ class NetworkArchitecture extends BasicView {
     setData(msg, data) {
         this.dataManager.setData(data);
         this.draw();
+    }
+
+    setActivationPattern(msg, data) {
+        this.dataManager.setActivationPattern(data);
+        let layer_names = Object.keys(this.dataManager.data);
+        for (let i = 0; i < layer_names.length; i++){
+            this.architecture[layer_names[i]].setActivation_pattern(this.dataManager.activation_pattern[layer_names[i]]);
+        }
+
+        this.redraw();
     }
 }

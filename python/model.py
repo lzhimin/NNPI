@@ -41,6 +41,7 @@ class LeNet(PruningModule):
         activation_summary = {}
         activation_summary['fc1'] = np.sum(
             np.array(layer1_activation) != 0, axis=0).tolist()
+
         activation_summary['fc2'] = np.sum(
             np.array(layer2_activation) != 0, axis=0).tolist()
 

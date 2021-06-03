@@ -20,5 +20,14 @@ def _fetch_data():
     return json.dumps(data.getdata(json_request['percentage']))
 
 
+@app.route("/_fetch_activation", methods=["GET", "POST"])
+def _fetch_activation():
+    json_request = request.get_json()
+
+    # return json.dumps({"a": 1})
+    # print(json_request)
+    return json.dumps(data.getActivation(json_request['indexs']))
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

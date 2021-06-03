@@ -1,52 +1,28 @@
-from sklearn.metrics.pairwise import nan_euclidean_distances
+from app import index
 import torch
-from sklearn_extra.cluster import KMedoids
 import numpy as np
-from torchvision import datasets, transforms
-from torch.autograd import Variable
-from python import SaliencyMap, FeatureVisualization
+from python.modelManager import ModelManager
 from python.model import LeNet, LeNet_5
 from sklearn.manifold import TSNE
 
+
 device = torch.device('cpu')
+modelManager = ModelManager(device=device)
 
 
 def getdata(percentage):
     return load_Model_Data_Summary(percentage)
 
 
+def getActivation(indexs):
+    return {"activation_pattern": modelManager.fetch_activation_pattern(indexs)}
+
+
 def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_trained.plk'):
-
-    # load dataset
-    mnist = datasets.MNIST(root='data/', train=False, transform=transforms.Compose([
-        transforms.ToTensor()
-    ]))
-
-    # load train model
-    model = LeNet(mask=True).to(device)
-    model.load_state_dict(torch.load(
-        'data/model/LetNet/letnet300_trained.pkl'))
-    model.eval()
-
-    print('load model')
-
-    # load untrained model
-    untrain_model = LeNet(mask=True).to(device)
-    untrain_model.load_state_dict(torch.load(
-        'data/model/LetNet/letnet300_untrained.pkl'))
-    untrain_model.eval()
-
-    print('load untrain model')
-    # left model
-    pruned_model = LeNet(mask=True).to(device)
-    pruned_model.load_state_dict(torch.load(
-        'data/model/LetNet/letnet300_trained.pkl'))
-    pruned_model.eval()
-    pruned_model.prune_by_percentile(float(percentage))
-
-    print('load untrain model')
     # pruned parameter model
     # model.prune_by_percentile_left(float(percentage))
+
+    mnist = modelManager.loadValidationData()
 
     labels = set()
     for i in range(len(mnist)):
@@ -54,9 +30,16 @@ def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_
     labels = list(labels)
     labels.sort()
 
+    # left model
+    pruned_model = LeNet(mask=True).to(device)
+    pruned_model.load_state_dict(torch.load(
+        'data/model/LetNet/letnet300_trained.pkl'))
+    pruned_model.eval()
+    pruned_model.prune_by_percentile(float(percentage))
+
     print('get validation')
     # validation summary
-    validation_summary = validation(model, mnist, labels)
+    validation_summary = validation(modelManager.train_model, mnist, labels)
 
     print('get tsne')
     # input embedding
@@ -64,14 +47,15 @@ def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_
         n_components=2).fit_transform(validation_summary[1])
 
     print('get activation')
-    activation_pattern = model.activationPattern(
+    activation_pattern = modelManager.train_model.activationPattern(
         validation_summary[1])
 
     print('return result')
-    result = {}
-    result['model_summary'] = getModelSummary(model, untrain_model)
-    result['prediction_summary'] = validation_summary[0]
 
+    result = {}
+    result['model_summary'] = getModelSummary(
+        modelManager.train_model, modelManager.untrain_model)
+    result['prediction_summary'] = validation_summary[0]
     result['embedding'] = input_embedding.tolist()
     result['embedding_label'] = validation_summary[2]
     result['activation_pattern'] = activation_pattern
@@ -84,12 +68,8 @@ def validation(model, dataset, labels):
     # confusion matrix of the validation dataset
     confusionMatrix = np.zeros((len(labels), len(labels)))
 
-    subset_counts = {}
     subset = []
     subset_label = []
-
-    # number of samples for analysis
-    N = 200
 
     test_loader = torch.utils.data.DataLoader(dataset)
     with torch.no_grad():
@@ -100,19 +80,10 @@ def validation(model, dataset, labels):
             # get the index of the max log-probability
             pred = output.data.max(1, keepdim=True)[1]
             confusionMatrix[device_target[0]][pred[0][0]] += 1
-            key = str(target.item())
 
-            if key not in subset_counts:
-                subset_counts[key] = 1
-                subset.append(
-                    np.array(data.tolist()[0][0]).flatten().tolist())
-                subset_label.append(device_target[0].item())
-            else:
-                if subset_counts[key] < N:
-                    subset_counts[key] += 1
-                    subset.append(
-                        np.array(data.tolist()[0][0]).flatten().tolist())
-                    subset_label.append(device_target[0].item())
+            subset.append(
+                np.array(data.tolist()[0][0]).flatten().tolist())
+            subset_label.append(device_target[0].item())
 
     return confusionMatrix.tolist(), subset, subset_label
 

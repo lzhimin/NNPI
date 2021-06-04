@@ -12,24 +12,31 @@ class ModelManager:
         # device
         self.device = device
 
+        self.model = 'letnet300'
+        #self.model = 'letnet_5'
+
         # load train model
         self.train_model = self.loadModel(
-            'data/model/LetNet/letnet300_trained.pkl')
+            'data/model/LetNet/'+self.model+'_trained.pkl')
         # load untrained model
         self.untrain_model = self.loadModel(
-            'data/model/LetNet/letnet300_untrained.pkl')
+            'data/model/LetNet/'+self.model+'_untrained.pkl')
 
         self.datasets = self.loadValidationData()
 
     def loadModel(self, path):
-        model = LeNet(mask=True).to(self.device)
+        model = None
+        if self.model == 'letnet_5':
+            model = LeNet_5(mask=True).to(self.device)
+        elif self.model == 'letnet300':
+            model = LeNet(mask=True).to(self.device)
+
         model.load_state_dict(torch.load(path))
         model.eval()
 
         return model
 
     def loadValidationData(self):
-
         # load dataset
         mnist = datasets.MNIST(root='data/', train=False, transform=transforms.Compose([
             transforms.ToTensor()

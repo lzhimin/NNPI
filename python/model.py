@@ -34,7 +34,8 @@ class LeNet(PruningModule):
         layer2_activation = []
 
         for i in range(len(dataset)):
-            x = F.relu(self.fc1(torch.tensor(dataset[i])))
+            x = F.relu(self.fc1(torch.tensor(
+                np.array(dataset[i]).flatten().tolist())))
             layer1_activation.append(x.tolist())
             x = F.relu(self.fc2(x))
             layer2_activation.append(x.tolist())
@@ -117,15 +118,14 @@ class LeNet_5(PruningModule):
             # conv1
             x = self.conv1(torch.tensor(dataset[i]))
             x = F.relu(x)
-
-            conv1_activation.append(x.tolist())
             x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+            conv1_activation.append(np.array(x.tolist()).flatten().tolist())
 
             # Conv2
             x = self.conv2(x)
             x = F.relu(x)
-            conv2_activation.append(x.tolist())
             x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+            conv2_activation.append(np.array(x.tolist()).flatten().tolist())
 
             # Fully-connected
             x = x.view(x.shape[0], -1)
@@ -136,3 +136,20 @@ class LeNet_5(PruningModule):
             x = self.fc2(x)
             x = F.relu(x)
             fc2_activation.append(x.tolist())
+
+        activation_summary = {}
+        activation_summary['conv1'] = np.sum(
+            np.array(conv1_activation) != 0, axis=0).tolist()
+
+        activation_summary['conv2'] = np.sum(
+            np.array(conv2_activation) != 0, axis=0).tolist()
+
+        activation_summary['fc1'] = np.sum(
+            np.array(fc1_activation) != 0, axis=0).tolist()[0]
+
+        activation_summary['fc2'] = np.sum(
+            np.array(fc2_activation) != 0, axis=0).tolist()[0]
+
+        print(activation_summary['fc2'])
+
+        return activation_summary

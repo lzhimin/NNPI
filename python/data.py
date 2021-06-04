@@ -31,20 +31,19 @@ def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_
     labels.sort()
 
     # left model
-    pruned_model = LeNet(mask=True).to(device)
-    pruned_model.load_state_dict(torch.load(
-        'data/model/LetNet/letnet300_trained.pkl'))
-    pruned_model.eval()
-    pruned_model.prune_by_percentile(float(percentage))
+    #pruned_model = LeNet(mask=True).to(device)
+    # pruned_model.load_state_dict(torch.load(
+    #    'data/model/LetNet/letnet300_trained.pkl'))
+    # pruned_model.eval()
+    # pruned_model.prune_by_percentile(float(percentage))
 
     print('get validation')
     # validation summary
     validation_summary = validation(modelManager.train_model, mnist, labels)
 
     print('get tsne')
-    # input embedding
     input_embedding = TSNE(
-        n_components=2).fit_transform(validation_summary[1])
+        n_components=2).fit_transform(validation_summary[3])
 
     print('get activation')
     activation_pattern = modelManager.train_model.activationPattern(
@@ -70,6 +69,7 @@ def validation(model, dataset, labels):
 
     subset = []
     subset_label = []
+    flatten_subset = []
 
     test_loader = torch.utils.data.DataLoader(dataset)
     with torch.no_grad():
@@ -81,11 +81,12 @@ def validation(model, dataset, labels):
             pred = output.data.max(1, keepdim=True)[1]
             confusionMatrix[device_target[0]][pred[0][0]] += 1
 
-            subset.append(
-                np.array(data.tolist()[0][0]).flatten().tolist())
+            subset.append(data.tolist())
+            flatten_subset.append(
+                np.array(data.tolist()).flatten().tolist())
             subset_label.append(device_target[0].item())
 
-    return confusionMatrix.tolist(), subset, subset_label
+    return confusionMatrix.tolist(), subset, subset_label, flatten_subset
 
 
 def saliencyMap():

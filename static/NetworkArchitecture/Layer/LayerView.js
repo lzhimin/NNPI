@@ -213,7 +213,7 @@ class LayerView {
         //clean the drawing panel
         this.display_vis.html('');
 
-        let colors = ['#fee391', '#fec44f', '#fe9929', '#ec7014', '#cc4c02', '#993404'];
+        let colors = ['#fee391', '#993404'];
 
         let max = d3.max(this.dataManager.pattern)
         let domains = [1];
@@ -223,7 +223,7 @@ class LayerView {
         }
         domains.push(max);
 
-        let colorscale = d3.scaleQuantize().domain(domains).range(colors);
+        let colorscale = d3.scaleLinear().domain([1,max]).range(colors);
 
         //neuro node
         //this.dataManager.pattern.sort(function (a, b) { return b - a;});
@@ -250,7 +250,7 @@ class LayerView {
         
         
         this.display_vis.append('g').selectAll('.layerview_neuros')
-            .data(colors)
+            .data(domains)
             .enter()
             .append('rect')
             .attr('class', 'layerview_neuro')
@@ -263,7 +263,7 @@ class LayerView {
             .attr('width', 8)
             .attr('height', 8)
             .style('fill', (d) => {
-                return d;
+                return colorscale(d);
             });
             
         this.display_vis.append('g').selectAll('.layerview_neuros')

@@ -2,10 +2,9 @@ from torchvision import datasets, transforms
 from tqdm import tqdm
 from torch import nn
 import torch
-
 import torch.nn.functional as F
 import torch.optim as optim
-
+from utils import progress_bar
 import argparse
 import sys
 import os
@@ -54,33 +53,44 @@ transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-batch_size = 4
+batch_size = 50
 
 trainset = datasets.CIFAR10(root='../../data', train=True, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                           shuffle=True, num_workers=2)
+                                           shuffle=True, num_workers=0, pin_memory=True)
 testset = datasets.CIFAR10(root='../../data', train=False, transform=transform)
 test_loader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                          shuffle=True, num_workers=2)
+                                          shuffle=True, num_workers=0, pin_memory=True)
+classes = ('plane', 'car', 'bird', 'cat', 'deer',
+           'dog', 'frog', 'horse', 'ship', 'truck')
+
+criterion = nn.CrossEntropyLoss()
 
 
 def train(epochs, model, device, optimizer):
-
     model.train()
+    train_loss = 0
+    correct = 0
+    total = 0
     for epoch in range(epochs):
         pbar = tqdm(enumerate(train_loader), total=len(train_loader))
-
         for batch_idx, (data, target) in pbar:
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
-            output = model(data)
-            loss = F.nll_loss(output, target)
+            outputs = model(data)
+            loss = criterion(outputs, target)
             loss.backward()
             optimizer.step()
 
-        #save(model, str(epoch))
-        #test(model, device)
+            train_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += target.size(0)
+            correct += predicted.eq(target).sum().item()
+        print(epoch, train_loss, correct)
+
+        # save(model, str(epoch))
+        test(model, device)
 
 
 def test(model, device):
@@ -92,18 +102,18 @@ def test(model, device):
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
-            output = model(data)
+            outputs = model(data)
             # sum up batch loss
-            test_loss += F.nll_loss(output, target, reduction='sum').item()
-            # get the index of the max log-probability
-            pred = output.data.max(1, keepdim=True)[1]
-            correct += pred.eq(target.data.view_as(pred)).sum().item()
+            loss = criterion(outputs, target)
+
+            test_loss += loss.item()
+            _, predicted = outputs.max(1)
+            correct += predicted.eq(target).sum().item()
 
         test_loss /= len(test_loader.dataset)
         accuracy = 100. * correct / len(test_loader.dataset)
         print('Test set: Average loss:', test_loss,
               'Accuracy', correct/len(test_loader.dataset))
-
         return accuracy
 
 
@@ -123,30 +133,32 @@ def main():
 
     # model.load_state_dict(torch.load(
     #    '../../data/model/LetNet/letnet_5_trained.pkl'))
-    #test(model, device)
+    # test(model, device)
 
     # model.prune_by_percentile_left(70)
-    #test(model, device)
+    # test(model, device)
 
-    #model.conv1.weight.requires_grad = False
-    #model.conv1.bias.requires_grad = False
+    # model.conv1.weight.requires_grad = False
+    # model.conv1.bias.requires_grad = False
 
-    #model.conv2.weight.requires_grad = False
-    #model.conv2.bias.requires_grad = False
+    # model.conv2.weight.requires_grad = False
+    # model.conv2.bias.requires_grad = False
 
-    #model.fc1.weight.requires_grad = False
-    #model.fc1.bias.requires_grad = False
+    # model.fc1.weight.requires_grad = False
+    # model.fc1.bias.requires_grad = False
 
-    #model.fc2.weight.requires_grad = False
-    #model.fc2.bias.requires_grad = False
+    # model.fc2.weight.requires_grad = False
+    # model.fc2.bias.requires_grad = False
 
-    #model.fc3.weight.requires_grad = False
-    #model.fc3.bias.requires_grad = False
+    # model.fc3.weight.requires_grad = False
+    # model.fc3.bias.requires_grad = False
     test(model, device)
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr,
+                          momentum=0.9, weight_decay=5e-4)
+
     train(10, model, device, optimizer)
 
-    #test(model, device)
+    # test(model, device)
     # print(model.parameters)
 
 

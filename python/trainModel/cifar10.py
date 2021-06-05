@@ -11,7 +11,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('..'))
 
-CHECKPOINT_DIR = '../../data/model/LetNet'  # model checkpoints
+CHECKPOINT_DIR = '../../data/model/VGG'  # model checkpoints
 # make checkpoint path directory
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
@@ -24,7 +24,7 @@ parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                     help='input batch size for testing (default: 1000)')
 parser.add_argument('--epochs', type=int, default=100, metavar='N',
                     help='number of epochs to train (default: 100)')
-parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
+parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                     help='learning rate (default: 0.01)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA training')
@@ -50,20 +50,19 @@ else:
 
 
 # load the training data
-train_loader = torch.utils.data.DataLoader(
-    datasets.MNIST('../../data', train=True, download=True,
-                   transform=transforms.Compose([
-                       transforms.ToTensor()
-                   ])),
-    batch_size=args.batch_size, shuffle=True, num_workers=0, pin_memory=True)
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-# load the testing data
-test_loader = torch.utils.data.DataLoader(
-    datasets.MNIST('../../data', train=False,
-                   transform=transforms.Compose([
-                       transforms.ToTensor()
-                   ])),
-    batch_size=args.test_batch_size, shuffle=False)
+batch_size = 4
+
+trainset = datasets.CIFAR10(root='../../data', train=True, transform=transform)
+
+train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                           shuffle=True, num_workers=2)
+testset = datasets.CIFAR10(root='../../data', train=False, transform=transform)
+test_loader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
+                                          shuffle=True, num_workers=2)
 
 
 def train(epochs, model, device, optimizer):
@@ -117,37 +116,37 @@ def save(model, name):
 def main():
 
     print("--- Initial Training ---")
-    from model import LeNet, LeNet_5
+    from model import VGG16
 
     # model
-    model = LeNet_5(mask=True).to(device)
+    model = VGG16(mask=True).to(device)
 
-    model.load_state_dict(torch.load(
-        '../../data/model/LetNet/letnet_5_trained.pkl'))
-    test(model, device)
+    # model.load_state_dict(torch.load(
+    #    '../../data/model/LetNet/letnet_5_trained.pkl'))
+    #test(model, device)
 
-    model.prune_by_percentile_left(70)
-    test(model, device)
+    # model.prune_by_percentile_left(70)
+    #test(model, device)
 
-    model.conv1.weight.requires_grad = False
-    model.conv1.bias.requires_grad = False
+    #model.conv1.weight.requires_grad = False
+    #model.conv1.bias.requires_grad = False
 
-    model.conv2.weight.requires_grad = False
-    model.conv2.bias.requires_grad = False
+    #model.conv2.weight.requires_grad = False
+    #model.conv2.bias.requires_grad = False
 
-    model.fc1.weight.requires_grad = False
-    model.fc1.bias.requires_grad = False
+    #model.fc1.weight.requires_grad = False
+    #model.fc1.bias.requires_grad = False
 
-    model.fc2.weight.requires_grad = False
-    model.fc2.bias.requires_grad = False
+    #model.fc2.weight.requires_grad = False
+    #model.fc2.bias.requires_grad = False
 
     #model.fc3.weight.requires_grad = False
     #model.fc3.bias.requires_grad = False
-    #test(model, device)
+    test(model, device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
     train(10, model, device, optimizer)
 
-    test(model, device)
+    #test(model, device)
     # print(model.parameters)
 
 

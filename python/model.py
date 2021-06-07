@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from prune import PruningModule, MaskedLinear
+from python.prune import PruningModule, MaskedLinear
 import numpy as np
 
 
@@ -22,7 +22,7 @@ class LeNet(PruningModule):
 
     def forward(self, x):
         x = x.view(-1, 784)
-        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc1(x))# this is very interesting.
         x = F.relu(self.fc2(x))
         x = F.log_softmax(self.fc3(x), dim=1)
 
@@ -119,13 +119,13 @@ class LeNet_5(PruningModule):
             x = self.conv1(torch.tensor(dataset[i]))
             x = F.relu(x)
             x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
-            conv1_activation.append(np.array(x.tolist()).flatten().tolist())
+            conv1_activation.append(x.tolist())
 
             # Conv2
             x = self.conv2(x)
             x = F.relu(x)
             x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
-            conv2_activation.append(np.array(x.tolist()).flatten().tolist())
+            conv2_activation.append(x.tolist())
 
             # Fully-connected
             x = x.view(x.shape[0], -1)
@@ -153,6 +153,67 @@ class LeNet_5(PruningModule):
         print(activation_summary['fc2'])
 
         return activation_summary
+
+
+class Alexnet(PruningModule):
+    def __init__(self, mask=False):
+        super(Alexnet, self).__init__()
+        linear = MaskedLinear if mask else nn.Linear
+
+        # GROUP 1
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64,
+                               kernel_size=11, stride=4, padding=2)
+
+        self.maxpool1 = nn.MaxPool2d(kernel_size=3, stride=2)
+
+        self.conv2 = nn.Conv2d(in_channels=64, out_channels=192,
+                               kernel_size=5, padding=2)
+
+        self.maxpool2 = nn.MaxPool2d(kernel_size=3, stride=2)
+
+        self.conv3 = nn.Conv2d(in_channels=192, out_channels=384,
+                               kernel_size=3, padding=1)
+
+        self.conv4 = nn.Conv2d(in_channels=384, out_channels=256,
+                               kernel_size=3, padding=1)
+
+        self.conv5 = nn.Conv2d(in_channels=256, out_channels=256,
+                               kernel_size=3, padding=1)
+
+        self.maxpool5 = nn.MaxPool2d(kernel_size=3, stride=2)
+
+        self.fc1 = linear(in_features=256 * 6 * 6, out_features=4096)
+        self.fc2 = linear(in_features=4096, out_features=4096)
+        self.fc3 = linear(in_features=4096, out_features=10)
+
+    def forward(self, x):
+         # GROUP 1
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.maxpool1(x)
+
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = self.maxpool2(x)
+
+        x = self.conv3(x)
+        x = F.relu(x)
+
+        x = self.conv4(x)
+        x = F.relu(x)
+
+        x = self.conv5(x)
+        x = F.relu(x)
+        x = self.maxpool5(x)
+
+        x = x.view(x.size(0), -1)
+        # print(output.shape)
+
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.log_softmax(self.fc3(x), dim=1)
+
+        return x
 
 
 class VGG16(PruningModule):

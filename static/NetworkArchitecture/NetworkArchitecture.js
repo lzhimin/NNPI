@@ -17,13 +17,15 @@ class NetworkArchitecture extends BasicView {
         super.init();
 
         //clean the panel
-        d3.select("#network_architecture_panel").html("");
+        //d3.select("#network_architecture_panel").html("");
 
         //add svg 
-        this.svg = d3.select('#network_architecture_panel')
-            .append('svg')
+        this.canvas = d3.select('#network_architecture_canvas')
+            //    .append('svg')
             .attr('width', this.width)
-            .attr("height", 1800);
+            .attr("height", 1800)
+            .node()
+            .getContext('2d');
         
         //margin
         this.margin.left = 100;
@@ -32,7 +34,7 @@ class NetworkArchitecture extends BasicView {
         // construct data for each neural network layer
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
-            this.architecture[layer_names[i]] = new LayerView(layer_names[i], this.dataManager.data[layer_names[i]], this.svg)
+            this.architecture[layer_names[i]] = new LayerView(layer_names[i], this.dataManager.data[layer_names[i]], this.canvas)
             this.architecture[layer_names[i]].setActivation_pattern(this.dataManager.activation_pattern[layer_names[i]]);
         }
 
@@ -53,7 +55,7 @@ class NetworkArchitecture extends BasicView {
         let padding = 130;
 
         //draw input data distribution
-        this.draw_menu(x - 20, y);
+        //this.draw_menu(x - 20, y);
 
         //draw innere layer
         let layer_names = Object.keys(this.dataManager.data);
@@ -66,8 +68,7 @@ class NetworkArchitecture extends BasicView {
         }
 
         //draw output prediction
-        this.draw_prediction_summary(x-width/4, y + (height + padding) * (layer_names.length) + padding, width, height);
-       
+        //this.draw_prediction_summary(x-width/4, y + (height + padding) * (layer_names.length) + padding, width, height);
     }
 
     redraw() {

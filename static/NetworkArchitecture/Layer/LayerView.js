@@ -1,15 +1,15 @@
 class LayerView {
 
-    constructor(name, params, svg) {
+    constructor(name, params, canvas) {
         this.name = name;
         this.dataManager = new LayerViewData(params);
-        this.chart = svg.append('g');
+        this.canvas = canvas;
 
         // display option 
         // 1. weight
         // 2. activation 
         // 3. error
-        this.display_option = 'weight';
+        this.display_option = 'activation';
     }
 
     init() {
@@ -36,6 +36,11 @@ class LayerView {
         //backgroud
         this.background_width = this.width * 3;
         this.background_height = this.height * 1.4;
+
+      
+        this.draw_activation_pattern();
+
+        /*
         this.chart.append('rect')
             .attr('class', 'layerview_background')
             .attr('x', this.x - this.width/2)
@@ -56,7 +61,10 @@ class LayerView {
         
         //labels
         this.draw_layer_labels();
+        */
     }
+
+    
 
     draw_menu() {
 
@@ -209,79 +217,88 @@ class LayerView {
     }
 
     draw_activation_pattern() {
+        //draw convolution activation map
+        if (this.name.includes('conv')) {
+            this.draw_activation_pattern_conv(this.x, this.y);
+        }
+        // draw full connect layer activation map 
+        else {
+            this.draw_activation_pattern_fc();
+        }
+    }
 
-        //clean the drawing panel
-        this.display_vis.html('');
+    draw_activation_pattern_conv(x, y) {
+        let rect_w = 3;
+        let rect_h = 3;
+        let paddding = 5;
 
+        this.canvas.lineWidth = 1;
+        this.canvas.fillStyle = 'gray';
+        this.canvas.strokeRect(x - this.width/2, y - 15, this.background_width, this.background_height)
+        
+        let data = this.dataManager.pattern[0];
+        for (let i = 0; i < data.length; i++){
+            if ((i + 1) % 10 == 0)
+                y += (rect_h * data[0][0].length + paddding);
+            this.draw_activation_pattern_conv_helpr(x + (data[0][0].length * rect_w + paddding) * ((i+1)%10) - 50, y, rect_w, rect_h, data[i]);
+        }
+    }
+
+    draw_activation_pattern_conv_helpr(x, y, w, h, data) {
         let colors = ['#fee391', '#993404'];
-
-        let max = d3.max(this.dataManager.pattern)
+        let max = 1500;//d3.max(this.dataManager.pattern)
         let domains = [1];
         let n = 6;
+
         for (let i = 1; i < n; i++){
             domains.push(parseInt(max/n * i))
         }
         domains.push(max);
+        let colorscale = d3.scaleLinear().domain([1, max]).range(colors);
 
-        let colorscale = d3.scaleLinear().domain([1,max]).range(colors);
-
-        //neuro node
-        //this.dataManager.pattern.sort(function (a, b) { return b - a;});
-        this.display_vis.selectAll('.layerview_neuros')
-            .data(this.dataManager.pattern)
-            .enter()
-            .append('rect')
-            .attr('class', 'layerview_neuro')
-            .attr('x', (d, i) => {
-                return this.x + (i % 30) * (8 + 2) - 50
-            })
-            .attr('y', (d, i) => {
-                return this.y + Math.floor(i / 30) * 8 - 12;
-            })
-            .attr('width', 8)
-            .attr('height', 8)
-            .style('fill', (d) => {
-                return d==0?"white":colorscale(d);
-            })
-            .style('stroke', '1px')
-            .style('stroke-opacity', (d) => {
-                return d == 0 ? 0.4 : 1
-            });
-        
-        
-        this.display_vis.append('g').selectAll('.layerview_neuros')
-            .data(domains)
-            .enter()
-            .append('rect')
-            .attr('class', 'layerview_neuro')
-            .attr('x', (d, i) => {
-                return this.x + i * (8 + 2);
-            })
-            .attr('y', (d, i) => {
-                return this.y + 90;
-            })
-            .attr('width', 8)
-            .attr('height', 8)
-            .style('fill', (d) => {
-                return colorscale(d);
-            });
-            
-        this.display_vis.append('g').selectAll('.layerview_neuros')
-            .data([domains[0], domains[3], domains[6]])
-            .enter()
-            .append('text')
-            .text((d) => d)
-            .attr('x', (d, i) => {
-                return this.x + i * 20;
-            })
-            .attr('y', (d, i) => {
-                return this.y + 115;
-            })
-            .style("font", "10px times")
+        for (let i = 0; i < data.length; i++){
+            for (let j = 0; j < data[i].length; j++){
+                if (data[i][j] == 0){
+                    this.canvas.fillStyle = 'white';
+                    this.canvas.fillRect(x + i *  w, y + j * h, w, h);
+                }else{
+                    this.canvas.fillStyle = colorscale(data[i][j]);
+                    this.canvas.fillRect(x + i *  w, y + j * h, w, h);
+                    }
+            }
+        }
     }
 
-    draw_error_propagation() {
+    draw_activation_pattern_fc() {
+
+        let colors = ['#fee391', '#993404'];
+        let max = d3.max(this.dataManager.pattern)
+        let domains = [1];
+        let n = 6;
+
+        for (let i = 1; i < n; i++){
+            domains.push(parseInt(max/n * i))
+        }
+        domains.push(max);
+        let colorscale = d3.scaleLinear().domain([1, max]).range(colors);
+
+        this.canvas.lineWidth = 1;
+        this.canvas.fillStyle = 'gray';
+        this.canvas.strokeRect(this.x - this.width/2, this.y - 15, this.background_width, this.background_height)
+
+
         
+        for (let i = 0; i < this.dataManager.pattern.length; i++){
+            if (this.dataManager.pattern[i] == 0){
+                this.canvas.fillStyle = 'white';
+                this.canvas.fillRect(this.x + (i % 30) * (8 + 2) - 50, this.y + Math.floor(i / 30) * 8, 8, 8);
+            }else{
+                this.canvas.fillStyle = colorscale(this.dataManager.pattern[i]);
+                this.canvas.fillRect(this.x + (i % 30) * (8 + 2) - 50, this.y + Math.floor(i / 30) * 8, 8, 8);
+            }
+        }
+
+
     }
 
     redraw() {

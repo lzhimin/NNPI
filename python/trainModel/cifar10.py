@@ -126,10 +126,10 @@ def save(model, name):
 def main():
 
     print("--- Initial Training ---")
-    from model import VGG16
+    from model import VGG16, Alexnet
 
     # model
-    model = VGG16(mask=True).to(device)
+    model = Alexnet(mask=True).to(device)
 
     # model.load_state_dict(torch.load(
     #    '../../data/model/LetNet/letnet_5_trained.pkl'))

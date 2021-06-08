@@ -19,7 +19,9 @@ class ModelManager:
         self.train_model = self.loadModel(
             'data/model/LetNet/'+self.model+'_trained.pkl')
 
-        self.train_model.prune_by_percentile(float(60))
+        # self.train_model.prune_by_percentile(float(90))
+        # self.train_model.prune_by_percentile_left(float(70))
+
         # load untrained model
         self.untrain_model = self.loadModel(
             'data/model/LetNet/'+self.model+'_untrained.pkl')
@@ -58,7 +60,7 @@ class ModelManager:
 
         for data, target in test_loader:
             device_data = data.to('cpu')
-            subset.append(device_data)
+            subset.append(device_data.tolist())
 
         result = self.train_model.activationPattern(subset)
-        return result
+        return {'activation_pattern': result, 'selectedData': subset}

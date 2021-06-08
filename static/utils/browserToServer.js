@@ -23,6 +23,7 @@ function fetch_activation(json) {
         dataType: 'json',
         success: function (data) {
             publish("activation_pattern", data.activation_pattern);
+            publish("SelectedSample", data.selectedData);
         }
     });
 }

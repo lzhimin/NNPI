@@ -264,11 +264,11 @@ class LayerView {
 
         for (let i = 0; i < data.length; i++){
             for (let j = 0; j < data[i].length; j++){
-                if (data[i][j] == 0){
+                if (data[j][i] == 0){
                     this.canvas.fillStyle = 'white';
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
                 }else{
-                    this.canvas.fillStyle = colorscale(data[i][j]);
+                    this.canvas.fillStyle = colorscale(data[j][i]);
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
                 }
             }
@@ -297,10 +297,10 @@ class LayerView {
         for (let i = 0; i < this.dataManager.pattern.length; i++){
             if (this.dataManager.pattern[i] == 0){
                 this.canvas.fillStyle = 'white';
-                this.canvas.fillRect(this.x + (i % 30) * (8 + 2) - 50, this.y + Math.floor(i / 30) * 8, 8, 8);
+                this.canvas.fillRect(this.x + (i % 60) * (8 + 2) - 50, this.y + Math.floor(i / 60) * 8, 8, 8);
             }else{
                 this.canvas.fillStyle = colorscale(this.dataManager.pattern[i]);
-                this.canvas.fillRect(this.x + (i % 30) * (8 + 2) - 50, this.y + Math.floor(i / 30) * 8, 8, 8);
+                this.canvas.fillRect(this.x + (i % 60) * (8 + 2) - 50, this.y + Math.floor(i / 60) * 8, 8, 8);
             }
         }
 

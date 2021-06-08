@@ -3,8 +3,8 @@ let myLayout = new GoldenLayout(config);
 
 let _main_view;
 let _prediction_summary_view;
-let _error_analysis_view;
-let _projection_view;
+let _network_architecture_view;
+let _selected_sample_view;
 
 myLayout.registerComponent('MainView', function (container, state) {
     $(container.getElement()[0]).load('../static/MainView/MainView.html');
@@ -21,13 +21,13 @@ myLayout.registerComponent('MainView', function (container, state) {
 myLayout.registerComponent('NetworkArchitecture', function (container, state) {
     $(container.getElement()[0]).load('../static/NetworkArchitecture/NetworkArchitecture.html');
     //program Tree view, subscribe to data event
-    _error_analysis_view = new NetworkArchitecture(container);
+    _network_architecture_view = new NetworkArchitecture(container);
 });
 
-myLayout.registerComponent('ProjectionView', function (container, state) {
-    $(container.getElement()[0]).load('../static/ProjectView/ProjectView.html');
+myLayout.registerComponent('SelectedSampleView', function (container, state) {
+    $(container.getElement()[0]).load('../static/SelectedSample/SelectedSample.html');
     //program Tree view, subscribe to data event
-    _projection_view = new ProjectView(container);
+    _selected_sample_view = new SelectedSampleView(container);
 });
 
 myLayout.on('itemCreated', (item) => {

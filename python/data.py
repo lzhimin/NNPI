@@ -15,7 +15,7 @@ def getdata(percentage):
 
 
 def getActivation(indexs):
-    return {"activation_pattern": modelManager.fetch_activation_pattern(indexs)}
+    return modelManager.fetch_activation_pattern(indexs)
 
 
 def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_trained.plk'):

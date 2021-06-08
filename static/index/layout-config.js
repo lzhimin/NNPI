@@ -16,7 +16,7 @@ let config = {
             },{
                 type: 'component',
                 componentName: 'ProjectionView',
-                title: 'Projection View'
+                title: 'Selected Samples'
             }]
         },{
             type: 'stack',

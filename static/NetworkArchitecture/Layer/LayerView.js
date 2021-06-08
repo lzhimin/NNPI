@@ -34,7 +34,7 @@ class LayerView {
     draw() {
        
         //backgroud
-        this.background_width = this.width * 3;
+        this.background_width = this.width * 5.5;
         this.background_height = this.height * 1.4;
 
       
@@ -228,8 +228,8 @@ class LayerView {
     }
 
     draw_activation_pattern_conv(x, y) {
-        let rect_w = 3;
-        let rect_h = 3;
+        let rect_w = 8;
+        let rect_h = 8;
         let paddding = 5;
 
         this.canvas.lineWidth = 1;
@@ -238,18 +238,24 @@ class LayerView {
         
         let data = this.dataManager.pattern[0];
         for (let i = 0; i < data.length; i++){
-            if ((i + 1) % 10 == 0)
+            if ((i + 1) % 25 == 0)
                 y += (rect_h * data[0][0].length + paddding);
-            this.draw_activation_pattern_conv_helpr(x + (data[0][0].length * rect_w + paddding) * ((i+1)%10) - 50, y, rect_w, rect_h, data[i]);
+            this.draw_activation_pattern_conv_helpr(x + (data[0][0].length * rect_w + paddding) * (i%25) - 50, y, rect_w, rect_h, data[i]);
         }
     }
 
     draw_activation_pattern_conv_helpr(x, y, w, h, data) {
+
         let colors = ['#fee391', '#993404'];
-        let max = 1500;//d3.max(this.dataManager.pattern)
+        let max = d3.max(this.dataManager.pattern[0], (d => {
+            let values = []
+            for (let i = 0; i < d.length; i++)
+                    values.push(d3.max(d[i]))
+            return d3.max(values);
+        }));
+
         let domains = [1];
         let n = 6;
-
         for (let i = 1; i < n; i++){
             domains.push(parseInt(max/n * i))
         }
@@ -264,7 +270,7 @@ class LayerView {
                 }else{
                     this.canvas.fillStyle = colorscale(data[i][j]);
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
-                    }
+                }
             }
         }
     }

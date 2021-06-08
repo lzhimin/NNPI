@@ -19,7 +19,7 @@ class ModelManager:
         self.train_model = self.loadModel(
             'data/model/LetNet/'+self.model+'_trained.pkl')
 
-        # self.train_model.prune_by_percentile(float(70))
+        self.train_model.prune_by_percentile(float(60))
         # load untrained model
         self.untrain_model = self.loadModel(
             'data/model/LetNet/'+self.model+'_untrained.pkl')

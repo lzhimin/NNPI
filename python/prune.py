@@ -14,6 +14,8 @@ class PruningModule(Module):
     def prune_by_percentile(self, q=80.0):
         # Calculate percentile value
         alive_parameters = []
+        print(q)
+
         for name, p in self.named_parameters():
             # We do not prune bias term
             if 'bias' in name or 'mask' in name:
@@ -35,6 +37,14 @@ class PruningModule(Module):
         for name, module in self.named_modules():
             if name in ['fc1', 'fc2', 'fc3']:
                 module.prune(threshold=percentile_value)
+
+            # if name in ['conv1', 'conv2']:
+            #    conv = module.weight.data.cpu().numpy()
+            #    device = module.weight.device
+            #    conv_index = conv < percentile_value
+            #    conv[conv_index] = 0
+
+            #    module.weight.data = torch.from_numpy(conv).to(device)
 
     # prune the weight > q
     def prune_by_percentile_left(self, q=80.0):

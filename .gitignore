@@ -3,3 +3,4 @@ python/*pycache*
 todo
 image
 image.py
+notebook/.*

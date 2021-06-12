@@ -22,7 +22,7 @@ class LeNet(PruningModule):
 
     def forward(self, x):
         x = x.view(-1, 784)
-        x = F.relu(self.fc1(x))# this is very interesting.
+        x = F.relu(self.fc1(x))  # this is very interesting.
         x = F.relu(self.fc2(x))
         x = F.log_softmax(self.fc3(x), dim=1)
 
@@ -156,6 +156,7 @@ class LeNet_5(PruningModule):
 
 
 class Alexnet(PruningModule):
+
     def __init__(self, mask=False):
         super(Alexnet, self).__init__()
         linear = MaskedLinear if mask else nn.Linear

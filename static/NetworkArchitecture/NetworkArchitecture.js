@@ -29,7 +29,7 @@ class NetworkArchitecture extends BasicView {
         
         //margin
         this.margin.left = 100;
-        this.margin.top = 50;
+        this.margin.top = 20;
         
         // construct data for each neural network layer
         let layer_names = Object.keys(this.dataManager.data);

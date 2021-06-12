@@ -81,7 +81,7 @@ def train(epochs, model, device, optimizer):
             optimizer.step()
 
         #save(model, str(epoch))
-        #test(model, device)
+        test(model, device)
 
 
 def test(model, device):
@@ -120,26 +120,28 @@ def main():
     from model import LeNet, LeNet_5
 
     # model
-    model = LeNet_5(mask=True).to(device)
+    model = LeNet(mask=True).to(device)
 
     model.load_state_dict(torch.load(
-        '../../data/model/LetNet/letnet_5_trained.pkl'))
+        '../../data/model/LetNet/letnet300_trained.pkl'))
     test(model, device)
 
-    model.prune_by_percentile_left(70)
+    print("pruned the model")
+
+    model.prune_by_percentile(99)
     test(model, device)
 
-    model.conv1.weight.requires_grad = False
-    model.conv1.bias.requires_grad = False
+    #model.conv1.weight.requires_grad = False
+    #model.conv1.bias.requires_grad = False
 
-    model.conv2.weight.requires_grad = False
-    model.conv2.bias.requires_grad = False
+    ##model.conv2.weight.requires_grad = False
+    #model.conv2.bias.requires_grad = False
 
-    model.fc1.weight.requires_grad = False
-    model.fc1.bias.requires_grad = False
+    #model.fc1.weight.requires_grad = False
+    #model.fc1.bias.requires_grad = False
 
-    model.fc2.weight.requires_grad = False
-    model.fc2.bias.requires_grad = False
+    #model.fc2.weight.requires_grad = False
+    #model.fc2.bias.requires_grad = False
 
     #model.fc3.weight.requires_grad = False
     #model.fc3.bias.requires_grad = False

@@ -4,3 +4,4 @@ todo
 image
 image.py
 notebook/.*
+__pycache__

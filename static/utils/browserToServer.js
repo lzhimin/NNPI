@@ -7,7 +7,7 @@ function fetch_data(json) {
         dataType: 'json',
         success: function (data) {
             publish("model_summary", [data.model_summary, data.prediction_summary, data.embedding, data.embedding_label, data.activation_pattern])
-            publish("input_summary", [data.embedding, data.embedding_label])
+            publish("input_summary", [data.embedding, data.embedding_label, data.predict_result])
         }
     });
 }

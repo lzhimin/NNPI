@@ -50,7 +50,6 @@ def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_
         validation_summary[1])
 
     print('return result')
-
     result = {}
     result['model_summary'] = getModelSummary(
         modelManager.train_model, modelManager.untrain_model)
@@ -58,6 +57,7 @@ def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_
     result['embedding'] = input_embedding.tolist()
     result['embedding_label'] = validation_summary[2]
     result['activation_pattern'] = activation_pattern
+    result['predict_result'] = validation_summary[4]
 
     return result
 
@@ -70,8 +70,11 @@ def validation(model, dataset, labels):
     subset = []
     subset_label = []
     flatten_subset = []
+    prediction_result = []
 
     test_loader = torch.utils.data.DataLoader(dataset)
+
+    print(len(test_loader))
     with torch.no_grad():
         for data, target in test_loader:
             device_data, device_target = data.to('cpu'), target.to('cpu')
@@ -81,12 +84,17 @@ def validation(model, dataset, labels):
             pred = output.data.max(1, keepdim=True)[1]
             confusionMatrix[device_target[0]][pred[0][0]] += 1
 
+            if device_target[0] == pred[0][0]:
+                prediction_result.append(1)
+            else:
+                prediction_result.append(0)
+
             subset.append(data.tolist())
             flatten_subset.append(
                 np.array(data.tolist()).flatten().tolist())
             subset_label.append(device_target[0].item())
 
-    return confusionMatrix.tolist(), subset, subset_label, flatten_subset
+    return confusionMatrix.tolist(), subset, subset_label, flatten_subset, prediction_result
 
 
 def saliencyMap():

@@ -13,6 +13,9 @@ class MainView extends BasicView {
         //enable lasso
         this.lasso_selection = 'no';
 
+        //color encoding
+        this.color_encoding_option = 'label';
+
         //subscribe('MainVis', this.setData.bind(this))
         subscribe("input_summary", this.setData.bind(this))
     }
@@ -84,7 +87,12 @@ class MainView extends BasicView {
             })
             .attr('r', 5)
             .style('fill', (d, i) => {
-                return this.colormap(d[1]);
+                //define different color encoding
+                if (this.color_encoding_option == 'error') {
+                    return this.dataManager.prediction_result[i] == 1 ? 'white' : 'red';
+                } else {
+                    return this.colormap(d[1]);
+                }
             })
             .style('fill-opacity', 0.9)
             .on('click', function(event, d) {
@@ -150,10 +158,17 @@ class MainView extends BasicView {
 
     //binding the interactive event
     bindingEvent() {
-        //setup event
+        //lasso operation event
         $("input[name='lasso_selection_option']").off('change');
         $("input[name='lasso_selection_option']").on('change', () => {
             this.lasso_selection = $("input[type=radio][name='lasso_selection_option']:checked").val();
+            this.draw();
+        });
+
+        //label color event
+        $("input[name='color_encoding_option']").off('change');
+        $("input[name='color_encoding_option']").on('change', () => {
+            this.color_encoding_option = $("input[type=radio][name='color_encoding_option']:checked").val();
             this.draw();
         });
     }

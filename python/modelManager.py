@@ -12,8 +12,8 @@ class ModelManager:
         # device
         self.device = device
 
-        #self.model = 'letnet300'
-        self.model = 'letnet_5'
+        self.model = 'letnet300'
+        #self.model = 'letnet_5'
 
         # load train model
         self.train_model = self.loadModel(
@@ -47,7 +47,7 @@ class ModelManager:
         ]))
 
         # select your indices here as a list
-        subset_indices = (np.arange(1500)).astype('int')
+        subset_indices = (np.arange(3000)).astype('int')
         mnist = torch.utils.data.Subset(mnist, subset_indices)
 
         return mnist
@@ -64,3 +64,8 @@ class ModelManager:
 
         result = self.train_model.activationPattern(subset)
         return {'activation_pattern': result, 'selectedData': subset}
+
+    def prune_neural_network(self, percentage):
+        self.train_model = self.loadModel(
+            'data/model/LetNet/'+self.model+'_trained.pkl')
+        self.train_model.prune_by_percentile(float(percentage))

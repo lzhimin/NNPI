@@ -42,6 +42,9 @@ class NetworkArchitecture extends BasicView {
         //dataset 
         let colordomain = Array.from(new Set(this.dataManager.embedding_labels))
         this.colormap = d3.scaleOrdinal().domain(colordomain).range(d3.schemeSet3);
+
+        //binding the menu event
+        this.bindingEvent();
    }
 
     draw() {
@@ -242,5 +245,15 @@ class NetworkArchitecture extends BasicView {
         }
 
         this.redraw();
+    }
+
+    //binding the interactive event
+    bindingEvent() {
+         //setup event
+        d3.select("#pruning_precentage").on('change', () => {
+            this.pruning_precentage = $("#pruning_precentage").val();
+            $('#pruning_precentage_label').html('Pruning Percentage (' + this.pruning_precentage + '%)');
+            fetch_data({'percentage':this.pruning_precentage});
+        });
     }
 }

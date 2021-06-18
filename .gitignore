@@ -5,3 +5,4 @@ image
 image.py
 notebook/.*
 __pycache__
+tsne.out

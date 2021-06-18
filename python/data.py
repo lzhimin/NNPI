@@ -37,13 +37,17 @@ def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_
     # pruned_model.eval()
     # pruned_model.prune_by_percentile(float(percentage))
 
+    # prune the neural network
+    modelManager.prune_neural_network(percentage)
+
     print('get validation')
     # validation summary
     validation_summary = validation(modelManager.train_model, mnist, labels)
 
     print('get tsne')
-    input_embedding = TSNE(
-        n_components=2).fit_transform(validation_summary[3])
+    # input_embedding = TSNE(
+    #    n_components=2).fit_transform(validation_summary[3])
+    input_embedding = np.loadtxt('tsne.out',  delimiter=',')
 
     print('get activation')
     activation_pattern = modelManager.train_model.activationPattern(
@@ -79,7 +83,6 @@ def validation(model, dataset, labels):
         for data, target in test_loader:
             device_data, device_target = data.to('cpu'), target.to('cpu')
             output = model(device_data)
-
             # get the index of the max log-probability
             pred = output.data.max(1, keepdim=True)[1]
             confusionMatrix[device_target[0]][pred[0][0]] += 1

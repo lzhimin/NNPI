@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from python.prune import PruningModule, MaskedLinear
 import numpy as np
+from sklearn.manifold import TSNE
 
 
 class LeNet(PruningModule):
@@ -29,7 +30,6 @@ class LeNet(PruningModule):
         return x
 
     def activationPattern(self, dataset):
-
         layer1_activation = []
         layer2_activation = []
 
@@ -41,6 +41,14 @@ class LeNet(PruningModule):
             layer2_activation.append(x.tolist())
 
         activation_summary = {}
+        # T-sne embedding
+
+        activation_summary['fc1_embedding'] = TSNE(
+            n_components=2).fit_transform(np.array(layer1_activation).transpose(1, 0)).tolist()
+
+        activation_summary['fc2_embedding'] = TSNE(
+            n_components=2).fit_transform(np.array(layer2_activation).transpose(1, 0)).tolist()
+
         activation_summary['fc1'] = np.sum(
             np.array(layer1_activation) != 0, axis=0).tolist()
 

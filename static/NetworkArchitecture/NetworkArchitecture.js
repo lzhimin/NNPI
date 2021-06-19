@@ -17,15 +17,13 @@ class NetworkArchitecture extends BasicView {
         super.init();
 
         //clean the panel
-        //d3.select("#network_architecture_panel").html("");
+        d3.select("#network_architecture_panel").html("");
 
         //add svg 
-        this.canvas = d3.select('#network_architecture_canvas')
-            //    .append('svg')
+        this.svg = d3.select('#network_architecture_panel')
+            .append('svg')
             .attr('width', this.width)
             .attr("height", 1800)
-            .node()
-            .getContext('2d');
         
         //margin
         this.margin.left = 100;
@@ -34,8 +32,9 @@ class NetworkArchitecture extends BasicView {
         // construct data for each neural network layer
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
-            this.architecture[layer_names[i]] = new LayerView(layer_names[i], this.dataManager.data[layer_names[i]], this.canvas)
+            this.architecture[layer_names[i]] = new LayerView(layer_names[i], this.dataManager.data[layer_names[i]], this.svg)
             this.architecture[layer_names[i]].setActivation_pattern(this.dataManager.activation_pattern[layer_names[i]]);
+            this.architecture[layer_names[i]].set_embedding(this.dataManager.activation_pattern[layer_names[i]+"_embedding"]);
         }
 
 

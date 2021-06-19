@@ -68,9 +68,7 @@ class MainView extends BasicView {
             .attr('class', 'embedding_axis')
             .attr("transform", "translate(" + x + " ,0)")
             .call(d3.axisLeft(this.y_axis).ticks(10));
-        
-        
-        
+                
         this.points = this.svg.append('g')
             .selectAll('.embedding_points')
             .data(data, (d, i) => {
@@ -94,7 +92,7 @@ class MainView extends BasicView {
                     return this.colormap(d[1]);
                 }
             })
-            .style('fill-opacity', 0.9)
+            .style('fill-opacity', 0.5)
             .on('click', function(event, d) {
                 d3.selectAll('.embedding_points').attr('r', 5);
                 d3.select(this).attr('r', 10);
@@ -149,10 +147,10 @@ class MainView extends BasicView {
         // if no selected points, reset to all tomato
         if (!selectedPoints["_groups"][0].length) {
             // reset all
-            this.points.style('fill-opacity', 0.9);
+            this.points.style('fill-opacity', 0.5);
         } else {
             this.points.style('fill-opacity', 0.2);
-            selectedPoints.style('fill-opacity',0.9);
+            selectedPoints.style('fill-opacity',0.5);
         }
     }
 

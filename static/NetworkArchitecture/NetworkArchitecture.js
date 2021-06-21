@@ -54,7 +54,7 @@ class NetworkArchitecture extends BasicView {
         let y = this.margin.top;
         let width = 120;
         let height = 120;
-        let padding = 130;
+        let padding = 150;
 
         //draw input data distribution
         //this.draw_menu(x - 20, y);
@@ -64,7 +64,7 @@ class NetworkArchitecture extends BasicView {
         for (let i = 0; i < layer_names.length; i++){
             let key = layer_names[i];
 
-            this.architecture[key].setlocation(x, y + (height + padding) * i + padding);
+            this.architecture[key].setlocation(x, y + (height + padding) * i + padding * 0.3);
             this.architecture[key].setScale(width, height);
             this.architecture[key].draw();
         }

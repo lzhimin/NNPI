@@ -43,11 +43,18 @@ class LeNet(PruningModule):
         activation_summary = {}
         # T-sne embedding
 
-        activation_summary['fc1_embedding'] = TSNE(
-            n_components=2).fit_transform(np.array(layer1_activation).transpose(1, 0)).tolist()
+        activation_summary['fc1_embedding'] = np.loadtxt(
+            'fc1_embedding.out', delimiter=',').tolist()
+        #TSNE(n_components=2).fit_transform(np.array(layer1_activation).transpose(1, 0)).tolist()
 
-        activation_summary['fc2_embedding'] = TSNE(
-            n_components=2).fit_transform(np.array(layer2_activation).transpose(1, 0)).tolist()
+        activation_summary['fc2_embedding'] = np.loadtxt(
+            'fc2_embedding.out', delimiter=',').tolist()
+        #TSNE(n_components=2).fit_transform(np.array(layer2_activation).transpose(1, 0)).tolist()
+
+        # np.savetxt('fc1_embedding.out',
+        #           activation_summary['fc1_embedding'], delimiter=',')
+        # np.savetxt('fc2_embedding.out',
+        #           activation_summary['fc2_embedding'], delimiter=',')
 
         activation_summary['fc1'] = np.sum(
             np.array(layer1_activation) != 0, axis=0).tolist()
@@ -56,6 +63,29 @@ class LeNet(PruningModule):
             np.array(layer2_activation) != 0, axis=0).tolist()
 
         return activation_summary
+
+    def neuron_activation_to_data(self, neuron_info, dataset):
+        neuron_indexs = neuron_info['indexs']
+        layername = neuron_info['layername']
+
+        input_indexs = []
+        for i in range(len(dataset)):
+            x = F.relu(self.fc1(torch.tensor(
+                np.array(dataset[i]).flatten().tolist())))
+
+            if layername == 'fc1':
+                for index in neuron_indexs:
+                    if x[index] != 0:
+                        input_indexs.append(i)
+
+            x = F.relu(self.fc2(x))
+
+            if layername == 'fc2':
+                for index in neuron_indexs:
+                    if x[index] != 0:
+                        input_indexs.append(i)
+
+        return input_indexs
 
     def activationPruning(self, dataset):
         layer1_activation = []

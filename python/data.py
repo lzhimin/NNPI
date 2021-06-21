@@ -18,6 +18,10 @@ def getActivation(indexs):
     return modelManager.fetch_activation_pattern(indexs)
 
 
+def get_neuron_activation_to_input(data):
+    return modelManager.fetch_neuron_activation_to_input(data)
+
+
 def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_trained.plk'):
     # pruned parameter model
     # model.prune_by_percentile_left(float(percentage))

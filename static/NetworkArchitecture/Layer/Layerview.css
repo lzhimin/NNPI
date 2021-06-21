@@ -1,5 +1,5 @@
 .layerview_background {
-    stroke: black;
+    stroke: gray;
     fill: white;
     fill-opacity: 0.1;
     border-radius: 25px;
@@ -33,4 +33,9 @@
 .architecture_labels_rect {
     fill: white;
     stroke: gray;
+}
+
+.architecture_embedding_points {
+    stroke: gray;
+    stroke-width: 1px;
 }

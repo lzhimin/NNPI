@@ -13,8 +13,13 @@ class LayerView {
     }
 
     init() {
-        
+        //reset the drawing elements
+        this.svg.html('');
 
+        
+        //backgroud
+        this.background_width = this.width * 5;
+        this.background_height = this.height * 1.7;
     }
 
     setlocation(x, y) {
@@ -37,76 +42,60 @@ class LayerView {
 
     draw() {
        
-        //backgroud
-        this.background_width = this.width * 5.5;
-        this.background_height = this.height * 1.4;
-
-        this.draw_activation_neuron_embedding(this.x, this.y, this.width * 5.5 *0.9, this.background_height * 1.4 * 0.9, this.embedding);
+        this.init();
       
-       // this.draw_activation_pattern();
-
-        /*this.chart.append('rect')
+        // this.draw_activation_pattern();
+        //draw the background 
+        this.svg.append('rect')
             .attr('class', 'layerview_background')
             .attr('x', this.x - this.width/2)
             .attr('y', this.y - 15)
             .attr('width', this.background_width)
             .attr('height', this.background_height);
         
-        //menu
-        this.draw_menu();
-
-        this.display_vis = this.chart.append('g');
-
-        //draw the current selected visualization
-        if (this.display_option == 'weight')
-            this.draw_weight_distribution();
-        else if (this.display_option == 'active')
-            this.draw_activation_pattern();
-        
-        //labels
-        this.draw_layer_labels();
-        */
+        //draw activation
+        this.draw_activation_neuron_embedding(this.embedding);
     }
 
-    draw_activation_neuron_embedding(x, y, width, height, data) {
+    draw_activation_neuron_embedding(data) {
+
+        let x = this.x;
+        let y = this.y;
+        let width = this.width * 4;
+        let height = this.background_height * 0.8;
+
         let x_max, x_min, y_max, y_min;
         
         //understand the activation pattern and color scale
-        let colors = ['white', 'red'];
+        let colors = ['#fdd0a2', '#a63603'];
         let max = d3.max(this.dataManager.pattern)
-        //let domains = [1];
-        //let n = 9;
-        //for (let i = 1; i < n; i++){
-        //    domains.push(parseInt(max/n * i))
-        //}
-        //domains.push(max);
         let colorscale = d3.scaleLinear().domain([1, max]).range(colors);
 
         //reset the scale
         [x_min, x_max] = d3.extent(data, (d) => { return d[0] });
         [y_min, y_max] = d3.extent(data, (d) => { return d[1] });
-        y_min = -6;
-        x_max = 15;
         
         this.x_axis = d3.scaleLinear().domain([x_min , x_max * 1.1]).range([x, x + width]);
         this.y_axis = d3.scaleLinear().domain([y_max * 1.1, y_min]).range([y, y + height]);
 
         this.svg.append('g')
-            .attr('class', 'embedding_axis')
+            .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(0" + ',' + (y + height) + ")")
             .call(d3.axisBottom(this.x_axis).ticks(10));
         
         this.svg.append('g')
-            .attr('class', 'embedding_axis')
+            .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(" + x + " ,0)")
             .call(d3.axisLeft(this.y_axis).ticks(10));
                 
         this.points = this.svg.append('g')
-            .selectAll('.embedding_points')
-            .data(data)
+            .selectAll('.architecture_embedding_points')
+            .data(data, (d, i) => {
+                return d.push(i);
+            })
             .enter()
             .append('circle')
-            .attr('class', 'embedding_points')
+            .attr('class', 'architecture_embedding_points')
             .attr('cx', (d) => {
                 return this.x_axis(d[0]);
             })
@@ -115,9 +104,17 @@ class LayerView {
             })
             .attr('r', 5)
             .style('fill', (d, i) => {
-                return colorscale(this.dataManager.pattern[i]);
+                if (this.dataManager.pattern[i] == 0)
+                    return 'white';
+                else
+                    return colorscale(this.dataManager.pattern[i]);
             })
-            .style('fill-opacity', 0.5);              
+            .style('fill-opacity', 0.5)
+            .on('click', (event, d, nodes) =>{
+                d3.selectAll('.architecture_embedding_points').attr('r', 5);
+                d3.select(this.points["_groups"][0][d[2]]).attr('r', 10);
+                fetch_sample_activation({ 'indexs': [d[2]], 'layername': this.name });
+            });
     }
 
     draw_menu() {
@@ -219,56 +216,6 @@ class LayerView {
             .attr('dominant-baseline', 'dominant-baseline');
     }
 
-    draw_weight_distribution() {
-
-        //clean the drawing panel
-        this.display_vis.html('');
-        
-        //distribution of the weight 
-        let x_scale = d3.scaleLinear()
-            .domain(d3.extent(this.dataManager.data.weight))
-            .range([0, this.width]);
-        
-        let y_scale = d3.scaleLinear()
-            .domain(d3.extent(this.dataManager.data.untrain_weight))
-            .range([this.height, 0]);
-        
-        let x_bin = 30;
-        let y_bin = 30;
-        let x_w = this.width / x_bin;
-        let y_h = this.height / y_bin;
-        let bins = this.dataManager.bining_2d(this.dataManager.data.weight, this.dataManager.data.untrain_weight, x_bin, y_bin);
-        
-        let colors = ['#c6dbef', '#9ecae1', '#6baed6', '#4292c6', '#2171b5', '#08519c', '#08306b'];
-        let colorscale = d3.scaleQuantize().domain([0, d3.max(bins)]).range(colors);
-
-        this.display_vis.append('g').selectAll(".binrect")
-            .data(bins)
-            .enter()
-            .append('rect')
-            .attr('x', (d, i) => {
-                return this.x + (i + 1) % x_bin * x_w;
-            })
-            .attr('y', (d, i) => {
-                return this.y + Math.floor(i  / y_bin) * y_h ;
-            })
-            .attr('width', x_w)
-            .attr('height', y_h)
-            .style('fill', (d, i) => {
-                return d == 0?'white':colorscale(d);
-            });
-
-        
-        // add the x Axis
-        this.display_vis.append("g")
-            .attr("transform", "translate(" + (this.x ) + "," + (this.y + this.height) + ")")
-            .call(d3.axisBottom(x_scale).ticks(4));
-
-        // add the y Axis
-        this.display_vis.append("g")
-            .attr("transform", "translate(" + (this.x ) + "," + (this.y) + ")")
-            .call(d3.axisLeft(y_scale).ticks(4));
-    }
 
     draw_activation_pattern() {
         //draw convolution activation map
@@ -362,11 +309,6 @@ class LayerView {
     }
 
     redraw() {
-        if (this.display_option == 'weight') {
-            this.draw_weight_distribution();
-            this.draw_layer_labels();
-        }
-        else if (this.display_option == 'activation')
-            this.draw_activation_neuron_embedding();
+        this.draw();
     }
 }

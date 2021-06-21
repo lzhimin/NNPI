@@ -17,7 +17,8 @@ class MainView extends BasicView {
         this.color_encoding_option = 'label';
 
         //subscribe('MainVis', this.setData.bind(this))
-        subscribe("input_summary", this.setData.bind(this))
+        subscribe("input_summary", this.setData.bind(this));
+        subscribe("input_activation_pattern", this.set_Nueron_Activation_Mapping.bind(this));
     }
 
     init() {
@@ -174,5 +175,11 @@ class MainView extends BasicView {
     setData(msg, data) {
         this.dataManager.setData(data);
         this.draw();
+    }
+
+    set_Nueron_Activation_Mapping(msg, data) {
+        this.points.style('fill', (d, i) => {
+            return data.includes(i) ? this.colormap(d[1]) : 'white';
+        });
     }
 }

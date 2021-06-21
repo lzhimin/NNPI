@@ -23,10 +23,13 @@ def _fetch_data():
 @app.route("/_fetch_activation", methods=["GET", "POST"])
 def _fetch_activation():
     json_request = request.get_json()
-
-    # return json.dumps({"a": 1})
-    # print(json_request)
     return json.dumps(data.getActivation(json_request['indexs']))
+
+
+@app.route("/_fetch_sample_activation", methods=["GET", "POST"])
+def _fetch_sample_activation():
+    json_request = request.get_json()
+    return json.dumps(data.get_neuron_activation_to_input(json_request))
 
 
 if __name__ == '__main__':

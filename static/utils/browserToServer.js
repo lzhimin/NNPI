@@ -12,8 +12,6 @@ function fetch_data(json) {
     });
 }
 
-
-
 function fetch_activation(json) {
     $.ajax({
         url: '/_fetch_activation',
@@ -24,6 +22,19 @@ function fetch_activation(json) {
         success: function (data) {
             publish("activation_pattern", data.activation_pattern);
             publish("SelectedSample", data.selectedData);
+        }
+    });
+}
+
+function fetch_sample_activation(json) {
+       $.ajax({
+        url: '/_fetch_sample_activation',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(json),
+        dataType: 'json',
+        success: function (data) {
+            publish("input_activation_pattern", data.input_activation_pattern);
         }
     });
 }

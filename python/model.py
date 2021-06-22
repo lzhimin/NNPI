@@ -113,6 +113,7 @@ class LeNet(PruningModule):
 
 
 class LeNet_5(PruningModule):
+
     def __init__(self, mask=False):
         super(LeNet_5, self).__init__()
         linear = MaskedLinear if mask else nn.Linear
@@ -187,8 +188,6 @@ class LeNet_5(PruningModule):
 
         activation_summary['fc2'] = np.sum(
             np.array(fc2_activation) != 0, axis=0).tolist()[0]
-
-        print(activation_summary['fc2'])
 
         return activation_summary
 

@@ -29,7 +29,13 @@ def _fetch_activation():
 @app.route("/_fetch_sample_activation", methods=["GET", "POST"])
 def _fetch_sample_activation():
     json_request = request.get_json()
-    return json.dumps(data.get_neuron_activation_to_input(json_request))
+    return json.dumps(data.mapping_neuron_activation_to_input(json_request))
+
+@app.route("/_fetch_selected_architecture_info", methods=["GET", "POST"])
+def _fetch_selected_architecture_info():
+    json_request = request.get_json()
+    return json.dumps(data.selected_architecture_info(json_request))
+
 
 
 if __name__ == '__main__':

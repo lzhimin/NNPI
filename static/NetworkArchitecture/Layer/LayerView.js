@@ -9,6 +9,10 @@ class LayerView {
         // 1. TSNE
         // 2. Ranking 
         this.display_option = 'Ranking';
+
+        //selected neuron
+
+        this.selected_neuron = [];
     }
 
     init() {
@@ -216,6 +220,43 @@ class LayerView {
                 d3.select(this.points["_groups"][0][d[1]]).attr('r', 10);
                 fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
             });
+
+
+        let brush = d3.brushX()
+            .extent([[x, y + height/2 - 30],[x + width + 10, y + height/2 + 30]])
+            .on("end", (event)=>{
+                let extent = event.selection;
+                let select_neurons = [];
+                if(!extent){
+                    //fetch all the neurons
+                    this.points.attr('fill', (d, i)=>{
+                        if (this.dataManager.pattern[i] == 0)
+                            return 'white';
+                        else
+                            return colorscale(this.dataManager.pattern[i]);W
+                    });
+                }else{
+                    this.points.attr('fill', (d, i)=>{
+                        if( extent[0] < this.x_axis(d[0]) && extent[1] > this.x_axis(d[0])){
+                            if (this.dataManager.pattern[i] == 0)
+                                return 'white';
+                            else
+                                return colorscale(this.dataManager.pattern[i]);
+                        } else {
+                            select_neurons.push(i);
+                            return 'gray';   
+                        }
+                    });
+                }
+
+                fetch_selected_architecture_info({'name':this.name, 'pruned_neuron':select_neurons});
+            });
+
+        // add brush event
+         // Add the brushing
+        this.svg.append("g")
+            .attr("class", "brush")
+            .call(brush);
     }
 
     redraw() {

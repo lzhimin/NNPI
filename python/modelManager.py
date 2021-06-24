@@ -10,7 +10,7 @@ class ModelManager:
     def __init__(self, device, model_type='LetNet', path='data/model/LetNet/'):
 
         # device
-        self.device = device
+        self.device = 'cpu'
 
         self.model = 'letnet300'
         #self.model = 'letnet_5'
@@ -65,7 +65,7 @@ class ModelManager:
         result = self.train_model.activationPattern(subset)
         return {'activation_pattern': result, 'selectedData': subset}
 
-    def fetch_neuron_activation_to_input(self, neuron_info):
+    def mapping_neuron_activation_to_input(self, neuron_info):
 
         test_loader = torch.utils.data.DataLoader(self.datasets)
         subset = []
@@ -83,3 +83,21 @@ class ModelManager:
         self.train_model = self.loadModel(
             'data/model/LetNet/'+self.model+'_trained.pkl')
         self.train_model.prune_by_percentile(float(percentage))
+
+    def prune_unselected_neuron_return_prediction_result(self, selected_neuron):
+        self.train_model.pruned_unselected_neuron(selected_neuron)
+        prediction_result = []
+
+        data_loader = torch.utils.data.DataLoader(self.datasets)
+        with torch.no_grad():
+            for data, target in data_loader:
+                device_data, device_target = data.to('cpu'), target.to('cpu')
+                output = self.train_model(device_data)
+                # get the index of the max log-probability
+                pred = output.data.max(1, keepdim=True)[1]
+
+                if device_target[0] == pred[0][0]:
+                    prediction_result.append(1)
+                else:
+                    prediction_result.append(0)
+        return prediction_result

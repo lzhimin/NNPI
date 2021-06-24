@@ -27,7 +27,7 @@ function fetch_activation(json) {
 }
 
 function fetch_sample_activation(json) {
-       $.ajax({
+    $.ajax({
         url: '/_fetch_sample_activation',
         type: 'POST',
         contentType: 'application/json',
@@ -35,6 +35,19 @@ function fetch_sample_activation(json) {
         dataType: 'json',
         success: function (data) {
             publish("input_activation_pattern", data.input_activation_pattern);
+        }
+    });
+}
+
+function fetch_selected_architecture_info(json){
+    $.ajax({
+        url: '/_fetch_selected_architecture_info',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(json),
+        dataType: 'json',
+        success: function (data) {
+            publish("predict_summary", data.predict_summary);
         }
     });
 }

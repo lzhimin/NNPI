@@ -6,3 +6,4 @@ image.py
 notebook/.*
 __pycache__
 *.out
+.vscode

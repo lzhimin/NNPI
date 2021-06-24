@@ -18,7 +18,8 @@ class MainView extends BasicView {
 
         //subscribe('MainVis', this.setData.bind(this))
         subscribe("input_summary", this.setData.bind(this));
-        subscribe("input_activation_pattern", this.set_Nueron_Activation_Mapping.bind(this));
+        subscribe("input_activation_pattern", this.set_Neuron_Activation_Mapping.bind(this));
+        subscribe("predict_summary", this.set_prediction_result.bind(this));
     }
 
     init() {
@@ -177,9 +178,15 @@ class MainView extends BasicView {
         this.draw();
     }
 
-    set_Nueron_Activation_Mapping(msg, data) {
+    set_Neuron_Activation_Mapping(msg, data) {
         this.points.style('fill', (d, i) => {
             return data.includes(i) ? this.colormap(d[1]) : 'white';
+        });
+    }
+
+    set_prediction_result(msg, data){
+        this.points.style('fill', (d, i) => {
+                return data[i] == 1 ? 'white' : 'red';
         });
     }
 }

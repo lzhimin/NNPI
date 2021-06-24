@@ -13,14 +13,15 @@ modelManager = ModelManager(device=device)
 def getdata(percentage):
     return load_Model_Data_Summary(percentage)
 
-
 def getActivation(indexs):
     return modelManager.fetch_activation_pattern(indexs)
 
-
-def get_neuron_activation_to_input(data):
-    return modelManager.fetch_neuron_activation_to_input(data)
-
+def selected_architecture_info(selected_neuron):
+    predict_result = modelManager.prune_unselected_neuron_return_prediction_result(selected_neuron)
+    return {'predict_summary':predict_result}
+    
+def mapping_neuron_activation_to_input(data):
+    return modelManager.mapping_neuron_activation_to_input(data)
 
 def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_trained.plk'):
     # pruned parameter model
@@ -69,7 +70,6 @@ def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_
 
     return result
 
-
 def validation(model, dataset, labels):
 
     # confusion matrix of the validation dataset
@@ -103,7 +103,6 @@ def validation(model, dataset, labels):
 
     return confusionMatrix.tolist(), subset, subset_label, flatten_subset, prediction_result
 
-
 def saliencyMap():
     # saliency data
     #salient_data = {}
@@ -118,10 +117,8 @@ def saliencyMap():
     #        salient_data[i].append(gd[0].reshape(28, 28).tolist())
     pass
 
-
 def visualization(model):
     pass
-
 
 def getModelSummary(train_model, untrain_model):
     model_summary = {}

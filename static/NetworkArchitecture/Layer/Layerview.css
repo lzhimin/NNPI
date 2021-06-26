@@ -2,7 +2,6 @@
     stroke: gray;
     fill: white;
     fill-opacity: 0.1;
-    border-radius: 25px;
 }
 
 .layer_label {
@@ -38,4 +37,10 @@
 .architecture_embedding_points {
     stroke: gray;
     stroke-width: 1px;
+}
+
+.neuron_activation_rect{
+    stroke: gray;
+    fill: steelblue;
+    fill-opacity: 0.6;
 }

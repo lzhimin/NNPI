@@ -22,7 +22,7 @@ class LayerView {
         
         //backgroud
         this.background_width = this.width * 5;
-        this.background_height = this.height * 1.7;
+        this.background_height = this.height * 1.8;
     }
 
     draw() {
@@ -182,11 +182,11 @@ class LayerView {
         //reset the scale
         [x_min, x_max] = d3.extent(this.dataManager.pattern);
         
-        this.x_axis = d3.scaleLinear().domain([x_max * 1.1, x_min]).range([x, x + width]);
+        this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x, x + width]);
 
         this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
-            .attr("transform", "translate(0" + ',' + (y + height/2) + ")")
+            .attr("transform", "translate(0" + ',' + (y + height) + ")")
             .call(d3.axisBottom(this.x_axis).ticks(10));
             
         //ranking data
@@ -195,6 +195,41 @@ class LayerView {
             data_activation_pattern.push([this.dataManager.pattern[i], i]);
         }
         
+        
+        
+        //add histogram
+        let histogram = d3.histogram()
+            .value((d)=>{return d;})
+            .domain(this.x_axis.domain())
+            .thresholds(this.x_axis.ticks(30));
+        
+        //histogram bin
+        let bins = histogram(this.dataManager.pattern);
+        this.y_axis = d3.scaleLinear().range([height * 0.8, 0]).domain([0, d3.max(bins, (d)=>{
+            return d.length;
+        })]);
+
+        this.svg.append('g')
+            .attr('class', 'architecture_embedding_axis')
+            .attr("transform", "translate(" + x + "," + (y + 30) + ")")
+            .call(d3.axisLeft(this.y_axis).ticks(5));
+
+        this.hist = this.svg.selectAll(".neuron_activation_rect_"+this.name)
+            .data(bins)
+            .enter()
+            .append("rect")
+            .attr('class', 'neuron_activation_rect')
+            .attr("x", 1)
+            .attr("transform", (d)=> { 
+                return "translate(" + this.x_axis(d.x0) + "," + (y + 30 + this.y_axis(d.length)) + ")"; 
+            })
+            .attr("width", (d)=> { 
+                return this.x_axis(d.x1) - this.x_axis(d.x0) - 1; 
+            })
+            .attr("height", (d)=> { 
+                return height * 0.8 - this.y_axis(d.length); 
+            });
+
         this.points = this.svg.append('g')
             .selectAll('.architecture_embedding_points')
             .data(data_activation_pattern)
@@ -205,7 +240,7 @@ class LayerView {
                 return this.x_axis(d[0]);
             })
             .attr('cy', (d) => {
-                return y + height/2 - 15;
+                return y + height - 15;
             })
             .attr('r', 5)
             .style('fill', (d, i) => {
@@ -222,8 +257,9 @@ class LayerView {
             });
 
 
+
         let brush = d3.brushX()
-            .extent([[x, y + height/2 - 30],[x + width + 10, y + height/2 + 30]])
+            .extent([[x - 20, y + height - 30], [x + width + 10, y + height + 30]])
             .on("end", (event)=>{
                 let extent = event.selection;
                 let select_neurons = [];

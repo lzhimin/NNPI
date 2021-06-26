@@ -85,6 +85,9 @@ class ModelManager:
         self.train_model.prune_by_percentile(float(percentage))
 
     def prune_unselected_neuron_return_prediction_result(self, selected_neuron):
+
+        #reload a new model for the analysis
+        self.train_model = self.loadModel('data/model/LetNet/'+self.model+'_trained.pkl')
         self.train_model.pruned_unselected_neuron(selected_neuron)
         prediction_result = []
 

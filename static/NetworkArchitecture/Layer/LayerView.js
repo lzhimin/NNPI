@@ -167,8 +167,8 @@ class LayerView {
     }
 
     draw_neuron_feature_ranking() {
-        let x = this.x;
-        let y = this.y;
+        let x = this.x + 20;
+        let y = this.y - 20;
         let width = this.width * 4;
         let height = this.background_height * 0.8;
 
@@ -211,8 +211,25 @@ class LayerView {
 
         this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
-            .attr("transform", "translate(" + x + "," + (y + 30) + ")")
+            .attr("transform", "translate(" + x + "," + (y + 32) + ")")
             .call(d3.axisLeft(this.y_axis).ticks(5));
+
+        this.svg.append('g')
+            .append('text')
+            .text('activation frequency')
+            .attr('x', this.x + width/2)
+            .attr('y', this.y + height + 10)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+
+        this.svg.append('g')
+            .append('text')
+            .text('neuron density')
+            .attr('x', this.x - 20)
+            .attr('y', this.y + height/2)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('writing-mode', 'vertical-rl');
 
         this.hist = this.svg.selectAll(".neuron_activation_rect_"+this.name)
             .data(bins)
@@ -221,7 +238,7 @@ class LayerView {
             .attr('class', 'neuron_activation_rect')
             .attr("x", 1)
             .attr("transform", (d)=> { 
-                return "translate(" + this.x_axis(d.x0) + "," + (y + 30 + this.y_axis(d.length)) + ")"; 
+                return "translate(" + this.x_axis(d.x0) + "," + (y + 32 + this.y_axis(d.length)) + ")"; 
             })
             .attr("width", (d)=> { 
                 return this.x_axis(d.x1) - this.x_axis(d.x0) - 1; 

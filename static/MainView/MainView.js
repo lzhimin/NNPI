@@ -53,7 +53,7 @@ class MainView extends BasicView {
     }
 
     draw_embedding(x, y, width, height, data) {
-         let x_max, x_min, y_max, y_min;
+        let x_max, x_min, y_max, y_min;
 
         [x_min, x_max] = d3.extent(data, (d) => { return d[0][0] });
         [y_min, y_max] = d3.extent(data, (d) => { return d[0][1] });

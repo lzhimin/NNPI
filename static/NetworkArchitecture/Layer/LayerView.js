@@ -11,8 +11,9 @@ class LayerView {
         this.display_option = 'Ranking';
 
         //selected neuron
-
         this.selected_neuron = [];
+
+        subscribe("feature_vis", this.set_featureVis.bind(this));
     }
 
     init() {
@@ -40,11 +41,12 @@ class LayerView {
         
         //draw activation
 
-        if (this.display_option == 'TSNE')
-            this.draw_activation_neuron_embedding(this.embedding);
-        else
+        if (this.display_option == 'Selection')
+            this.draw_neuron_feature_selection();
+        else if(this.display_option == 'Ranking')
             this.draw_neuron_feature_ranking();
-
+        else 
+            this.draw_activation_neuron_embedding(this.embedding);
         //draw menu
         this.draw_menu();
     }
@@ -99,6 +101,7 @@ class LayerView {
                 if (this.dataManager.pattern[i] == 0)
                     return 'white';
                 else
+                    //return 'steelblue';
                     return colorscale(this.dataManager.pattern[i]);
             })
             .style('fill-opacity', 0.5)
@@ -116,7 +119,7 @@ class LayerView {
         let height = 30;
 
         this.menu = this.svg.append('g').selectAll('.layerview_menu_rect')
-            .data([this.name+'_TSNE', this.name+'_Ranking'])
+            .data([this.name+'_Ranking', this.name+'_Selection', this.name+'_TSNE', ])
             .enter()
             .append('rect')
             .text((d) => d)
@@ -148,12 +151,14 @@ class LayerView {
                     this.display_option = 'TSNE';
                 else if (i.includes('Ranking'))
                     this.display_option = 'Ranking';
-                
+                else if(i.includes('Selection'))
+                this.display_option = 'Selection';
+
                 this.redraw();
             });
         
         this.svg.selectAll('.layerview_menu')
-            .data(['TSNE', 'Ranking'])
+            .data(['Ranking', 'Selection', 'TSNE'])
             .enter()
             .append('text')
             .text((d)=>d)
@@ -259,11 +264,10 @@ class LayerView {
             })
             .attr('r', 5)
             .style('fill', (d, i) => {
-
-                return 'steelblue';
-                //if (this.dataManager.pattern[i] == 0)
-                //    return 'white';
-                //else
+                if (this.dataManager.pattern[i] == 0)
+                    return 'white';
+                else
+                    return 'steelblue';
                 //    return colorscale(this.dataManager.pattern[i]);
             })
             .style('fill-opacity', 0.5)
@@ -272,6 +276,108 @@ class LayerView {
                 d3.select(this.points["_groups"][0][d[1]]).attr('r', 10);
                 fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
             });
+    }
+
+    draw_neuron_feature_selection() {
+        let x = this.x + 20;
+        let y = this.y - 20;
+        let width = this.width * 4;
+        let height = this.background_height * 0.9;
+
+        let x_max, x_min;
+        
+        //understand the activation pattern and color scale
+        let colors = ['#fdd0a2', '#a63603'];
+        let max = d3.max(this.dataManager.pattern)
+        let colorscale = d3.scaleLinear().domain([1, max]).range(colors);
+
+        //reset the scale
+        [x_min, x_max] = d3.extent(this.dataManager.pattern);
+        
+        this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x, x + width]);
+
+        this.svg.append('g')
+            .attr('class', 'architecture_embedding_axis')
+            .attr("transform", "translate(0" + ',' + (y + height/2) + ")")
+            .call(d3.axisTop(this.x_axis).ticks(10));
+            
+        //ranking data
+        let data_activation_pattern = [];
+        for (let i = 0; i < this.dataManager.pattern.length; i++){
+            data_activation_pattern.push([this.dataManager.pattern[i], i]);
+        }   
+        
+        //add histogram
+        let histogram = d3.histogram()
+            .value((d)=>{return d;})
+            .domain(this.x_axis.domain())
+            .thresholds(this.x_axis.ticks(30));
+        
+        //histogram bin
+        let bins = histogram(this.dataManager.pattern);
+        this.y_axis = d3.scaleLinear().range([0, height/2]).domain([0, d3.max(bins, (d)=>{
+            return d.length;
+        })]);
+
+        this.svg.append('g')
+            .attr('class', 'architecture_embedding_axis')
+            .attr("transform", "translate(" + x + "," + (y + height/2) + ")")
+            .call(d3.axisLeft(this.y_axis).ticks(5));
+
+        this.svg.append('g')
+            .append('text')
+            .text('activation frequency')
+            .attr('x', this.x + width/2)
+            .attr('y', this.y + 10)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+
+        this.svg.append('g')
+            .append('text')
+            .text('neuron density')
+            .attr('x', this.x - 20)
+            .attr('y', this.y + height/1.5)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('writing-mode', 'vertical-rl');
+
+        this.hist = this.svg.selectAll(".neuron_activation_rect_"+this.name)
+            .data(bins)
+            .enter()
+            .append("rect")
+            .attr('class', 'neuron_activation_rect')
+            .attr("x", 1)
+            .attr("transform", (d)=> { 
+                return "translate(" + this.x_axis(d.x0) + "," + (y + height/2 + 2) + ")"; 
+            })
+            .attr("width", (d)=> { 
+                return this.x_axis(d.x1) - this.x_axis(d.x0) - 1; 
+            })
+            .attr("height", (d)=> { 
+                return this.y_axis(d.length); 
+            });
+
+        this.points = this.svg.append('g')
+            .selectAll('.architecture_embedding_points')
+            .data(data_activation_pattern)
+            .enter()
+            .append('circle')
+            .attr('class', 'architecture_embedding_points')
+            .attr('cx', (d) => {
+                return this.x_axis(d[0]);
+            })
+            .attr('cy', (d) => {
+                return y + height/2 - 30;
+            })
+            .attr('r', 5)
+            .style('fill', (d, i) => {
+                if (this.dataManager.pattern[i] == 0)
+                    return 'white';
+                else
+                    return 'steelblue';
+                //    return colorscale(this.dataManager.pattern[i]);
+            })
+            .style('fill-opacity', 0.5);
 
 
 
@@ -310,7 +416,7 @@ class LayerView {
         this.svg.append("g")
             .attr("class", "brush")
             .call(brush);
-    }
+    }    
 
     redraw() {
         this.draw();
@@ -332,6 +438,36 @@ class LayerView {
 
     set_embedding(embedding) {
         this.embedding = embedding
+    }
+
+    set_featureVis(msg, data){
+
+        if(data[0] != this.name){
+            return;
+        }
+        else{
+            //remove feature vis
+            if (this.feature != undefined){
+                this.feature.remove();
+            }
+
+            let colorscale = d3.scaleLinear().domain([0, 255]).range(['white', 'black']);
+            this.feature = this.svg.append('g')
+                .selectAll('.featurevis')
+                .data(data[1].flat())
+                .enter()
+                .append('rect')
+                .attr('width', 2)
+                .attr('height',2)
+                .attr('x', (d, i)=>{
+                    return this.x + this.background_width/2 + i% 28 * 2;
+                })
+                .attr('y', (d, i)=>{
+                    return this.y + this.background_height/2+ Math.floor(i/28) * 2;
+                })
+                .style('fill', (d)=>{return colorscale(d);});
+
+        } 
     }
 
 }

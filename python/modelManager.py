@@ -2,6 +2,7 @@ from re import T, sub
 import torch
 from torchvision import datasets, transforms
 from python.model import LeNet, LeNet_5
+from python.FeatureVisualization import getFeatureVisualization
 import numpy as np
 
 
@@ -67,6 +68,8 @@ class ModelManager:
 
     def mapping_neuron_activation_to_input(self, neuron_info):
 
+        print(neuron_info)
+
         test_loader = torch.utils.data.DataLoader(self.datasets)
         subset = []
 
@@ -77,7 +80,10 @@ class ModelManager:
         result = self.train_model.neuron_activation_to_data(
             neuron_info, subset)
 
-        return {"input_activation_pattern": result}
+        # get the feature visualization of the selected neuron
+        feature = getFeatureVisualization(self.train_model, neuron_info['layername'], neuron_info['indexs'][0])
+
+        return {"input_activation_pattern": result, 'feature_vis':[neuron_info['layername'], feature.tolist()]}
 
     def prune_neural_network(self, percentage):
         self.train_model = self.loadModel(

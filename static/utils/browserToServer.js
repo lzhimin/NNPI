@@ -35,6 +35,7 @@ function fetch_sample_activation(json) {
         dataType: 'json',
         success: function (data) {
             publish("input_activation_pattern", data.input_activation_pattern);
+            publish('feature_vis', data.feature_vis)
         }
     });
 }

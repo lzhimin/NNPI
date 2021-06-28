@@ -193,9 +193,7 @@ class LayerView {
         let data_activation_pattern = [];
         for (let i = 0; i < this.dataManager.pattern.length; i++){
             data_activation_pattern.push([this.dataManager.pattern[i], i]);
-        }
-        
-        
+        }   
         
         //add histogram
         let histogram = d3.histogram()
@@ -218,7 +216,7 @@ class LayerView {
             .append('text')
             .text('activation frequency')
             .attr('x', this.x + width/2)
-            .attr('y', this.y)
+            .attr('y', this.y + 10)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central')
 
@@ -278,7 +276,7 @@ class LayerView {
 
 
         let brush = d3.brushX()
-            .extent([[x - 20, y + height - 30], [x + width + 10, y + height + 30]])
+            .extent([[x - 20, y + height/2 - 60], [x + width + 10, y + height/2]])
             .on("end", (event)=>{
                 let extent = event.selection;
                 let select_neurons = [];

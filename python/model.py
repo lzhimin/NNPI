@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from python.prune import PruningModule, MaskedLinear
 import numpy as np
-from sklearn.manifold import TSNE
+import torch.nn.utils.prune as prune
 
 
 class LeNet(PruningModule):
@@ -113,7 +113,6 @@ class LeNet(PruningModule):
               len(np.array(self.fc1.mask.tolist()).flatten()))
         print(np.sum((self.fc2.mask == 0).tolist()) /
               len(np.array(self.fc2.mask.tolist()).flatten()))
-
 
 class LeNet_5(PruningModule):
 
@@ -234,8 +233,16 @@ class LeNet_5(PruningModule):
         if info['name'] == 'fc2':
             self.fc2.mask[info['pruned_neuron']] = 0
 
-
+        print(info)
+        if info['name'] == 'conv1':
+            for index in info['pruned_neuron']:
+                self.conv1.weight.data[index] = 0
             
+
+        if info['name'] == 'conv2':
+            for index in info['pruned_neuron']:
+                self.conv2.weight.data[index] = 0
+           
 class drawingNet(PruningModule):
 
     def __init__(self, mask=False, numclasses=10):

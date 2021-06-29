@@ -13,8 +13,8 @@ class ModelManager:
         # device
         self.device = 'cpu'
 
-        self.model = 'letnet300'
-        #self.model = 'letnet_5'
+        #self.model = 'letnet300'
+        self.model = 'letnet_5'
 
         # load train model
         self.train_model = self.loadModel(

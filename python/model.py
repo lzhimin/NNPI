@@ -180,11 +180,19 @@ class LeNet_5(PruningModule):
             fc2_activation.append(x.tolist())
 
         activation_summary = {}
-        activation_summary['conv1'] = np.sum(
-            np.array(conv1_activation) != 0, axis=0).tolist()
+        activation_summary['conv1'] = []
+        for filter in self.conv1.weight.data.numpy():
+            activation_summary['conv1'].append(np.linalg.norm(filter).tolist())
 
-        activation_summary['conv2'] = np.sum(
-            np.array(conv2_activation) != 0, axis=0).tolist()
+        activation_summary['conv2'] = []
+        for filter in self.conv2.weight.data.numpy():
+            activation_summary['conv2'].append(np.linalg.norm(filter).tolist())
+
+        #activation_summary['conv1'] = np.sum(
+        #    np.array(conv1_activation) != 0, axis=0).tolist()
+
+        #activation_summary['conv2'] = np.sum(
+        #    np.array(conv2_activation) != 0, axis=0).tolist()
 
         activation_summary['fc1'] = np.sum(
             np.array(fc1_activation) != 0, axis=0).tolist()[0]
@@ -289,7 +297,6 @@ class Alexnet(PruningModule):
         x = F.log_softmax(self.fc3(x), dim=1)
 
         return x
-
 
 class VGG16(PruningModule):
 

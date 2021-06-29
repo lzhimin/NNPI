@@ -8,7 +8,7 @@ class LayerView {
         // display option 
         // 1. TSNE
         // 2. Ranking 
-        this.display_option = 'Ranking';
+        this.display_option = 'Selection';
 
         //selected neuron
         this.selected_neuron = [];
@@ -117,9 +117,19 @@ class LayerView {
         let padding = 5;
         let width = 60;
         let height = 30;
+        let menu = undefined;
+        let menu_name = undefined;
 
+        if(this.name.includes('fc')){
+            menu = [this.name+'_Selection', this.name+'_Ranking', this.name+'_TSNE', ];
+            menu_name = ['Selection', 'Ranking', 'TSNE'];
+        }
+        else{
+            menu = [this.name+'_Selection'];
+            menu_name = ['Selection'];
+        }
         this.menu = this.svg.append('g').selectAll('.layerview_menu_rect')
-            .data([this.name+'_Ranking', this.name+'_Selection', this.name+'_TSNE', ])
+            .data(menu)
             .enter()
             .append('rect')
             .text((d) => d)
@@ -158,7 +168,7 @@ class LayerView {
             });
         
         this.svg.selectAll('.layerview_menu')
-            .data(['Ranking', 'Selection', 'TSNE'])
+            .data(menu_name)
             .enter()
             .append('text')
             .text((d)=>d)
@@ -180,9 +190,9 @@ class LayerView {
         let x_max, x_min;
         
         //understand the activation pattern and color scale
-        let colors = ['#fdd0a2', '#a63603'];
-        let max = d3.max(this.dataManager.pattern)
-        let colorscale = d3.scaleLinear().domain([1, max]).range(colors);
+        //let colors = ['#fdd0a2', '#a63603'];
+        //let max = d3.max(this.dataManager.pattern)
+        //let colorscale = d3.scaleLinear().domain([1, max]).range(colors);
 
         //reset the scale
         [x_min, x_max] = d3.extent(this.dataManager.pattern);
@@ -219,7 +229,12 @@ class LayerView {
 
         this.svg.append('g')
             .append('text')
-            .text('activation frequency')
+            .text((d)=>{
+                if(this.name.includes('fc'))
+                    return 'activation frequency';
+                else
+                    return 'filter L1 norm';
+            })
             .attr('x', this.x + width/2)
             .attr('y', this.y + 10)
             .attr('text-anchor', 'middle')
@@ -227,7 +242,12 @@ class LayerView {
 
         this.svg.append('g')
             .append('text')
-            .text('neuron density')
+            .text((d)=>{
+                if(this.name.includes('fc'))
+                    return 'neuron density';
+                else
+                    return 'filter density';
+            })
             .attr('x', this.x - 20)
             .attr('y', this.y + height/1.5)
             .attr('text-anchor', 'middle')
@@ -250,135 +270,67 @@ class LayerView {
                 return this.y_axis(d.length); 
             });
 
-        this.points = this.svg.append('g')
-            .selectAll('.architecture_embedding_points')
-            .data(data_activation_pattern)
-            .enter()
-            .append('circle')
-            .attr('class', 'architecture_embedding_points')
-            .attr('cx', (d) => {
-                return this.x_axis(d[0]);
-            })
-            .attr('cy', (d) => {
-                return y + height/2 - 30;
-            })
-            .attr('r', 5)
-            .style('fill', (d, i) => {
-                if (this.dataManager.pattern[i] == 0)
-                    return 'white';
-                else
-                    return 'steelblue';
-                //    return colorscale(this.dataManager.pattern[i]);
-            })
-            .style('fill-opacity', 0.5)
-            .on('click', (event, d, nodes) =>{
-                d3.selectAll('.architecture_embedding_points').attr('r', 5);
-                d3.select(this.points["_groups"][0][d[1]]).attr('r', 10);
-                fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
-            });
+        if(this.name.includes('fc')){
+            this.points = this.svg.append('g')
+                .selectAll('.architecture_embedding_points')
+                .data(data_activation_pattern)
+                .enter()
+                .append('circle')
+                .attr('class', 'architecture_embedding_points')
+                .attr('cx', (d) => {
+                    return this.x_axis(d[0]);
+                })
+                .attr('cy', (d) => {
+                    return y + height/2 - 30;
+                })
+                .attr('r', 5)
+                .style('fill', (d, i) => {
+                    if (this.dataManager.pattern[i] == 0)
+                        return 'white';
+                    else
+                        return 'steelblue';
+                    //    return colorscale(this.dataManager.pattern[i]);
+                })
+                .style('fill-opacity', 0.5)
+                .on('click', (event, d, nodes) =>{
+                    d3.selectAll('.architecture_embedding_points').attr('r', 5);
+                    d3.select(this.points["_groups"][0][d[1]]).attr('r', 10);
+                    fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
+                });
+        }
+        else{
+            this.points = this.svg.append('g')
+                .selectAll('.architecture_embedding_filter')
+                .data(data_activation_pattern)
+                .enter()
+                .append('rect')
+                .attr('class', 'architecture_embedding_points')
+                .attr('x', (d) => {
+                    return this.x_axis(d[0]);
+                })
+                .attr('y', (d) => {
+                    return y + height/2 - 30;
+                })
+                .attr('width', 10)
+                .attr('height', 10)
+                .style('fill', (d, i) => {
+                    if (this.dataManager.pattern[i] == 0)
+                        return 'white';
+                    else
+                        return 'steelblue';
+                    //    return colorscale(this.dataManager.pattern[i]);
+                })
+                .style('fill-opacity', 0.5);
+        }
     }
 
     draw_neuron_feature_selection() {
+        this.draw_neuron_feature_ranking();
+        
         let x = this.x + 20;
         let y = this.y - 20;
         let width = this.width * 4;
         let height = this.background_height * 0.9;
-
-        let x_max, x_min;
-        
-        //understand the activation pattern and color scale
-        let colors = ['#fdd0a2', '#a63603'];
-        let max = d3.max(this.dataManager.pattern)
-        let colorscale = d3.scaleLinear().domain([1, max]).range(colors);
-
-        //reset the scale
-        [x_min, x_max] = d3.extent(this.dataManager.pattern);
-        
-        this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x, x + width]);
-
-        this.svg.append('g')
-            .attr('class', 'architecture_embedding_axis')
-            .attr("transform", "translate(0" + ',' + (y + height/2) + ")")
-            .call(d3.axisTop(this.x_axis).ticks(10));
-            
-        //ranking data
-        let data_activation_pattern = [];
-        for (let i = 0; i < this.dataManager.pattern.length; i++){
-            data_activation_pattern.push([this.dataManager.pattern[i], i]);
-        }   
-        
-        //add histogram
-        let histogram = d3.histogram()
-            .value((d)=>{return d;})
-            .domain(this.x_axis.domain())
-            .thresholds(this.x_axis.ticks(30));
-        
-        //histogram bin
-        let bins = histogram(this.dataManager.pattern);
-        this.y_axis = d3.scaleLinear().range([0, height/2]).domain([0, d3.max(bins, (d)=>{
-            return d.length;
-        })]);
-
-        this.svg.append('g')
-            .attr('class', 'architecture_embedding_axis')
-            .attr("transform", "translate(" + x + "," + (y + height/2) + ")")
-            .call(d3.axisLeft(this.y_axis).ticks(5));
-
-        this.svg.append('g')
-            .append('text')
-            .text('activation frequency')
-            .attr('x', this.x + width/2)
-            .attr('y', this.y + 10)
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central')
-
-        this.svg.append('g')
-            .append('text')
-            .text('neuron density')
-            .attr('x', this.x - 20)
-            .attr('y', this.y + height/1.5)
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central')
-            .attr('writing-mode', 'vertical-rl');
-
-        this.hist = this.svg.selectAll(".neuron_activation_rect_"+this.name)
-            .data(bins)
-            .enter()
-            .append("rect")
-            .attr('class', 'neuron_activation_rect')
-            .attr("x", 1)
-            .attr("transform", (d)=> { 
-                return "translate(" + this.x_axis(d.x0) + "," + (y + height/2 + 2) + ")"; 
-            })
-            .attr("width", (d)=> { 
-                return this.x_axis(d.x1) - this.x_axis(d.x0) - 1; 
-            })
-            .attr("height", (d)=> { 
-                return this.y_axis(d.length); 
-            });
-
-        this.points = this.svg.append('g')
-            .selectAll('.architecture_embedding_points')
-            .data(data_activation_pattern)
-            .enter()
-            .append('circle')
-            .attr('class', 'architecture_embedding_points')
-            .attr('cx', (d) => {
-                return this.x_axis(d[0]);
-            })
-            .attr('cy', (d) => {
-                return y + height/2 - 30;
-            })
-            .attr('r', 5)
-            .style('fill', (d, i) => {
-                if (this.dataManager.pattern[i] == 0)
-                    return 'white';
-                else
-                    return 'steelblue';
-                //    return colorscale(this.dataManager.pattern[i]);
-            })
-            .style('fill-opacity', 0.5);
-
 
 
         let brush = d3.brushX()
@@ -392,7 +344,8 @@ class LayerView {
                         if (this.dataManager.pattern[i] == 0)
                             return 'white';
                         else
-                            return colorscale(this.dataManager.pattern[i]);W
+                            return 'steelblue';
+                            //return colorscale(this.dataManager.pattern[i]);
                     });
                 }else{
                     this.points.attr('fill', (d, i)=>{
@@ -400,7 +353,8 @@ class LayerView {
                             if (this.dataManager.pattern[i] == 0)
                                 return 'white';
                             else
-                                return colorscale(this.dataManager.pattern[i]);
+                                return 'steelblue';
+                                //return colorscale(this.dataManager.pattern[i]);
                         } else {
                             select_neurons.push(i);
                             return 'gray';   

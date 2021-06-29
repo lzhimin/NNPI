@@ -81,7 +81,7 @@ class ModelManager:
             neuron_info, subset)
 
         # get the feature visualization of the selected neuron
-        feature = getFeatureVisualization(self.train_model, neuron_info['layername'], neuron_info['indexs'][0])
+        feature = np.zeros(28 *28) #getFeatureVisualization(self.train_model, neuron_info['layername'], neuron_info['indexs'][0])
 
         return {"input_activation_pattern": result, 'feature_vis':[neuron_info['layername'], feature.tolist()]}
 

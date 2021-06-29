@@ -188,12 +188,6 @@ class LeNet_5(PruningModule):
         for filter in self.conv2.weight.data.numpy():
             activation_summary['conv2'].append(np.linalg.norm(filter).tolist())
 
-        #activation_summary['conv1'] = np.sum(
-        #    np.array(conv1_activation) != 0, axis=0).tolist()
-
-        #activation_summary['conv2'] = np.sum(
-        #    np.array(conv2_activation) != 0, axis=0).tolist()
-
         activation_summary['fc1'] = np.sum(
             np.array(fc1_activation) != 0, axis=0).tolist()[0]
 
@@ -202,6 +196,46 @@ class LeNet_5(PruningModule):
 
         return activation_summary
 
+    def neuron_activation_to_data(self, neuron_info, dataset):
+        neuron_indexs = neuron_info['indexs']
+        layername = neuron_info['layername']
+
+        input_indexs = []
+        for i in range(len(dataset)):
+            x = self.conv1(torch.tensor(np.array(dataset[i]), dtype=torch.float))
+            x = F.relu(x)
+            x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+
+            # Conv2
+            x = self.conv2(x)
+            x = F.relu(x)
+            x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+
+            # Fully-connected
+            x = x.view(x.shape[0], -1)
+            x = F.relu(self.fc1(x))
+
+            if layername == 'fc1':
+                for index in neuron_indexs:
+                    if x[0][index] != 0:
+                        input_indexs.append(i)
+
+            x = F.relu(self.fc2(x))
+            if layername == 'fc2':
+                for index in neuron_indexs:
+                    if x[0][index] != 0:
+                        input_indexs.append(i)
+
+        return input_indexs
+
+    def pruned_unselected_neuron(self, info):
+        if info['name'] == 'fc1':
+            self.fc1.mask[info['pruned_neuron']] = 0
+        if info['name'] == 'fc2':
+            self.fc2.mask[info['pruned_neuron']] = 0
+
+
+            
 class drawingNet(PruningModule):
 
     def __init__(self, mask=False, numclasses=10):

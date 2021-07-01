@@ -94,7 +94,9 @@ class ModelManager:
 
         #reload a new model for the analysis
         self.train_model = self.loadModel('data/model/LetNet/'+self.model+'_trained.pkl')
-        self.train_model.pruned_unselected_neuron(selected_neuron)
+
+        for key in selected_neuron:
+            self.train_model.pruned_unselected_neuron(key, selected_neuron[key])
         prediction_result = []
 
         data_loader = torch.utils.data.DataLoader(self.datasets)

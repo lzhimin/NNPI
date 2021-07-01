@@ -227,20 +227,18 @@ class LeNet_5(PruningModule):
 
         return input_indexs
 
-    def pruned_unselected_neuron(self, info):
-        if info['name'] == 'fc1':
-            self.fc1.mask[info['pruned_neuron']] = 0
-        if info['name'] == 'fc2':
-            self.fc2.mask[info['pruned_neuron']] = 0
+    def pruned_unselected_neuron(self, name, indexs):
+        if name == 'fc1':
+            self.fc1.mask[indexs] = 0
+        if name == 'fc2':
+            self.fc2.mask[indexs] = 0
 
-        print(info)
-        if info['name'] == 'conv1':
-            for index in info['pruned_neuron']:
-                self.conv1.weight.data[index] = 0
-            
+        if name == 'conv1':
+            for index in indexs:
+                self.conv1.weight.data[index] = 0     
 
-        if info['name'] == 'conv2':
-            for index in info['pruned_neuron']:
+        if name == 'conv2':
+            for index in indexs:
                 self.conv2.weight.data[index] = 0
            
 class drawingNet(PruningModule):

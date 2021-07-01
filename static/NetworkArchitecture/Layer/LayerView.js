@@ -361,8 +361,8 @@ class LayerView {
                         }
                     });
                 }
-
-                fetch_selected_architecture_info({'name':this.name, 'pruned_neuron':select_neurons});
+                
+                publish('ComponentPruning', {'name':this.name, 'pruned_neuron':select_neurons}); 
             });
 
         // add brush event

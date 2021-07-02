@@ -6,7 +6,7 @@ let config = {
             width: 50,
             content: [{
                 type: 'stack',
-                height: 75,
+                height: 65,
                 content: [{
                     type: 'component',
                     componentName: 'MainView',

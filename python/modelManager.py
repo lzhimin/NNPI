@@ -1,9 +1,10 @@
-from re import T, sub
 import torch
 from torchvision import datasets, transforms
 from python.model import LeNet, LeNet_5
 from python.FeatureVisualization import getFeatureVisualization
 import numpy as np
+import torch.utils.data as data
+
 
 
 class ModelManager:
@@ -17,15 +18,19 @@ class ModelManager:
         self.model = 'letnet_5'
 
         # load train model
+        #self.train_model = self.loadModel(
+        #    'data/model/LetNet/'+self.model+'_trained.pkl')
+
         self.train_model = self.loadModel(
-            'data/model/LetNet/'+self.model+'_trained.pkl')
+            'data/model/DrawNet/googledraw.pkl'
+        )
 
         # self.train_model.prune_by_percentile(float(90))
         # self.train_model.prune_by_percentile_left(float(95))
 
         # load untrained model
-        self.untrain_model = self.loadModel(
-            'data/model/LetNet/'+self.model+'_untrained.pkl')
+        # self.untrain_model = self.loadModel(
+        #    'data/model/LetNet/'+self.model+'_untrained.pkl')
 
         self.datasets = self.loadValidationData()
 
@@ -112,3 +117,16 @@ class ModelManager:
                 else:
                     prediction_result.append(0)
         return prediction_result
+
+
+
+class C_Dataset(data.Dataset):
+
+    def __init__(self, mtype, root='Dataset'):
+        """
+        """
+
+        pass
+
+    def load_dataset(root, mtype):
+        pass

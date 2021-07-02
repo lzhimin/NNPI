@@ -241,7 +241,7 @@ class LeNet_5(PruningModule):
             for index in indexs:
                 self.conv2.weight.data[index] = 0
            
-class drawingNet(PruningModule):
+class ConvNet(PruningModule):
 
     def __init__(self, mask=False, numclasses=10):
         super(drawingNet, self).__init__()

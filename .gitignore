@@ -1,5 +1,6 @@
 data/*
 python/*pycache*
+python/trainModel/__pycache__/*
 todo
 image
 image.py

@@ -5,20 +5,63 @@ import json
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.utils.data as data
 from tqdm import tqdm
+import sys
 
-# model - resnet34
-from Model.nets import resnet34
-from Model.nets import convnet
+
+#reconfigure the environment
+sys.path.insert(0, os.path.abspath('..'))
+from model import ConvNet
+
 
 # dataset
-from DataUtils.load_data import QD_Dataset
+def load_dataset(root, mtype):
+    num_classes = 10
+
+    # load data from cache
+    if os.path.exists(os.path.join(root, mtype+'.npz')):
+        print("*"*50)
+        print("Loading "+mtype+" dataset...")
+        print("*"*50)
+        print("Classes number of "+mtype+" dataset: "+str(num_classes))
+        print("*"*50)
+        data_cache = np.load(os.path.join(root, mtype+'.npz'))
+        return data_cache["data"].astype('float32'), \
+            data_cache["target"].astype('int64'), num_classes
+
+    else:
+        raise FileNotFoundError("%s doesn't exist!" %
+                                os.path.join(root, mtype+'.npz'))
+
+class QD_Dataset(data.Dataset):
+    def __init__(self, mtype, root='Dataset'):
+        """
+        args:
+        - mytpe: str, specify the type of the dataset, i.e, 'train' or 'test'
+        - root: str, specify the root of the dataset directory
+        """
+
+        self.data, self.target, self.num_classes = load_dataset(root, mtype)
+        self.data = torch.from_numpy(self.data)
+        self.target = torch.from_numpy(self.target)
+        print("Dataset "+mtype+" loading done.")
+        print("*"*50+"\n")
+
+    def __getitem__(self, index):
+        return self.data[index], self.target[index]
+
+    def __len__(self):
+        return len(self.data)
+
+    def get_number_classes(self):
+        return self.num_classes
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pytorch implementation of image classification based on Quick, Draw! data.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--data_root', '-root', type=str, default='Dataset',
+    parser.add_argument('--data_root', '-root', type=str, default='../../data/googleDraw',
                         help='root for the dataset directory.')
     parser.add_argument('--image_size', '-size', type=int, default=28,
                         help='the size of the input image.')
@@ -85,9 +128,9 @@ if __name__ == '__main__':
 
     net = None
     if args.model == 'resnet34':
-        net = resnet34(num_classes)
+        net = ConvNet(num_classes)#resnet34(num_classes)
     elif args.model == 'convnet':
-        net = convnet(num_classes)
+        net = ConvNet(num_classes)
 
     if args.ngpu > 1:
         net = nn.DataParallel(net)

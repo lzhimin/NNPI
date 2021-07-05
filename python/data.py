@@ -23,12 +23,11 @@ def selected_architecture_info(selected_neuron):
 def mapping_neuron_activation_to_input(data):
     return modelManager.mapping_neuron_activation_to_input(data)
 
-def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_trained.plk'):
+def load_Model_Data_Summary(percentage, model_path='data/model/DrawNet/model.pytorch'):
     # pruned parameter model
     # model.prune_by_percentile_left(float(percentage))
 
     mnist = modelManager.loadValidationData()
-
     labels = set()
     for i in range(len(mnist)):
         labels.add(mnist[i][1])
@@ -43,16 +42,16 @@ def load_Model_Data_Summary(percentage, model_path='data/model/LetNet/letnet300_
     # pruned_model.prune_by_percentile(float(percentage))
 
     # prune the neural network
-    modelManager.prune_neural_network(percentage)
+    # modelManager.prune_neural_network(percentage)
 
     print('get validation')
     # validation summary
     validation_summary = validation(modelManager.train_model, mnist, labels)
 
     print('get tsne')
-    # input_embedding = TSNE(
-    #    n_components=2).fit_transform(validation_summary[3])
-    input_embedding = np.loadtxt('tsne.out',  delimiter=',')
+    input_embedding = TSNE(
+        n_components=2).fit_transform(validation_summary[3])
+    #input_embedding = np.loadtxt('tsne.out',  delimiter=',')
 
     print('get activation')
     activation_pattern = modelManager.train_model.activationPattern(

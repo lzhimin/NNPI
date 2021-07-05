@@ -3,8 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from python.prune import PruningModule, MaskedLinear
 import numpy as np
-import torch.nn.utils.prune as prune
-
 
 class LeNet(PruningModule):
 
@@ -244,7 +242,7 @@ class LeNet_5(PruningModule):
 class ConvNet(PruningModule):
 
     def __init__(self, mask=False, numclasses=10):
-        super(drawingNet, self).__init__()
+        super(ConvNet, self).__init__()
         linear = MaskedLinear if mask else nn.Linear
 
         self.conv1 = nn.Conv2d(1, 64, 3, 1, 1)
@@ -254,6 +252,8 @@ class ConvNet(PruningModule):
         self.fc2 = linear(512, numclasses)
 
     def forward(self, x):
+        x = x.view(-1, 1, 28, 28)
+        x /= 255.0
 
         x = self.conv1(x)
         x = F.relu(x)
@@ -276,6 +276,75 @@ class ConvNet(PruningModule):
 
         return x
 
+    def activationPattern(self, dataset):
+        conv1_activation = []
+        conv2_activation = []
+        conv3_activation = []
+        fc1_activation = []
+
+        for i in range(len(dataset)):
+            x = torch.tensor(dataset[i])
+            x = x.view(-1, 1, 28, 28)
+            x /= 255.0
+            # conv1
+            x = self.conv1(x)
+            x = F.relu(x)
+            x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+            conv1_activation.append(x.tolist())
+
+            # Conv2
+            x = self.conv2(x)
+            x = F.relu(x)
+            x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+            conv2_activation.append(x.tolist())
+
+            # Conv3
+            x = self.conv3(x)
+            x = F.relu(x)
+            x = F.max_pool2d(x, kernel_size=2)
+            conv3_activation.append(x.tolist())
+
+            # Fully-connected
+            x = x.view(x.shape[0], -1)
+            x = self.fc1(x)
+            x = F.relu(x)
+            fc1_activation.append(x.tolist())
+
+
+        activation_summary = {}
+        activation_summary['conv1'] = []
+        for filter in self.conv1.weight.data.numpy():
+            activation_summary['conv1'].append(np.linalg.norm(filter).tolist())
+
+        activation_summary['conv2'] = []
+        for filter in self.conv2.weight.data.numpy():
+            activation_summary['conv2'].append(np.linalg.norm(filter).tolist())
+
+        activation_summary['conv3'] = []
+        for filter in self.conv3.weight.data.numpy():
+            activation_summary['conv3'].append(np.linalg.norm(filter).tolist())
+
+        activation_summary['fc1'] = np.sum(
+            np.array(fc1_activation) != 0, axis=0).tolist()[0]
+
+        return activation_summary
+
+    def pruned_unselected_neuron(self, name, indexs):
+        if name == 'fc1':
+            self.fc1.mask[indexs] = 0
+
+        if name == 'conv1':
+            for index in indexs:
+                self.conv1.weight.data[index] = 0     
+
+        if name == 'conv2':
+            for index in indexs:
+                self.conv2.weight.data[index] = 0
+
+        if name == 'conv3':
+            for index in indexs:
+                self.conv3.weight.data[index] = 0
+                
 class Alexnet(PruningModule):
 
     def __init__(self, mask=False):

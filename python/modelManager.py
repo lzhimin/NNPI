@@ -1,11 +1,10 @@
 import torch
 from torchvision import datasets, transforms
-from python.model import LeNet, LeNet_5
+from python.model import LeNet, LeNet_5, ConvNet
 from python.FeatureVisualization import getFeatureVisualization
 import numpy as np
 import torch.utils.data as data
-
-
+import os
 
 class ModelManager:
 
@@ -15,22 +14,23 @@ class ModelManager:
         self.device = 'cpu'
 
         #self.model = 'letnet300'
-        self.model = 'letnet_5'
+        #self.model = 'letnet_5'
+        self.model = 'googledraw'
 
         # load train model
         #self.train_model = self.loadModel(
         #    'data/model/LetNet/'+self.model+'_trained.pkl')
 
         self.train_model = self.loadModel(
-            'data/model/DrawNet/googledraw.pkl'
+            'data/model/DrawNet/googledraw_trained.pkl'
         )
 
         # self.train_model.prune_by_percentile(float(90))
         # self.train_model.prune_by_percentile_left(float(95))
 
         # load untrained model
-        # self.untrain_model = self.loadModel(
-        #    'data/model/LetNet/'+self.model+'_untrained.pkl')
+        self.untrain_model = self.loadModel(
+           'data/model/DrawNet/googledraw_trained.pkl')
 
         self.datasets = self.loadValidationData()
 
@@ -40,6 +40,8 @@ class ModelManager:
             model = LeNet_5(mask=True).to(self.device)
         elif self.model == 'letnet300':
             model = LeNet(mask=True).to(self.device)
+        elif self.model == 'googledraw':
+            model = ConvNet(mask=True).to(self.device)
 
         model.load_state_dict(torch.load(path))
         model.eval()
@@ -48,15 +50,20 @@ class ModelManager:
 
     def loadValidationData(self):
         # load dataset
-        mnist = datasets.MNIST(root='data/', train=False, transform=transforms.Compose([
-            transforms.ToTensor()
-        ]))
+        data = None
+        if self.model == 'letnet300' or self.model == 'letnet_5':
+            data = datasets.MNIST(root='data/', train=False, transform=transforms.Compose([
+                transforms.ToTensor()
+            ]))
+
+        elif self.model == 'googledraw':
+            data = QD_Dataset(mtype="test", root='data/googleDraw')
 
         # select your indices here as a list
         subset_indices = (np.arange(3000)).astype('int')
-        mnist = torch.utils.data.Subset(mnist, subset_indices)
+        data = torch.utils.data.Subset(data, subset_indices)
 
-        return mnist
+        return data
 
     def fetch_activation_pattern(self, indexs):
 
@@ -72,8 +79,6 @@ class ModelManager:
         return {'activation_pattern': result, 'selectedData': subset}
 
     def mapping_neuron_activation_to_input(self, neuron_info):
-
-        print(neuron_info)
 
         test_loader = torch.utils.data.DataLoader(self.datasets)
         subset = []
@@ -92,13 +97,13 @@ class ModelManager:
 
     def prune_neural_network(self, percentage):
         self.train_model = self.loadModel(
-            'data/model/LetNet/'+self.model+'_trained.pkl')
+            'data/model/DrawNet/'+self.model+'_trained.pkl')
         self.train_model.prune_by_percentile(float(percentage))
 
     def prune_unselected_neuron_return_prediction_result(self, selected_neuron):
 
         #reload a new model for the analysis
-        self.train_model = self.loadModel('data/model/LetNet/'+self.model+'_trained.pkl')
+        self.train_model = self.loadModel('data/model/DrawNet/googledraw_trained.pkl')
 
         for key in selected_neuron:
             self.train_model.pruned_unselected_neuron(key, selected_neuron[key])
@@ -118,15 +123,33 @@ class ModelManager:
                     prediction_result.append(0)
         return prediction_result
 
-
-
-class C_Dataset(data.Dataset):
+class QD_Dataset(data.Dataset):
 
     def __init__(self, mtype, root='Dataset'):
-        """
-        """
+        self.data, self.target, self.num_classes = self.load_dataset(root, mtype)
+        self.data = torch.from_numpy(self.data)
+        self.target = torch.from_numpy(self.target)
+        print("Dataset "+mtype+" loading done.")
+        print("*"*50+"\n")
 
-        pass
+    def load_dataset(self, root, mtype):
+        num_classes = 10
 
-    def load_dataset(root, mtype):
-        pass
+        # load data from cache
+        if os.path.exists(os.path.join(root, mtype+'.npz')):
+            data_cache = np.load(os.path.join(root, mtype+'.npz'))
+            return data_cache["data"].astype('float32'), \
+                data_cache["target"].astype('int64'), num_classes
+
+        else:
+            raise FileNotFoundError("%s doesn't exist!" %
+                                    os.path.join(root, mtype+'.npz'))
+
+    def __getitem__(self, index):
+        return self.data[index], self.target[index]
+
+    def __len__(self):
+        return len(self.data)
+
+    def get_number_classes(self):
+        return self.num_classes

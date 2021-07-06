@@ -100,11 +100,11 @@ class LeNet(PruningModule):
         self.fc1.mask[[layer1 == 0]] = 0
         self.fc2.mask[[layer2 == 0]] = 0
 
-    def pruned_unselected_neuron(self, info):
-        if info['name'] == 'fc1':
-            self.fc1.mask[info['pruned_neuron']] = 0
-        if info['name'] == 'fc2':
-            self.fc2.mask[info['pruned_neuron']] = 0
+    def pruned_unselected_neuron(self, name, indexs):
+        if name == 'fc1':
+            self.fc1.mask[indexs] = 0
+        if name == 'fc2':
+            self.fc2.mask[indexs] = 0
 
     def sparsity(self):
         print(np.sum((self.fc1.mask == 0).tolist()) /
@@ -309,7 +309,6 @@ class ConvNet(PruningModule):
             x = self.fc1(x)
             x = F.relu(x)
             fc1_activation.append(x.tolist())
-
 
         activation_summary = {}
         activation_summary['conv1'] = []

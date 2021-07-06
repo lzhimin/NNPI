@@ -5,29 +5,22 @@ from python.modelManager import ModelManager
 from python.model import LeNet, LeNet_5
 from sklearn.manifold import TSNE
 
-
 device = torch.device('cpu')
 modelManager = ModelManager(device=device)
 
+def getdata(json_request):    
+    percentage = json_request['percentage']
+    model = json_request['dataset']
+    modelManager.config(percentage, model)
 
-def getdata(percentage):
-    return load_Model_Data_Summary(percentage)
+    return load_Model_Data_Summary(percentage, model)
 
-def getActivation(indexs):
-    return modelManager.fetch_activation_pattern(indexs)
-
-def selected_architecture_info(selected_neuron):
-    predict_result = modelManager.prune_unselected_neuron_return_prediction_result(selected_neuron)
-    return {'predict_summary':predict_result}
-    
-def mapping_neuron_activation_to_input(data):
-    return modelManager.mapping_neuron_activation_to_input(data)
-
-def load_Model_Data_Summary(percentage, model_path='data/model/DrawNet/model.pytorch'):
+def load_Model_Data_Summary(percentage, model):
     # pruned parameter model
     # model.prune_by_percentile_left(float(percentage))
 
     mnist = modelManager.loadValidationData()
+
     labels = set()
     for i in range(len(mnist)):
         labels.add(mnist[i][1])
@@ -35,7 +28,7 @@ def load_Model_Data_Summary(percentage, model_path='data/model/DrawNet/model.pyt
     labels.sort()
 
     # left model
-    #pruned_model = LeNet(mask=True).to(device)
+    # pruned_model = LeNet(mask=True).to(device)
     # pruned_model.load_state_dict(torch.load(
     #    'data/model/LetNet/letnet300_trained.pkl'))
     # pruned_model.eval()
@@ -58,13 +51,16 @@ def load_Model_Data_Summary(percentage, model_path='data/model/DrawNet/model.pyt
         validation_summary[1])
 
     print('return result')
+
+    print(modelManager.train_model)
     result = {}
     result['model_summary'] = getModelSummary(
         modelManager.train_model, modelManager.untrain_model)
     result['prediction_summary'] = validation_summary[0]
+    result['activation_pattern'] = activation_pattern
+
     result['embedding'] = input_embedding.tolist()
     result['embedding_label'] = validation_summary[2]
-    result['activation_pattern'] = activation_pattern
     result['predict_result'] = validation_summary[4]
 
     return result
@@ -73,7 +69,6 @@ def validation(model, dataset, labels):
 
     # confusion matrix of the validation dataset
     confusionMatrix = np.zeros((len(labels), len(labels)))
-
     subset = []
     subset_label = []
     flatten_subset = []
@@ -81,7 +76,6 @@ def validation(model, dataset, labels):
 
     test_loader = torch.utils.data.DataLoader(dataset)
 
-    print(len(test_loader))
     with torch.no_grad():
         for data, target in test_loader:
             device_data, device_target = data.to('cpu'), target.to('cpu')
@@ -101,6 +95,16 @@ def validation(model, dataset, labels):
             subset_label.append(device_target[0].item())
 
     return confusionMatrix.tolist(), subset, subset_label, flatten_subset, prediction_result
+
+def getActivation(indexs):
+    return modelManager.fetch_activation_pattern(indexs)
+
+def selected_architecture_info(selected_neuron):
+    predict_result = modelManager.prune_unselected_neuron_return_prediction_result(selected_neuron)
+    return {'predict_summary':predict_result}
+    
+def mapping_neuron_activation_to_input(data):
+    return modelManager.mapping_neuron_activation_to_input(data)
 
 def saliencyMap():
     # saliency data
@@ -123,6 +127,7 @@ def getModelSummary(train_model, untrain_model):
     model_summary = {}
 
     for name, param in untrain_model.named_parameters():
+        print(name)
         if 'fc3' in name:
             continue
 

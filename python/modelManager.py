@@ -8,10 +8,9 @@ import os
 
 class ModelManager:
 
-    def __init__(self, device, model_type='LetNet', path='data/model/LetNet/'):
-
+    def __init__(self, device='cpu', model_type='LetNet', path='data/model/LetNet/'):
         # device
-        self.device = 'cpu'
+        self.device = device
 
         #self.model = 'letnet300'
         #self.model = 'letnet_5'
@@ -34,6 +33,24 @@ class ModelManager:
 
         self.datasets = self.loadValidationData()
 
+    def config(self, percentage, model):
+
+        self.percentage = percentage
+
+        if model == 'mnist1':
+            self.path = 'data/model/LetNet/letnet300_trained.pkl'
+            self.model = 'letnet300'
+        elif model == 'mnist2':
+            self.path = 'data/model/LetNet/letnet_5_trained.pkl'
+            self.model = 'letnet_5'
+        elif model == 'google':
+            self.path = 'data/model/DrawNet/googledraw_trained.pkl'
+            self.model = 'googledraw'
+
+        self.train_model = self.loadModel(self.path)
+        self.untrain_model = self.loadModel(self.path)
+        self.datasets = self.loadValidationData() 
+
     def loadModel(self, path):
         model = None
         if self.model == 'letnet_5':
@@ -55,7 +72,7 @@ class ModelManager:
             data = datasets.MNIST(root='data/', train=False, transform=transforms.Compose([
                 transforms.ToTensor()
             ]))
-
+            
         elif self.model == 'googledraw':
             data = QD_Dataset(mtype="test", root='data/googleDraw')
 
@@ -66,12 +83,12 @@ class ModelManager:
         return data
 
     def fetch_activation_pattern(self, indexs):
-
         dataset = torch.utils.data.Subset(self.datasets, indexs)
         test_loader = torch.utils.data.DataLoader(dataset)
         subset = []
 
         for data, target in test_loader:
+            data = data.view(-1, 1, 28, 28)
             device_data = data.to('cpu')
             subset.append(device_data.tolist())
 
@@ -96,19 +113,18 @@ class ModelManager:
         return {"input_activation_pattern": result, 'feature_vis':[neuron_info['layername'], feature.tolist()]}
 
     def prune_neural_network(self, percentage):
-        self.train_model = self.loadModel(
-            'data/model/DrawNet/'+self.model+'_trained.pkl')
+        self.train_model = self.loadModel(self.path)
         self.train_model.prune_by_percentile(float(percentage))
 
     def prune_unselected_neuron_return_prediction_result(self, selected_neuron):
 
         #reload a new model for the analysis
-        self.train_model = self.loadModel('data/model/DrawNet/googledraw_trained.pkl')
+        self.train_model = self.loadModel(self.path)
 
         for key in selected_neuron:
             self.train_model.pruned_unselected_neuron(key, selected_neuron[key])
-        prediction_result = []
 
+        prediction_result = []
         data_loader = torch.utils.data.DataLoader(self.datasets)
         with torch.no_grad():
             for data, target in data_loader:

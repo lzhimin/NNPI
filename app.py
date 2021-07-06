@@ -14,10 +14,7 @@ def index():
 @app.route("/_fetch_data", methods=["GET", "POST"])
 def _fetch_data():
     json_request = request.get_json()
-
-    # return json.dumps({"a": 1})
-    # print(json_request)
-    return json.dumps(data.getdata(json_request['percentage']))
+    return json.dumps(data.getdata(json_request))
 
 
 @app.route("/_fetch_activation", methods=["GET", "POST"])
@@ -35,8 +32,6 @@ def _fetch_sample_activation():
 def _fetch_selected_architecture_info():
     json_request = request.get_json()
     return json.dumps(data.selected_architecture_info(json_request))
-
-
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -343,7 +343,46 @@ class ConvNet(PruningModule):
         if name == 'conv3':
             for index in indexs:
                 self.conv3.weight.data[index] = 0
-                
+
+    def neuron_activation_to_data(self, neuron_info, dataset):
+        neuron_indexs = neuron_info['indexs']
+        layername = neuron_info['layername']
+
+        input_indexs = []
+        for i in range(len(dataset)):
+            x = torch.tensor(np.array(dataset[i]), dtype=torch.float)
+            x = x.view(-1, 1, 28, 28)
+            x /= 255.0
+
+            x = self.conv1(x)
+            x = F.relu(x)
+            x = F.max_pool2d(x, kernel_size=2)
+
+            x = self.conv2(x)
+            x = F.relu(x)
+            x = F.max_pool2d(x, kernel_size=2)
+
+            x = self.conv3(x)
+            x = F.relu(x)
+            x = F.max_pool2d(x, kernel_size=2)
+
+            # Fully-connected
+            x = x.view(x.shape[0], -1)
+            x = F.relu(self.fc1(x))
+
+            if layername == 'fc1':
+                for index in neuron_indexs:
+                    if x[0][index] != 0:
+                        input_indexs.append(i)
+
+            x = F.relu(self.fc2(x))
+            if layername == 'fc2':
+                for index in neuron_indexs:
+                    if x[0][index] != 0:
+                        input_indexs.append(i)
+
+        return input_indexs         
+
 class Alexnet(PruningModule):
 
     def __init__(self, mask=False):

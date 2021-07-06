@@ -36,8 +36,8 @@ class SelectedSampleView extends BasicView {
 
         for (let i = 0; i < this.dataManager.data.length; i++){
             let sample = this.dataManager.data[i][0][0];
-            let x = this.x + (i % 20) * (sample.length * w + padding);
-            let y = this.y + parseInt(i / 20) * (sample[0].length * h + padding);
+            let x = this.x + (i % 10) * (sample.length * w + padding);
+            let y = this.y + parseInt(i / 10) * (sample[0].length * h + padding);
             this.draw_sample(x, y, w, h, sample);
         }
 

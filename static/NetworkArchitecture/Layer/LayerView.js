@@ -13,7 +13,7 @@ class LayerView {
         //selected neuron
         this.selected_neuron = [];
 
-        subscribe("feature_vis", this.set_featureVis.bind(this));
+        //subscribe("feature_vis", this.set_featureVis.bind(this));
     }
 
     init() {
@@ -125,8 +125,8 @@ class LayerView {
             menu_name = ['Selection', 'Ranking', 'TSNE'];
         }
         else{
-            menu = [this.name+'_Selection'];
-            menu_name = ['Selection'];
+            menu = [this.name+'_Selection', this.name+'_Ranking'];
+            menu_name = ['Selection', 'Ranking',];
         }
         this.menu = this.svg.append('g').selectAll('.layerview_menu_rect')
             .data(menu)
@@ -304,7 +304,7 @@ class LayerView {
                 .data(data_activation_pattern)
                 .enter()
                 .append('rect')
-                .attr('class', 'architecture_embedding_points')
+                .attr('class', 'architecture_embedding_filter')
                 .attr('x', (d) => {
                     return this.x_axis(d[0]);
                 })
@@ -320,7 +320,16 @@ class LayerView {
                         return 'steelblue';
                     //    return colorscale(this.dataManager.pattern[i]);
                 })
-                .style('fill-opacity', 0.5);
+                .style('fill-opacity', 0.5)
+                .on('click', (event, d, nodes) =>{
+                    d3.selectAll('.architecture_embedding_filter').attr('width', 10).attr('height', 10);
+                    d3.select(this.points["_groups"][0][d[1]]).attr('width', 20).attr('height', 20);
+                    //select a filter 
+                    
+                    fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
+                    
+                    //fetch_sample_activation({'indexs': [d[1]], 'layername': this.name });
+                })
         }
     }
 
@@ -423,5 +432,4 @@ class LayerView {
 
         } 
     }
-
 }

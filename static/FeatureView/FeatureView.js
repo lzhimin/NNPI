@@ -1,9 +1,9 @@
-class ProjectView extends BasicView {
+class FeatureView extends BasicView {
 
     constructor(container) {
         super(container);
 
-        this.dataManager = new ProjectViewData();
+        this.dataManager = new FeatureViewData();
 
         //the scatter plot points over the interface
         this.embedding_views = {};
@@ -12,7 +12,7 @@ class ProjectView extends BasicView {
         this.emebdding_axis = {};
 
 
-        subscribe('embedding', this.setData.bind(this));
+        subscribe('FeatureVisualization', this.setData.bind(this));
     }
 
     init() {

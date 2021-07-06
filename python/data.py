@@ -2,8 +2,8 @@ from app import index
 import torch
 import numpy as np
 from python.modelManager import ModelManager
-from python.model import LeNet, LeNet_5
 from sklearn.manifold import TSNE
+from python.FeatureVisualization import getFeatureVisualization
 
 device = torch.device('cpu')
 modelManager = ModelManager(device=device)
@@ -13,9 +13,9 @@ def getdata(json_request):
     model = json_request['dataset']
     modelManager.config(percentage, model)
 
-    return load_Model_Data_Summary(percentage, model)
+    return load_Model_Data_Summary()
 
-def load_Model_Data_Summary(percentage, model):
+def load_Model_Data_Summary():
     # pruned parameter model
     # model.prune_by_percentile_left(float(percentage))
 
@@ -120,9 +120,6 @@ def saliencyMap():
     #        salient_data[i].append(gd[0].reshape(28, 28).tolist())
     pass
 
-def visualization(model):
-    pass
-
 def getModelSummary(train_model, untrain_model):
     model_summary = {}
 
@@ -160,3 +157,10 @@ def getModelSummary(train_model, untrain_model):
             model_summary[name.split('.')[0]]["prune_ratio"] = prune_ratio
 
     return model_summary
+
+def fetch_filter_map(json):
+    indexs = json['indexs']
+    layername = json['layername']
+
+    return {'featureVis':getFeatureVisualization(modelManager.train_model, layername, indexs)}
+

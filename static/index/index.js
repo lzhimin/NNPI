@@ -4,6 +4,7 @@ let myLayout = new GoldenLayout(config);
 let _main_view;
 let _network_architecture_view;
 let _selected_sample_view;
+let _feature_view;
 
 myLayout.registerComponent('MainView', function (container, state) {
     $(container.getElement()[0]).load('../static/MainView/MainView.html');
@@ -22,6 +23,12 @@ myLayout.registerComponent('SelectedSampleView', function (container, state) {
     //program Tree view, subscribe to data event
     _selected_sample_view = new SelectedSampleView(container);
 });
+
+myLayout.registerComponent('FeatureView', function(container, state){
+    $(container.getElement()[0]).load('../static/FeatureView/FeatureView.html');
+    //program Tree view, subscribe to data event
+    //_selected_sample_view = new SelectedSampleView(container);
+})
 
 myLayout.on('itemCreated', (item) => {
     if (item.config.cssClass) {

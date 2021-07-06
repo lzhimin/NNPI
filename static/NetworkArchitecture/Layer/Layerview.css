@@ -34,7 +34,12 @@
     stroke: gray;
 }
 
-.architecture_embedding_points {
+.architecture_embedding_points{
+    stroke: gray;
+    stroke-width: 1px;
+}
+
+.architecture_embedding_filter{
     stroke: gray;
     stroke-width: 1px;
 }

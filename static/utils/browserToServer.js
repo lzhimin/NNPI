@@ -12,6 +12,19 @@ function fetch_data(json) {
     });
 }
 
+function fetch_fitler_visualization(json){
+    $.ajax({
+        url: '/_fetch_filter',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(json),
+        dataType: 'json',
+        success: function (data) {
+            
+        }
+    });
+}
+
 function fetch_activation(json) {
     $.ajax({
         url: '/_fetch_activation',

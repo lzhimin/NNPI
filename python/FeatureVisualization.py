@@ -19,10 +19,7 @@ class CNNLayerVisualization():
         self.model.eval()
         self.selected_layer = selected_layer
         self.selected_neuron = selected_neuron
-        self.conv_output = 0
-        # Create the folder to export images if not exists
-        if not os.path.exists('../generated'):
-            os.makedirs('../generated')
+
 
     def visualize_layer_neuron_without_hooks(self):
 
@@ -49,7 +46,6 @@ class CNNLayerVisualization():
             # update image
             optimizer.step()
 
-        #print(recreate_image(processed_image))
         return recreate_image(processed_image)
 
 

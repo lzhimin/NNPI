@@ -12,11 +12,18 @@ let config = {
                     componentName: 'MainView',
                     title: 'Main View'
                 }]
-                
             },{
-                type: 'component',
-                componentName: 'SelectedSampleView',
-                title: 'Selected Samples'
+                type: 'row',
+                width: 50,
+                content:[{
+                    type: 'component',
+                    componentName: 'SelectedSampleView',
+                    title: 'Selected Samples'
+                },{
+                    type: 'component',
+                    componentName: 'FeatureView',
+                    title: 'Feature Visualization'
+                }]
             }]
         },{
             type: 'stack',

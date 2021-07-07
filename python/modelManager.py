@@ -13,23 +13,31 @@ class ModelManager:
         self.device = device
 
         #self.model = 'letnet300'
-        #self.model = 'letnet_5'
-        self.model = 'googledraw'
+        self.model = 'letnet_5'
+        #self.model = 'googledraw'
 
         # load train model
         #self.train_model = self.loadModel(
         #    'data/model/LetNet/'+self.model+'_trained.pkl')
 
+        #self.train_model = self.loadModel(
+        #    'data/model/DrawNet/googledraw_trained.pkl'
+        #)
+
         self.train_model = self.loadModel(
-            'data/model/DrawNet/googledraw_trained.pkl'
+            'data/model/LetNet/letnet_5_trained.pkl'
         )
 
         # self.train_model.prune_by_percentile(float(90))
         # self.train_model.prune_by_percentile_left(float(95))
 
         # load untrained model
+        # self.untrain_model = self.loadModel(
+        #   'data/model/DrawNet/googledraw_trained.pkl')
+        
         self.untrain_model = self.loadModel(
-           'data/model/DrawNet/googledraw_trained.pkl')
+            'data/model/LetNet/letnet_5_trained.pkl'
+        )
 
         self.datasets = self.loadValidationData()
 

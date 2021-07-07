@@ -28,6 +28,7 @@ myLayout.registerComponent('FeatureView', function(container, state){
     $(container.getElement()[0]).load('../static/FeatureView/FeatureView.html');
     //program Tree view, subscribe to data event
     //_selected_sample_view = new SelectedSampleView(container);
+    _feature_view = new FeatureView(container);
 })
 
 myLayout.on('itemCreated', (item) => {

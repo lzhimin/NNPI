@@ -20,7 +20,7 @@ function fetch_fitler_visualization(json){
         data: JSON.stringify(json),
         dataType: 'json',
         success: function (data) {
-            
+            publish('FeatureVisualization', data);
         }
     });
 }

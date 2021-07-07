@@ -161,6 +161,7 @@ def getModelSummary(train_model, untrain_model):
 def fetch_filter_map(json):
     indexs = json['indexs']
     layername = json['layername']
+    feature= getFeatureVisualization(modelManager.train_model, layername, indexs)
 
-    return {'featureVis':getFeatureVisualization(modelManager.train_model, layername, indexs)}
+    return {'featureVis':feature.tolist()}
 

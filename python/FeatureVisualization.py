@@ -31,15 +31,24 @@ class CNNLayerVisualization():
         processed_image = preprocess_image(random_image, False)
 
         # Define optimizer for the image
-        optimizer = Adam([processed_image], lr=0.1, weight_decay=1e-6)
-        for i in range(1, 51):
+        optimizer = Adam([processed_image], lr=0.01, weight_decay=1e-6)
+        for _ in range(50):
             optimizer.zero_grad()
             # Assign create image to a varaible to move forward in the model
             x = processed_image
-            x = x.view(-1, 784)
-            x = F.relu(self.model.fc1(x))
-            loss = -x[0][self.selected_neuron]
+            x = x.view(-1, 1, 28, 28)
+                            
+            for index, layer in self.model.named_children():
+                #if the current layer is a full connection layer
+                if index == 'fc1':
+                    x = x.view(x.shape[0], -1)
 
+                x = layer(x)
+                if index == self.selected_layer:
+                    break
+            
+            self.conv_output = x[0][self.selected_neuron]
+            loss = -torch.mean(self.conv_output)
             # backward
             loss.backward()
 

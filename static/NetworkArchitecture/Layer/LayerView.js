@@ -184,7 +184,7 @@ class LayerView {
     draw_neuron_feature_ranking() {
         let x = this.x + 20;
         let y = this.y - 20;
-        let width = this.width * 4;
+        let width = this.width * 3;
         let height = this.background_height * 0.9;
 
         let x_max, x_min;
@@ -202,7 +202,7 @@ class LayerView {
         this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(0" + ',' + (y + height/2) + ")")
-            .call(d3.axisTop(this.x_axis).ticks(10));
+            .call(d3.axisTop(this.x_axis).ticks(5));
             
         //ranking data
         let data_activation_pattern = [];
@@ -218,7 +218,9 @@ class LayerView {
         
         //histogram bin
         let bins = histogram(this.dataManager.pattern);
-        this.y_axis = d3.scaleLinear().range([0, height/2]).domain([0, d3.max(bins, (d)=>{
+        this.y_axis = d3.scaleLinear()
+            .range([0, height/2])
+            .domain([0, d3.max(bins, (d)=>{
             return d.length;
         })]);
 
@@ -296,6 +298,7 @@ class LayerView {
                     d3.selectAll('.architecture_embedding_points').attr('r', 5);
                     d3.select(this.points["_groups"][0][d[1]]).attr('r', 10);
                     fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
+                    fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
                 });
         }
         else{
@@ -325,9 +328,7 @@ class LayerView {
                     d3.selectAll('.architecture_embedding_filter').attr('width', 10).attr('height', 10);
                     d3.select(this.points["_groups"][0][d[1]]).attr('width', 20).attr('height', 20);
                     //select a filter 
-                    
                     fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
-                    
                     //fetch_sample_activation({'indexs': [d[1]], 'layername': this.name });
                 })
         }
@@ -338,7 +339,7 @@ class LayerView {
         
         let x = this.x + 20;
         let y = this.y - 20;
-        let width = this.width * 4;
+        let width = this.width * 3;
         let height = this.background_height * 0.9;
 
 

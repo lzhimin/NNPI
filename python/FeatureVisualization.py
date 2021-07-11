@@ -32,7 +32,7 @@ class CNNLayerVisualization():
 
         # Define optimizer for the image
         optimizer = Adam([processed_image], lr=0.01, weight_decay=1e-6)
-        for _ in range(50):
+        for _ in range(30):
             optimizer.zero_grad()
             # Assign create image to a varaible to move forward in the model
             x = processed_image
@@ -48,13 +48,15 @@ class CNNLayerVisualization():
                     break
             
             self.conv_output = x[0][self.selected_neuron]
+            
             loss = -torch.mean(self.conv_output)
             # backward
             loss.backward()
 
             # update image
             optimizer.step()
-
+        #print(self.conv_output)
+        #print(recreate_image(processed_image))
         return recreate_image(processed_image)
 
 
@@ -62,7 +64,6 @@ def getFeatureVisualization(model, layer, neuron_index):
     feature_vis = CNNLayerVisualization(
         model, layer, neuron_index).visualize_layer_neuron_without_hooks()
 
-    #np.savetxt('image', feature_vis, delimiter=',')
     return feature_vis
 
 

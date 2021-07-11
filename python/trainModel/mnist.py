@@ -81,9 +81,9 @@ def train(epochs, model, device, optimizer):
             loss = F.nll_loss(output, target)
             loss.backward()
             optimizer.step()
-
-        #save(model, str(epoch))
         test(model, device)
+    save(model, str(epoch))
+        
 
 
 def test(model, device):
@@ -149,7 +149,7 @@ def main():
     #model.fc3.bias.requires_grad = False
     #test(model, device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
-    train(10, model, device, optimizer)
+    train(30, model, device, optimizer)
 
     test(model, device)
     # print(model.parameters)

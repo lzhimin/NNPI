@@ -182,6 +182,6 @@ def recreate_image(im_as_var):
     recreated_im[recreated_im > 1] = 1
     recreated_im[recreated_im < 0] = 0
     recreated_im = np.round(recreated_im * 255)
-
     recreated_im = np.uint8(recreated_im)
+
     return recreated_im

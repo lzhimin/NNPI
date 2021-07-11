@@ -40,10 +40,10 @@ class FeatureView extends BasicView {
         for (let i = 0; i < data.length; i++){
             for (let j = 0; j < data[i].length; j++){
                 if (data[j][i] == 0){
-                    this.canvas.fillStyle = this.color(data[j][i]);
+                    this.canvas.fillStyle = d3.interpolateOranges(data[j][i]/255);// this.color(data[j][i]);
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
                 }else{
-                    this.canvas.fillStyle = this.color(data[j][i]);
+                    this.canvas.fillStyle = d3.interpolateOranges(data[j][i]/255);//this.color(data[j][i]);
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
                 }
             }

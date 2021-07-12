@@ -39,6 +39,7 @@ class CNNLayerVisualization():
             x = x.view(-1, 1, 28, 28)
                             
             for index, layer in self.model.named_children():
+                print(index)
                 #if the current layer is a full connection layer
                 if index == 'fc1':
                     x = x.view(x.shape[0], -1)

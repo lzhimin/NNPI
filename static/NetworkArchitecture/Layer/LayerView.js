@@ -235,7 +235,7 @@ class LayerView {
                 if(this.name.includes('fc'))
                     return 'activation frequency';
                 else
-                    return 'filter L1 norm';
+                    return 'mean activation value';
             })
             .attr('x', this.x + width/2)
             .attr('y', this.y + 10)

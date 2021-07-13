@@ -184,7 +184,7 @@ class LayerView {
     draw_neuron_feature_ranking() {
         let x = this.x + 20;
         let y = this.y - 20;
-        let width = this.width * 3;
+        let width = this.width * 2;
         let height = this.background_height * 0.9;
 
         let x_max, x_min;
@@ -202,7 +202,7 @@ class LayerView {
         this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(0" + ',' + (y + height/2) + ")")
-            .call(d3.axisTop(this.x_axis).ticks(5));
+            .call(d3.axisTop(this.x_axis).ticks(3));
             
         //ranking data
         let data_activation_pattern = [];
@@ -214,12 +214,12 @@ class LayerView {
         let histogram = d3.histogram()
             .value((d)=>{return d;})
             .domain(this.x_axis.domain())
-            .thresholds(this.x_axis.ticks(30));
+            .thresholds(this.x_axis.ticks(20));
         
         //histogram bin
         let bins = histogram(this.dataManager.pattern);
         this.y_axis = d3.scaleLinear()
-            .range([0, height/2])
+            .range([0, height/5])
             .domain([0, d3.max(bins, (d)=>{
             return d.length;
         })]);
@@ -227,7 +227,7 @@ class LayerView {
         this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(" + x + "," + (y + height/2) + ")")
-            .call(d3.axisLeft(this.y_axis).ticks(5));
+            .call(d3.axisLeft(this.y_axis).ticks(3));
 
         this.svg.append('g')
             .append('text')
@@ -246,12 +246,12 @@ class LayerView {
             .append('text')
             .text((d)=>{
                 if(this.name.includes('fc'))
-                    return 'neuron density';
+                    return 'density';
                 else
-                    return 'filter density';
+                    return 'density';
             })
             .attr('x', this.x - 20)
-            .attr('y', this.y + height/1.5)
+            .attr('y', this.y + height/2)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central')
             .attr('writing-mode', 'vertical-rl');

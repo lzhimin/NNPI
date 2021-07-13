@@ -4,6 +4,7 @@ import numpy as np
 from python.modelManager import ModelManager
 from sklearn.manifold import TSNE
 from python.FeatureVisualization import getFeatureVisualization
+from sklearn.cluster import KMeans
 
 device = torch.device('cpu')
 modelManager = ModelManager(device=device)
@@ -18,12 +19,13 @@ def getdata(json_request):
 def load_Model_Data_Summary():
     # pruned parameter model
     # model.prune_by_percentile_left(float(percentage))
-
     mnist = modelManager.loadValidationData()
 
     labels = set()
     for i in range(len(mnist)):
         labels.add(mnist[i][1])
+
+    print(mnist)
     labels = list(labels)
     labels.sort()
 
@@ -94,6 +96,8 @@ def validation(model, dataset, labels):
                 np.array(data.tolist()).flatten().tolist())
             subset_label.append(device_target[0].item())
 
+    #kmeans = KMeans(n_clusters=10, random_state=0).fit(flatten_subset)
+    #return confusionMatrix.tolist(), subset, kmeans.labels_.tolist(), flatten_subset, prediction_result
     return confusionMatrix.tolist(), subset, subset_label, flatten_subset, prediction_result
 
 def getActivation(indexs):

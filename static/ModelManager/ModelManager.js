@@ -61,7 +61,8 @@ class ModelManager {
                     return 'steelblue';
                 else
                     return 'white';
-            });
+            })
+            .style('fill-opacity', 0.65);
         
         g.selectAll('.modelSummaryText')
             .data([key, model['accuracy']])
@@ -84,10 +85,15 @@ class ModelManager {
             .attr('y', y - 2)
             .attr('width', w + 4)
             .attr('height', (entries.length+2) * h + 4)
+            .attr('class', 'modelBlock')
             .style('fill-opacity', 0)
-            .style('fill', 'orange')
+            .style('stroke', '#b36200')
+            .style('stroke-opacity', 0)
             .on('click', function(){
-                d3.select(this).style('fill-opacity', 0.5);
+                d3.selectAll('.modelBlock').style('stroke-opacity', 0);
+                d3.select(this).style('stroke-opacity', 0.8);
+                
+                //fetch selected model information.
             });
     }
 

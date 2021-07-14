@@ -1,4 +1,3 @@
-
 class MainView extends BasicView {
 
     constructor(container) {
@@ -47,7 +46,7 @@ class MainView extends BasicView {
         this.init();
 
         // the size of embedding
-        let width = 750;
+        let width = 650;
         let height = 450;
         this.draw_embedding(this.margin.left, this.margin.top, width, height, this.dataManager.embedding)
     }

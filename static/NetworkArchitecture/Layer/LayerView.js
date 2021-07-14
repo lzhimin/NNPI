@@ -22,7 +22,7 @@ class LayerView {
 
         
         //backgroud
-        this.background_width = this.width * 5;
+        this.background_width = this.width * 4;
         this.background_height = this.height * 1.8;
     }
 
@@ -40,7 +40,6 @@ class LayerView {
             .attr('height', this.background_height);
         
         //draw activation
-
         if (this.display_option == 'Selection')
             this.draw_neuron_feature_selection();
         else if(this.display_option == 'Ranking')
@@ -128,6 +127,7 @@ class LayerView {
             menu = [this.name+'_Selection', this.name+'_Ranking'];
             menu_name = ['Selection', 'Ranking',];
         }
+        
         this.menu = this.svg.append('g').selectAll('.layerview_menu_rect')
             .data(menu)
             .enter()
@@ -221,8 +221,8 @@ class LayerView {
         this.y_axis = d3.scaleLinear()
             .range([0, height/5])
             .domain([0, d3.max(bins, (d)=>{
-            return d.length;
-        })]);
+                return d.length;
+            })]);
 
         this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')

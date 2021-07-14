@@ -7,9 +7,12 @@ class NetworkArchitecture extends BasicView {
 
         this.architecture = {};
 
-        subscribe('model_summary', this.setData.bind(this))
-        subscribe('activation_pattern', this.setActivationPattern.bind(this))
+        this.pruned_architecture = {};
 
+        this.model_summary = undefined;
+
+        subscribe('model_summary', this.setData.bind(this));
+        subscribe('activation_pattern', this.setActivationPattern.bind(this));
     }
 
     init() {
@@ -24,10 +27,12 @@ class NetworkArchitecture extends BasicView {
             .append('svg')
             .attr('width', this.width)
             .attr("height", 1800)
+
+        this.model_summary = new ModelManager(this.svg);
         
         //margin
         this.margin.left = 100;
-        this.margin.top = 20;
+        this.margin.top = 200;
         
         // construct data for each neural network layer
         let layer_names = Object.keys(this.dataManager.data);
@@ -44,7 +49,7 @@ class NetworkArchitecture extends BasicView {
 
         //binding the menu event
         this.bindingEvent();
-   }
+    }
 
     draw() {
         this.init();
@@ -55,6 +60,8 @@ class NetworkArchitecture extends BasicView {
         let width = 120;
         let height = 120;
         let padding = 150;
+
+        this.model_summary.draw();
 
         //draw input data distribution
         //this.draw_menu(x - 20, y);

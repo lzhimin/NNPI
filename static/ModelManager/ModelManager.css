@@ -1,0 +1,9 @@
+.model_summary_block{
+    stroke: rgb(80, 80, 80);
+    stroke-width: 2px;
+    fill: wheat;
+}
+
+.model_Summary_Text{
+    text-align: center;
+}

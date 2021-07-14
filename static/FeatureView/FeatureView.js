@@ -29,10 +29,15 @@ class FeatureView extends BasicView {
 
         let x = this.margin.left;
         let y = this.margin.top;
-        let w = 5;
-        let h = 5;
+        let w = 2;
+        let h = 2;
 
-        this.draw_sample(x, y, w, h,this.dataManager.feature);
+        let width = w * this.dataManager.feature[0][0].length;
+        let height = h * this.dataManager.feature[0].length;
+        let padding = 5;
+        for(let i = 0; i < this.dataManager.feature.length; i++){
+            this.draw_sample(x + i%5 * (width + padding) , y + parseInt(i/5) * (height + padding), w, h,this.dataManager.feature[i]);
+        }
 
     }
 
@@ -40,10 +45,10 @@ class FeatureView extends BasicView {
         for (let i = 0; i < data.length; i++){
             for (let j = 0; j < data[i].length; j++){
                 if (data[j][i] == 0){
-                    this.canvas.fillStyle = d3.interpolateOranges(data[j][i]/255);// this.color(data[j][i]);
+                    this.canvas.fillStyle = 'white';
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
                 }else{
-                    this.canvas.fillStyle = d3.interpolateOranges(data[j][i]/255);//this.color(data[j][i]);
+                    this.canvas.fillStyle = 'black';
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
                 }
             }

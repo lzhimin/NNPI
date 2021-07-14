@@ -162,11 +162,10 @@ def getModelSummary(train_model, untrain_model):
 
     return model_summary
 
-def fetch_filter_map(json):
-    indexs = json['indexs']
+def fetch_activation_feature_samples(json):
+    index = json['indexs']
     layername = json['layername']
-    feature = getFeatureVisualization(modelManager.train_model, layername, indexs)
-
-    return {'featureVis':feature.tolist()}
+    #feature = getFeatureVisualization(modelManager.train_model, layername, indexs)
+    return {'featureVis':modelManager.getTop10ActiveSample(modelManager.train_model, layername, index)}
 
 

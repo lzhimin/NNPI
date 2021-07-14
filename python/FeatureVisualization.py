@@ -62,10 +62,11 @@ class CNNLayerVisualization():
 
 
 def getFeatureVisualization(model, layer, neuron_index):
-    feature_vis = CNNLayerVisualization(
-        model, layer, neuron_index).visualize_layer_neuron_without_hooks()
+    #feature_vis = CNNLayerVisualization(
+    #    model, layer, neuron_index).visualize_layer_neuron_without_hooks()
 
-    return feature_vis
+    
+    return []
 
 
 if __name__ == '__main__':

@@ -34,7 +34,7 @@ def _fetch_selected_architecture_info():
 @app.route("/_fetch_filter", methods=["GET", "POST"])
 def _fetch_filter():
     json_request = request.get_json()
-    return json.dumps(data.fetch_filter_map(json_request))
+    return json.dumps(data.fetch_activation_feature_samples(json_request))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

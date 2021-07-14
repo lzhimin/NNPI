@@ -125,6 +125,20 @@ class LeNet(PruningModule):
         
         return [layer1_activation, layer2_activation]
 
+    def getActivationValue(self, x, layer, index):
+        x = torch.tensor(x)
+        x = x.view(-1, 784)
+        x = F.relu(self.fc1(x))
+
+        if layer == 'fc1':
+            return x[0][index]
+
+        x = F.relu(self.fc2(x))
+        if layer == 'fc2':
+            return x[0][index]
+
+        raise ValueError('Unknow layer') 
+
 class LeNet_5(PruningModule):
 
     def __init__(self, mask=False):
@@ -283,6 +297,8 @@ class LeNet_5(PruningModule):
 
         return [conv1_activation, conv2_activation, fc1_activation, fc2_activation]
 
+    def getActivationValue(self, layer, index):
+        pass
 class ConvNet(PruningModule):
 
     def __init__(self, mask=False, numclasses=10):

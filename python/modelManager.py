@@ -12,8 +12,8 @@ class ModelManager:
         # device
         self.device = device
 
-        #self.model = 'letnet300'
-        self.model = 'letnet_5'
+        self.model = 'letnet300'
+        #self.model = 'letnet_5'
         #self.model = 'googledraw'
 
         # load train model
@@ -25,7 +25,7 @@ class ModelManager:
         #)
 
         self.train_model = self.loadModel(
-            'data/model/LetNet/letnet_5_trained.pkl'
+            'data/model/LetNet/letnet300_trained.pkl'
         )
 
         # self.train_model.prune_by_percentile(float(90))
@@ -36,7 +36,7 @@ class ModelManager:
         #   'data/model/DrawNet/googledraw_trained.pkl')
         
         self.untrain_model = self.loadModel(
-            'data/model/LetNet/letnet_5_trained.pkl'
+            'data/model/LetNet/letnet300_trained.pkl'
         )
 
         self.datasets = self.loadValidationData()
@@ -146,6 +146,21 @@ class ModelManager:
                 else:
                     prediction_result.append(0)
         return prediction_result
+
+    def getTop10ActiveSample(self, model, layer, index):
+        rs = []
+        test_loader = torch.utils.data.DataLoader(self.datasets)
+        scores = []
+        with torch.no_grad():
+            for data, target in test_loader:
+                device_data, device_target = data.to('cpu'), target.to('cpu')
+                score = model.getActivationValue(device_data, layer, index)
+                scores.append(score)
+        indexs = (-np.array(scores)).argsort()[:10]
+        
+        for i in indexs:
+            rs.append(self.datasets[i][0][0].tolist())
+        return rs
 
 class QD_Dataset(data.Dataset):
 

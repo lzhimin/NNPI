@@ -5,6 +5,6 @@ class FeatureViewData {
     }
 
     setData(data) {
-        this.feature = data.featureVis;
+        this.feature = data;
     }
 }

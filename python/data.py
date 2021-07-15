@@ -166,6 +166,6 @@ def fetch_activation_feature_samples(json):
     index = json['indexs']
     layername = json['layername']
     #feature = getFeatureVisualization(modelManager.train_model, layername, indexs)
-    return {'featureVis':modelManager.getTop10ActiveSample(modelManager.train_model, layername, index)}
+    return modelManager.getTop10ActiveSample(modelManager.train_model, layername, index)
 
 

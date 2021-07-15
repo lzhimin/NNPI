@@ -14,4 +14,8 @@ class MainViewData {
 
         this.prediction_result = data[2];
     }
+
+    setActivationScore(data){
+        this.activationScore = data;
+    }
 }

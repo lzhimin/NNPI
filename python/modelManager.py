@@ -155,12 +155,12 @@ class ModelManager:
             for data, target in test_loader:
                 device_data, device_target = data.to('cpu'), target.to('cpu')
                 score = model.getActivationValue(device_data, layer, index)
-                scores.append(score)
-        indexs = (-np.array(scores)).argsort()[:10]
-        
+                scores.append(score.item())
+        indexs = (-np.array(scores, dtype=np.float)).argsort()[:200]
+         
         for i in indexs:
             rs.append(self.datasets[i][0][0].tolist())
-        return rs
+        return {'featureVis':rs, 'scores':scores}
 
 class QD_Dataset(data.Dataset):
 

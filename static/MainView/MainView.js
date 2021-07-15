@@ -19,6 +19,8 @@ class MainView extends BasicView {
         subscribe("input_summary", this.setData.bind(this));
         subscribe("input_activation_pattern", this.set_Neuron_Activation_Mapping.bind(this));
         subscribe("predict_summary", this.set_prediction_result.bind(this));
+
+        subscribe('Activation_Score', this.set_activation_score.bind(this));
     }
 
     init() {
@@ -46,9 +48,9 @@ class MainView extends BasicView {
         this.init();
 
         // the size of embedding
-        let width = 650;
-        let height = 450;
-        this.draw_embedding(this.margin.left, this.margin.top, width, height, this.dataManager.embedding)
+        this.embedding_width = 550;
+        this.embedding_height = 350;
+        this.draw_embedding(this.margin.left, this.margin.top, this.embedding_width, this.embedding_height, this.dataManager.embedding)
     }
 
     draw_embedding(x, y, width, height, data) {
@@ -108,6 +110,55 @@ class MainView extends BasicView {
         }
         
               
+    }
+
+    draw_activation_score_hist(x, y, width, height, data){
+
+        let x_min = 0, x_max = 0;
+
+        [x_min, x_max] = d3.extent(data);
+        
+        this.x_axis = d3.scaleLinear().domain([0, x_max * 1.1]).range([x, x + width]);
+
+        this.svg.append('g')
+            .attr('class', 'main_score_ranking_axis')
+            .attr("transform", "translate(0" + ',' + (y + height) + ")")
+            .call(d3.axisBottom(this.x_axis).ticks(10));
+        
+        //add histogram
+        let histogram = d3.histogram()
+            .value((d)=>{return d;})
+            .domain(this.x_axis.domain())
+            .thresholds(this.x_axis.ticks(20));
+        
+        //histogram bin
+        let bins = histogram(data);
+        this.y_axis = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, d3.max(bins, (d)=>{
+                return d.length;
+            })]);
+
+        this.svg.append('g')
+            .attr('class', 'main_score_ranking_axis')
+            .attr("transform", "translate(" + x + "," + (y) + ")")
+            .call(d3.axisLeft(this.y_axis).ticks(5));
+
+        this.hist = this.svg.selectAll(".main_score_ranking_hist")
+            .data(bins)
+            .enter()
+            .append("rect")
+            .attr('class', 'neuron_activation_rect')
+            .attr("x", 1)
+            .attr("transform", (d)=> { 
+                return "translate(" + this.x_axis(d.x0) + "," + (y + height/2 + 2) + ")"; 
+            })
+            .attr("width", (d)=> { 
+                return this.x_axis(d.x1) - this.x_axis(d.x0) - 1; 
+            })
+            .attr("height", (d)=> { 
+                return this.y_axis(d.length) - height; 
+            });
     }
 
     handleLassoEnd(lassoPolygon) {
@@ -187,5 +238,16 @@ class MainView extends BasicView {
         this.points.style('fill', (d, i) => {
                 return data[i] == 1 ? 'white' : 'red';
         });
+    }
+
+    //current selected neuron or filter's activation score
+    // and indexs
+    set_activation_score(msg, data){
+        this.dataManager.setActivationScore(data);
+
+        let x = this.margin.left;
+        let y = this.margin.top + this.embedding_height + 50;
+
+        this.draw_activation_score_hist(x, y, this.embedding_width, 100, data);
     }
 }

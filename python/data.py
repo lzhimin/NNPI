@@ -11,6 +11,7 @@ modelManager = ModelManager(device=device)
 
 def getdata(json_request):    
     percentage = json_request['percentage']
+    print(percentage)
     model = json_request['dataset']
     modelManager.config(percentage, model)
 
@@ -25,7 +26,6 @@ def load_Model_Data_Summary():
     for i in range(len(mnist)):
         labels.add(mnist[i][1])
 
-    print(mnist)
     labels = list(labels)
     labels.sort()
 
@@ -54,7 +54,6 @@ def load_Model_Data_Summary():
 
     print('return result')
 
-    print(modelManager.train_model)
     result = {}
     result['model_summary'] = getModelSummary(
         modelManager.train_model, modelManager.untrain_model)

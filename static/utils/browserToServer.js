@@ -66,3 +66,16 @@ function fetch_selected_architecture_info(json){
         }
     });
 }
+
+function update_selected_model(json){
+    $.ajax({
+        url: '/_update_selected_model',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(json),
+        dataType: 'json',
+        success: function (data) {
+            //publish("", data.predict_summary);
+        }
+    });
+}

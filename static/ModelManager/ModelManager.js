@@ -22,11 +22,8 @@ class ModelManager {
         let x = this.margin.left;
         let y = this.margin.top;
 
-
-
         let keys = Object.keys(this.dataManager.model_summary);
         for(let i = 0; i < keys.length; i++){
-
             this.draw_model_block(x + i * (w + padding), y, w, h, keys[i], this.dataManager.model_summary[keys[i]]);
         }
     }
@@ -69,7 +66,7 @@ class ModelManager {
             .enter()
             .append('text')
             .text((d, i)=>{
-                return  i == 0 ? d : (d * 100)+'%';
+                return  i == 0 ? (d)+'%' : (d)+'%';
             })
             .attr('class', 'model_Summary_Text')
             .attr('x', (d, i)=>{
@@ -89,11 +86,15 @@ class ModelManager {
             .style('fill-opacity', 0)
             .style('stroke', '#b36200')
             .style('stroke-opacity', 0)
-            .on('click', function(){
+            .on('click', function(d){
                 d3.selectAll('.modelBlock').style('stroke-opacity', 0);
-                d3.select(this).style('stroke-opacity', 0.8);
+                d3.select(this).style('stroke-opacity', 1);
+                //update_selected_model({'model':'5%'});
                 
                 //fetch selected model information.
+                //update current analysis model
+                let name = $('#data_file_selector').val();
+                fetch_data({'percentage':+key, 'dataset':name});
             });
     }
 

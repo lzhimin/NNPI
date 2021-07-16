@@ -25,7 +25,7 @@ class ModelManager:
         #)
 
         self.train_model = self.loadModel(
-            'data/model/LetNet/letnet300_trained.pkl'
+            'data/model/LetNet/model_9.pkl'
         )
 
         # self.train_model.prune_by_percentile(float(90))
@@ -36,7 +36,7 @@ class ModelManager:
         #   'data/model/DrawNet/googledraw_trained.pkl')
         
         self.untrain_model = self.loadModel(
-            'data/model/LetNet/letnet300_trained.pkl'
+            'data/model/LetNet/model_9.pkl'
         )
 
         self.datasets = self.loadValidationData()
@@ -46,7 +46,7 @@ class ModelManager:
         self.percentage = percentage
 
         if model == 'mnist1':
-            self.path = 'data/model/LetNet/letnet300_trained.pkl'
+            self.path = 'data/model/LetNet/model_9.pkl'
             self.model = 'letnet300'
         elif model == 'mnist2':
             self.path = 'data/model/LetNet/letnet_5_trained.pkl'
@@ -56,6 +56,9 @@ class ModelManager:
             self.model = 'googledraw'
 
         self.train_model = self.loadModel(self.path)
+        self.train_model.prune_by_percentile(self.percentage)
+
+        
         self.untrain_model = self.loadModel(self.path)
         self.datasets = self.loadValidationData() 
 

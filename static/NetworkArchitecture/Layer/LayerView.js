@@ -238,7 +238,7 @@ class LayerView {
                 if(this.name.includes('fc'))
                     return 'max activation value';
                 else
-                    return 'density';
+                    return 'max activation value';
             })
             .attr('x', this.x - 20)
             .attr('y', this.y + height/2)
@@ -331,28 +331,28 @@ class LayerView {
         let width = this.width * 3;
         let height = this.background_height * 0.9;
 
-        let brush = d3.brushX()
-            .extent([[x - 20, y + 15], [x + width + 10, y + height/1.1]])
+        let brush = d3.brush()
+            .extent([[x - 20, y], [x + width/1.3, y + height/1.1]])
             .on("end", (event)=>{
                 let extent = event.selection;
                 let select_neurons = [];
                 if(!extent){
                     //fetch all the neurons
-                    this.points.attr('fill', (d, i)=>{
+                    this.points.style('fill', (d, i)=>{
                         if (this.dataManager.pattern[i] == 0)
                             return 'white';
                         else
                             return 'steelblue';
-                            //return colorscale(this.dataManager.pattern[i]);
                     });
                 }else{
-                    this.points.attr('fill', (d, i)=>{
-                        if( extent[0] < this.x_axis(d[0]) && extent[1] > this.x_axis(d[0])){
+                    this.points.style('fill', (d, i)=>{
+                        let x_in = extent[0][0] < this.x_axis(d[0]) && extent[1][0] > this.x_axis(d[0])
+                        let y_in = extent[0][1] < this.y_axis(d[2]) && extent[1][1] > this.y_axis(d[2]);
+                        if(x_in && y_in){
                             if (this.dataManager.pattern[i] == 0)
                                 return 'white';
                             else
                                 return 'steelblue';
-                                //return colorscale(this.dataManager.pattern[i]);
                         } else {
                             select_neurons.push(i);
                             return 'gray';   

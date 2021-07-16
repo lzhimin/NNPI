@@ -331,7 +331,6 @@ class LayerView {
         let width = this.width * 3;
         let height = this.background_height * 0.9;
 
-
         let brush = d3.brushX()
             .extent([[x - 20, y + 15], [x + width + 10, y + height/1.1]])
             .on("end", (event)=>{

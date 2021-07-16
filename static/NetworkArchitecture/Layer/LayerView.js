@@ -188,6 +188,7 @@ class LayerView {
         let height = this.background_height * 0.9;
 
         let x_max, x_min;
+        let y_max, y_min;
         
         //understand the activation pattern and color scale
         //let colors = ['#fdd0a2', '#a63603'];
@@ -196,38 +197,27 @@ class LayerView {
 
         //reset the scale
         [x_min, x_max] = d3.extent(this.dataManager.pattern);
+        [y_min, y_max] = d3.extent(this.dataManager.strength);
         
         this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x, x + width]);
+        this.y_axis = d3.scaleLinear().domain([y_max, y_min]).range([y + height/8, y + height/1.2]);
 
         this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
-            .attr("transform", "translate(0" + ',' + (y + height/2) + ")")
-            .call(d3.axisTop(this.x_axis).ticks(3));
-            
+            .attr("transform", "translate(0" + ',' + (y + height/1.2) + ")")
+            .call(d3.axisBottom(this.x_axis).ticks(3));
+        
+        this.svg.append('g')
+            .attr('class', 'architecture_embedding_axis')
+            .attr("transform", "translate(" + x + ",0)")
+            .call(d3.axisLeft(this.y_axis).ticks(3));
+
         //ranking data
         let data_activation_pattern = [];
         for (let i = 0; i < this.dataManager.pattern.length; i++){
-            data_activation_pattern.push([this.dataManager.pattern[i], i]);
+            data_activation_pattern.push([this.dataManager.pattern[i], i, this.dataManager.strength[i]]);
         }   
         
-        //add histogram
-        let histogram = d3.histogram()
-            .value((d)=>{return d;})
-            .domain(this.x_axis.domain())
-            .thresholds(this.x_axis.ticks(20));
-        
-        //histogram bin
-        let bins = histogram(this.dataManager.pattern);
-        this.y_axis = d3.scaleLinear()
-            .range([0, height/5])
-            .domain([0, d3.max(bins, (d)=>{
-                return d.length;
-            })]);
-
-        this.svg.append('g')
-            .attr('class', 'architecture_embedding_axis')
-            .attr("transform", "translate(" + x + "," + (y + height/2) + ")")
-            .call(d3.axisLeft(this.y_axis).ticks(3));
 
         this.svg.append('g')
             .append('text')
@@ -238,7 +228,7 @@ class LayerView {
                     return 'mean activation value';
             })
             .attr('x', this.x + width/2)
-            .attr('y', this.y + 10)
+            .attr('y', this.y + height/1.1)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central')
 
@@ -246,7 +236,7 @@ class LayerView {
             .append('text')
             .text((d)=>{
                 if(this.name.includes('fc'))
-                    return 'density';
+                    return 'max activation value';
                 else
                     return 'density';
             })
@@ -256,7 +246,7 @@ class LayerView {
             .attr('dominant-baseline', 'central')
             .attr('writing-mode', 'vertical-rl');
 
-        this.hist = this.svg.selectAll(".neuron_activation_rect_"+this.name)
+        /*this.hist = this.svg.selectAll(".neuron_activation_rect_"+this.name)
             .data(bins)
             .enter()
             .append("rect")
@@ -270,7 +260,7 @@ class LayerView {
             })
             .attr("height", (d)=> { 
                 return this.y_axis(d.length); 
-            });
+            });*/
 
         if(this.name.includes('fc')){
             this.points = this.svg.append('g')
@@ -282,8 +272,8 @@ class LayerView {
                 .attr('cx', (d) => {
                     return this.x_axis(d[0]);
                 })
-                .attr('cy', (d) => {
-                    return y + height/2 - 30;
+                .attr('cy', (d, i) => {
+                    return this.y_axis(d[2]);
                 })
                 .attr('r', 5)
                 .style('fill', (d, i) => {
@@ -312,7 +302,7 @@ class LayerView {
                     return this.x_axis(d[0]);
                 })
                 .attr('y', (d) => {
-                    return y + height/2 - 30;
+                    return this.y_axis(d[2]);
                 })
                 .attr('width', 10)
                 .attr('height', 10)
@@ -321,7 +311,6 @@ class LayerView {
                         return 'white';
                     else
                         return 'steelblue';
-                    //    return colorscale(this.dataManager.pattern[i]);
                 })
                 .style('fill-opacity', 0.5)
                 .on('click', (event, d, nodes) =>{
@@ -344,7 +333,7 @@ class LayerView {
 
 
         let brush = d3.brushX()
-            .extent([[x - 20, y + height/2 - 60], [x + width + 10, y + height/2]])
+            .extent([[x - 20, y + 15], [x + width + 10, y + height/1.1]])
             .on("end", (event)=>{
                 let extent = event.selection;
                 let select_neurons = [];
@@ -402,6 +391,10 @@ class LayerView {
 
     set_embedding(embedding) {
         this.embedding = embedding
+    }
+
+    setActivation_Strength(strength) {
+        this.dataManager.setActivation_Strength(strength);
     }
 
     set_featureVis(msg, data){

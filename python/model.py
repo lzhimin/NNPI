@@ -57,8 +57,12 @@ class LeNet(PruningModule):
         activation_summary['fc1'] = np.sum(
             np.array(layer1_activation) != 0, axis=0).tolist()
 
+        activation_summary['fc1_strength'] = np.max(np.array(layer1_activation), axis=0).tolist()
+
         activation_summary['fc2'] = np.sum(
             np.array(layer2_activation) != 0, axis=0).tolist()
+
+        activation_summary['fc2_strength'] = np.max(np.array(layer2_activation), axis=0).tolist()
 
         return activation_summary
 
@@ -206,13 +210,19 @@ class LeNet_5(PruningModule):
 
         activation_summary = {}
         activation_summary['conv1'] =np.mean(conv1_activation, axis=0).tolist()
+        activation_summary['conv1_strength'] =np.max(conv1_activation, axis=0).tolist()
+
         activation_summary['conv2'] = np.mean(conv2_activation, axis=0).tolist()
+        activation_summary['conv2_strength'] =np.max(conv2_activation, axis=0).tolist()
 
         activation_summary['fc1'] = np.sum(
             np.array(fc1_activation) != 0, axis=0).tolist()[0]
+        activation_summary['fc1_strength'] = np.max(np.array(fc1_activation), axis=0).tolist()[0]
 
         activation_summary['fc2'] = np.sum(
             np.array(fc2_activation) != 0, axis=0).tolist()[0]
+        activation_summary['fc2_strength'] = np.max(np.array(fc2_activation), axis=0).tolist()[0]
+
 
         return activation_summary
 
@@ -297,8 +307,38 @@ class LeNet_5(PruningModule):
 
         return [conv1_activation, conv2_activation, fc1_activation, fc2_activation]
 
-    def getActivationValue(self, layer, index):
-        pass
+    def getActivationValue(self, x, layer, index):
+        x = torch.tensor(x)
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+    
+        if layer == 'conv1':
+            return np.mean(x[0][index].tolist())
+
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+
+
+        if layer == 'conv2':
+            return np.mean(x[0][index].tolist())
+        
+        x = x.view(x.shape[0], -1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        
+        if layer == 'fc1':
+            return x[0][index]
+
+        x = self.fc2(x)
+        x = F.relu(x)  
+
+        if layer == 'fc2':
+            return x[0][index]
+
+        raise ValueError('Unknow layer')
+
 class ConvNet(PruningModule):
 
     def __init__(self, mask=False, numclasses=10):
@@ -442,6 +482,43 @@ class ConvNet(PruningModule):
                         input_indexs.append(i)
 
         return input_indexs         
+
+    def getActivationValue(self, x, layer, index):
+        x = torch.tensor(x)
+        x = x.view(-1, 1, 28, 28)
+        x /= 255.0
+        
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+    
+        if layer == 'conv1':
+            return np.mean(x[0][index].tolist())
+
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+
+
+        if layer == 'conv2':
+            return np.mean(x[0][index].tolist())
+
+        x = self.conv3(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+
+
+        if layer == 'conv3':
+            return np.mean(x[0][index].tolist())
+        
+        x = x.view(x.shape[0], -1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        
+        if layer == 'fc1':
+            return x[0][index]
+
+        raise ValueError('Unknow layer')
 
 class Alexnet(PruningModule):
 

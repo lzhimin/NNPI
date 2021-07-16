@@ -40,6 +40,7 @@ class NetworkArchitecture extends BasicView {
             this.architecture[layer_names[i]] = new LayerView(layer_names[i], this.dataManager.data[layer_names[i]], this.svg)
             this.architecture[layer_names[i]].setActivation_pattern(this.dataManager.activation_pattern[layer_names[i]]);
             this.architecture[layer_names[i]].set_embedding(this.dataManager.activation_pattern[layer_names[i]+"_embedding"]);
+            this.architecture[layer_names[i]].setActivation_Strength(this.dataManager.activation_pattern[layer_names[i]+"_strength"]);
         }
 
 

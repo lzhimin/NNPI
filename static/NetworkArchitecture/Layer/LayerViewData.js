@@ -14,6 +14,10 @@ class LayerViewData {
         //this.countActivationBin();
     }
 
+    setActivation_Strength(strength){
+        this.strength = strength;
+    }
+
     bining_2d(datax, datay, x_bin, y_bin) {
         
         //bin 2d

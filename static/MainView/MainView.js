@@ -26,7 +26,7 @@ class MainView extends BasicView {
     init() {
         super.init();
 
-        this.margin = { 'left': 50, 'right': 20, 'top': 20 };
+        this.margin = { 'left': 100, 'right': 20, 'top': 20 };
 
         d3.select("#main_view_panel").html("");
 
@@ -120,7 +120,15 @@ class MainView extends BasicView {
         
         this.x_axis = d3.scaleLinear().domain([0, x_max * 1.1]).range([x, x + width]);
 
-        this.svg.append('g')
+        if (this.hist_g == undefined){
+            this.hist_g = this.svg.append('g');
+        }
+        else{
+            this.hist_g.remove();
+            this.hist_g = this.svg.append('g');
+        }
+
+        this.hist_g.append('g')
             .attr('class', 'main_score_ranking_axis')
             .attr("transform", "translate(0" + ',' + (y + height) + ")")
             .call(d3.axisBottom(this.x_axis).ticks(10));
@@ -129,7 +137,7 @@ class MainView extends BasicView {
         let histogram = d3.histogram()
             .value((d)=>{return d;})
             .domain(this.x_axis.domain())
-            .thresholds(this.x_axis.ticks(20));
+            .thresholds(this.x_axis.ticks(30));
         
         //histogram bin
         let bins = histogram(data);
@@ -139,25 +147,25 @@ class MainView extends BasicView {
                 return d.length;
             })]);
 
-        this.svg.append('g')
+        this.hist_g.append('g')
             .attr('class', 'main_score_ranking_axis')
             .attr("transform", "translate(" + x + "," + (y) + ")")
             .call(d3.axisLeft(this.y_axis).ticks(5));
 
-        this.hist = this.svg.selectAll(".main_score_ranking_hist")
+        this.hist = this.hist_g.selectAll(".main_score_ranking_hist")
             .data(bins)
             .enter()
             .append("rect")
             .attr('class', 'neuron_activation_rect')
             .attr("x", 1)
             .attr("transform", (d)=> { 
-                return "translate(" + this.x_axis(d.x0) + "," + (y + height/2 + 2) + ")"; 
+                return "translate(" + this.x_axis(d.x0) + "," + (y+ this.y_axis(d.length)) + ")"; 
             })
             .attr("width", (d)=> { 
                 return this.x_axis(d.x1) - this.x_axis(d.x0) - 1; 
             })
             .attr("height", (d)=> { 
-                return this.y_axis(d.length) - height; 
+                return height - this.y_axis(d.length); 
             });
     }
 

@@ -29,8 +29,8 @@ class FeatureView extends BasicView {
 
         let x = this.margin.left;
         let y = this.margin.top;
-        let w = 1;
-        let h = 1;
+        let w = 0.5;
+        let h = 0.5;
 
         let width = w * this.dataManager.feature[0][0].length;
         let height = h * this.dataManager.feature[0].length;

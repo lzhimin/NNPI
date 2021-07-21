@@ -29,14 +29,14 @@ class FeatureView extends BasicView {
 
         let x = this.margin.left;
         let y = this.margin.top;
-        let w = 0.5;
-        let h = 0.5;
+        let w = 2;
+        let h = 2;
 
         let width = w * this.dataManager.feature[0][0].length;
         let height = h * this.dataManager.feature[0].length;
         let padding = 5;
         for(let i = 0; i < this.dataManager.feature.length; i++){
-            this.draw_sample(x + i%10 * (width + padding) , y + parseInt(i/10) * (height + padding), w, h,this.dataManager.feature[i]);
+            this.draw_sample(x + i%5 * (width + padding) , y + parseInt(i/5) * (height + padding), w, h,this.dataManager.feature[i]);
         }
 
     }

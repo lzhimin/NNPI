@@ -44,9 +44,9 @@ def load_Model_Data_Summary():
     validation_summary = validation(modelManager.train_model, mnist, labels)
 
     print('get tsne')
-    input_embedding = TSNE(
-        n_components=2).fit_transform(validation_summary[3])
-    #input_embedding = np.loadtxt('tsne.out',  delimiter=',')
+    #input_embedding = TSNE(
+    #    n_components=2).fit_transform(validation_summary[3])
+    input_embedding = np.loadtxt('tsne.out',  delimiter=',')
 
     print('get activation')
     activation_pattern = modelManager.train_model.activationPattern(

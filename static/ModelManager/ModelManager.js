@@ -6,6 +6,8 @@ class ModelManager {
         this.margin = {'top':40, 'left':40, 'right':20};
 
         this.dataManager = new ModelManagerData();
+
+        this.model_selection = false;
     }
 
     init(){
@@ -14,6 +16,9 @@ class ModelManager {
 
     draw(){
         
+        if(this.model_selection)
+            return;
+
         this.init();
 
         let w = 100;
@@ -95,6 +100,7 @@ class ModelManager {
                 //update current analysis model
                 let name = $('#data_file_selector').val();
                 fetch_data({'percentage':+key, 'dataset':name});
+                this.model_selection = true;
             });
     }
 

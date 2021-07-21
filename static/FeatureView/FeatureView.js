@@ -10,12 +10,12 @@ class FeatureView extends BasicView {
     init() {
         super.init();
 
-        this.margin.left = 50;
-        this.margin.top = 50;
+        this.margin.left = 10;
+        this.margin.top = 10;  
 
         //add canvas 
         this.canvas = d3.select('#feature_view_canvas')
-            .attr('width', this.width)
+            .attr('width', 750)
             .attr("height", 1000)
             .node()
             .getContext('2d');
@@ -35,6 +35,23 @@ class FeatureView extends BasicView {
         let width = w * this.dataManager.feature[0][0].length;
         let height = h * this.dataManager.feature[0].length;
         let padding = 5;
+
+        for(let i = 0; i < this.dataManager.feature.length; i++){
+
+            let data = this.dataManager.feature[i]
+            let max_v = d3.max(data[0]), min_v = d3.min(data[0]);
+
+            for(let j = 1; j < data.length; j++){
+                if (max_v < d3.max(data[j]))
+                    max_v = d3.max(data[j]);
+                
+                if (min_v > d3.min(data[j]))
+                    min_v = d3.min(data[j]);
+            }
+
+            this.color_scale = d3.scaleLinear().domain([min_v, max_v]).range([1, 0]);
+        }
+
         for(let i = 0; i < this.dataManager.feature.length; i++){
             this.draw_sample(x + i%5 * (width + padding) , y + parseInt(i/5) * (height + padding), w, h,this.dataManager.feature[i]);
         }
@@ -45,10 +62,10 @@ class FeatureView extends BasicView {
         for (let i = 0; i < data.length; i++){
             for (let j = 0; j < data[i].length; j++){
                 if (data[j][i] == 0){
-                    this.canvas.fillStyle = 'white';
+                    this.canvas.fillStyle = d3.interpolateRdYlBu(this.color_scale(data[i][j]));
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
                 }else{
-                    this.canvas.fillStyle = 'black';
+                    this.canvas.fillStyle = d3.interpolateRdYlBu(this.color_scale(data[i][j]));
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
                 }
             }

@@ -42,6 +42,8 @@ class VanillaBackprop():
 
         return gradients_as_arr
 
+    
+
 
 def getMap(model, image, target_class, map_type='vanilla'):
     vanilla_grads = VanillaBackprop(

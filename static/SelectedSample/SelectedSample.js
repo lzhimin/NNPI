@@ -20,7 +20,7 @@ class SelectedSampleView extends BasicView {
             .getContext('2d');
         
         //update margin value
-        this.margin.left = 60;
+        this.margin.left = 15;
     }
 
     draw() {

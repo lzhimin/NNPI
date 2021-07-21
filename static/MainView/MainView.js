@@ -108,8 +108,23 @@ class MainView extends BasicView {
                 .on('start', this.handleLassoStart.bind(this));
             this.svg.call(lassoInstance);  
         }
+
+        this.svg.append('g')
+            .append('text')
+            .text('TSNE1')
+            .attr('x', x + width/2)
+            .attr('y', y + height + 30)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central');
         
-              
+        this.svg.append('g')
+            .append('text')
+            .text('TSNE2')
+            .attr('x', x  - 40)
+            .attr('y', y + height/2)
+            .attr('text-anchor', 'middle')
+            .attr('writing-mode', 'vertical-rl');
+        
     }
 
     draw_activation_score_hist(x, y, width, height, data){
@@ -118,7 +133,7 @@ class MainView extends BasicView {
 
         [x_min, x_max] = d3.extent(data);
         
-        this.x_axis = d3.scaleLinear().domain([0, x_max * 1.1]).range([x, x + width]);
+        this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x, x + width]);
 
         if (this.hist_g == undefined){
             this.hist_g = this.svg.append('g');
@@ -167,6 +182,21 @@ class MainView extends BasicView {
             .attr("height", (d)=> { 
                 return height - this.y_axis(d.length); 
             });
+
+        this.hist_g.append('g').append('text')
+            .text('Count')
+            .attr('x', x - 50)
+            .attr('y', y + height/2)
+            .attr('text-anchor', 'middle')
+            .attr('writing-mode', 'vertical-rl');
+        
+        this.hist_g.append('g').append('text')
+            .text('Activation Value')
+            .attr('x', x + width/2)
+            .attr('y', y + height + 30)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central');
+
     }
 
     handleLassoEnd(lassoPolygon) {

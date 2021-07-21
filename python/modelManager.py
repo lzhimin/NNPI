@@ -1,7 +1,7 @@
 import torch
 from torchvision import datasets, transforms
 from python.model import LeNet, LeNet_5, ConvNet
-from python.FeatureVisualization import getFeatureVisualization
+from python.FeatureVisualization import getFeatureVisualization,getSaliencyGradientWithNode
 import numpy as np
 import torch.utils.data as data
 import os
@@ -162,7 +162,9 @@ class ModelManager:
         indexs = (-np.array(scores, dtype=np.float)).argsort()[:200]
          
         for i in indexs:
-            rs.append(self.datasets[i][0][0].tolist())
+            img = self.datasets[i][0][0].tolist()
+            rs.append((getSaliencyGradientWithNode(model, layer, index, img).transpose()).tolist())
+
         return {'featureVis':rs, 'scores':scores}
 
 class QD_Dataset(data.Dataset):

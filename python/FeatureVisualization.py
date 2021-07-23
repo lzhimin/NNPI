@@ -82,10 +82,14 @@ class CNNLayerVisualization():
 
                 x = layer(x)
                 x = F.relu(x)
+
+                if 'conv' in index:
+                    x = F.max_pool2d(x, kernel_size=(2, 2), stride=2)
+
                 if index == self.selected_layer:
                     break
+
             self.conv_output = x[0][self.selected_neuron]
-            
             loss = -torch.mean(self.conv_output)
             # backward
             loss.backward()

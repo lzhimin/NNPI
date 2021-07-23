@@ -130,8 +130,8 @@ def main():
 
     print("pruned the model")
 
-    model.prune_by_percentile(95)
-    test(model, device)
+    #model.prune_by_percentile(99)
+    #test(model, device)
 
     #model.conv1.weight.requires_grad = False
     #model.conv1.bias.requires_grad = False
@@ -149,7 +149,7 @@ def main():
     #model.fc3.bias.requires_grad = False
     #test(model, device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
-    train(10, model, device, optimizer)
+    train(50, model, device, optimizer)
 
     test(model, device)
     # print(model.parameters)

@@ -35,18 +35,19 @@ class LeNet(PruningModule):
             x = F.relu(self.fc1(torch.tensor(
                 np.array(dataset[i]).flatten().tolist())))
             layer1_activation.append(x.tolist())
+
             x = F.relu(self.fc2(x))
             layer2_activation.append(x.tolist())
 
         activation_summary = {}
         # T-sne embedding
 
-        activation_summary['fc1_embedding'] = np.loadtxt(
-            'fc1_embedding.out', delimiter=',').tolist()
+        #activation_summary['fc1_embedding'] = np.loadtxt(
+        #    'fc1_embedding.out', delimiter=',').tolist()
         #TSNE(n_components=2).fit_transform(np.array(layer1_activation).transpose(1, 0)).tolist()
 
-        activation_summary['fc2_embedding'] = np.loadtxt(
-            'fc2_embedding.out', delimiter=',').tolist()
+        #activation_summary['fc2_embedding'] = np.loadtxt(
+        #    'fc2_embedding.out', delimiter=',').tolist()
         #TSNE(n_components=2).fit_transform(np.array(layer2_activation).transpose(1, 0)).tolist()
 
         # np.savetxt('fc1_embedding.out',
@@ -204,6 +205,7 @@ class LeNet_5(PruningModule):
             x = F.relu(x)
             fc1_activation.append(x.tolist())
 
+            
             x = self.fc2(x)
             x = F.relu(x)
             fc2_activation.append(x.tolist())
@@ -222,7 +224,6 @@ class LeNet_5(PruningModule):
         activation_summary['fc2'] = np.sum(
             np.array(fc2_activation) != 0, axis=0).tolist()[0]
         activation_summary['fc2_strength'] = np.max(np.array(fc2_activation), axis=0).tolist()[0]
-
 
         return activation_summary
 

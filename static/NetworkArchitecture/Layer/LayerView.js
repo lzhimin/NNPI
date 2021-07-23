@@ -181,7 +181,7 @@ class LayerView {
             .attr('class', 'active_menu_text')
     }
 
-    draw_neuron_feature_ranking() {
+    draw_neuron_feature_ranking() { 
         let x = this.x + 20;
         let y = this.y - 20;
         let width = this.width * 2;
@@ -215,7 +215,7 @@ class LayerView {
         //ranking data
         let data_activation_pattern = [];
         for (let i = 0; i < this.dataManager.pattern.length; i++){
-            data_activation_pattern.push([this.dataManager.pattern[i], i, this.dataManager.strength[i]]);
+             data_activation_pattern.push([this.dataManager.pattern[i], i, this.dataManager.strength[i]]);
         }   
         
 
@@ -275,13 +275,14 @@ class LayerView {
                 .attr('cy', (d, i) => {
                     return this.y_axis(d[2]);
                 })
-                .attr('r', 5)
+                .attr('r', (d, i)=>{
+                        return 5;
+                })
                 .style('fill', (d, i) => {
                     if (this.dataManager.pattern[i] == 0)
                         return 'white';
                     else
                         return 'steelblue';
-                    //    return colorscale(this.dataManager.pattern[i]);
                 })
                 .style('fill-opacity', 0.5)
                 .on('click', (event, d, nodes) =>{
@@ -394,6 +395,10 @@ class LayerView {
 
     setActivation_Strength(strength) {
         this.dataManager.setActivation_Strength(strength);
+    }
+
+    setActivation_label_activation(data){
+        this.dataManager.setActivation_label_activation(data);
     }
 
     set_featureVis(msg, data){

@@ -41,6 +41,9 @@ class NetworkArchitecture extends BasicView {
             this.architecture[layer_names[i]].setActivation_pattern(this.dataManager.activation_pattern[layer_names[i]]);
             this.architecture[layer_names[i]].set_embedding(this.dataManager.activation_pattern[layer_names[i]+"_embedding"]);
             this.architecture[layer_names[i]].setActivation_Strength(this.dataManager.activation_pattern[layer_names[i]+"_strength"]);
+
+            if (layer_names[i].includes('fc'))
+            this.architecture[layer_names[i]].setActivation_label_activation(this.dataManager.activation_pattern[layer_names[i]+"_0"])
         }
 
 

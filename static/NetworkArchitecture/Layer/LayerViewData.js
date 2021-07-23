@@ -18,6 +18,10 @@ class LayerViewData {
         this.strength = strength;
     }
 
+    setActivation_label_activation(labels_activation){
+        this.labels_activation = labels_activation;
+    }
+
     bining_2d(datax, datay, x_bin, y_bin) {
         
         //bin 2d

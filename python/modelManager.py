@@ -97,11 +97,15 @@ class ModelManager:
         dataset = torch.utils.data.Subset(self.datasets, indexs)
         test_loader = torch.utils.data.DataLoader(dataset)
         subset = []
+        subset_label = []
+
 
         for data, target in test_loader:
             data = data.view(-1, 1, 28, 28)
             device_data = data.to('cpu')
             subset.append(device_data.tolist())
+            subset_label.append(target.to('cpu').item())
+        
 
         result = self.train_model.activationPattern(subset)
         return {'activation_pattern': result, 'selectedData': subset}
@@ -159,7 +163,7 @@ class ModelManager:
                 device_data, device_target = data.to('cpu'), target.to('cpu')
                 score = model.getActivationValue(device_data, layer, index)
                 scores.append(score.item())
-        indexs = (-np.array(scores, dtype=np.float)).argsort()[:200]
+        indexs = (-np.array(scores, dtype=np.float)).argsort()[:20]
          
         for i in indexs:
             img = self.datasets[i][0][0].tolist()

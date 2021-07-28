@@ -19,6 +19,7 @@ class LeNet(PruningModule):
         self.fc2_embedding = []
         self.fc3_embedding = []
 
+
     def forward(self, x):
         x = x.view(-1, 784)
         x = F.relu(self.fc1(x))  # this is very interesting.

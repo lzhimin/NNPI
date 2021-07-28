@@ -80,14 +80,7 @@ class PruningModule(Module):
                       threshold, "for layer", name)
                 module.prune(threshold)
 
-    #def zfp_compression(self, tolerance=0.1):
-    #    for name, module in self.named_modules():
-    #        if name in ['fc1', 'fc2', 'fc3']:
-    #            data_array = module.weight.data.numpy()
-    #            compressed_layer = zfpy.compress_numpy(data_array, tolerance)
-    #            decompressed_lyaer = zfpy.decompress_numpy(compressed_layer)
-    #            module.weight.data = torch.from_numpy(
-    #                decompressed_lyaer).to('cpu')
+
 
 
 class MaskedLinear(Module):

@@ -5,6 +5,7 @@ from python.FeatureVisualization import getFeatureVisualization,getSaliencyGradi
 import numpy as np
 import torch.utils.data as data
 import os
+import torch.nn.functional as F
 
 class ModelManager:
 
@@ -38,6 +39,8 @@ class ModelManager:
         self.untrain_model = self.loadModel(
             'data/model/LetNet/letnet300_trained.pkl'
         )
+
+
 
         self.datasets = self.loadValidationData()
 
@@ -74,8 +77,23 @@ class ModelManager:
         model.load_state_dict(torch.load(path))
         model.eval()
 
-        return model
+        for name, param in model._modules.items():
+            if 'bias' not in name and 'mask' not in name and 'fc3' not in name:
+                param.register_forward_hook(self.forward_hook)
+                param.register_backward_hook(self.backward_hook)
 
+        return model
+    
+    def forward_hook(self, m, i, o): 
+        m._tp_activation = o.detach().clone()
+        
+        print(m._tp_activation)
+
+    def backward_hook(self, m, i, o):
+        taylor = -1. * (o[0] * m._tp_activation)
+        print(taylor.shape)
+        
+        
     def loadValidationData(self):
         # load dataset
         data = None
@@ -103,6 +121,9 @@ class ModelManager:
         for data, target in test_loader:
             data = data.view(-1, 1, 28, 28)
             device_data = data.to('cpu')
+            output = self.train_model(data)
+            loss = F.nll_loss(output, target)
+            loss.backward()
             subset.append(device_data.tolist())
             subset_label.append(target.to('cpu').item())
         

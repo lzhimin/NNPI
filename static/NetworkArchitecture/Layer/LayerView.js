@@ -45,7 +45,10 @@ class LayerView {
         else if(this.display_option == 'Ranking')
             this.draw_neuron_feature_ranking();
         else 
-            this.draw_activation_neuron_embedding(this.embedding);
+            this.draw_parallel_pruning_criteria();
+            //this.draw_neuron_feature_ranking();
+            //this.draw_activation_neuron_embedding(this.embedding);
+
         //draw menu
         this.draw_menu();
     }
@@ -120,15 +123,16 @@ class LayerView {
         let menu_name = undefined;
 
         if(this.name.includes('fc')){
-            menu = [this.name+'_Selection', this.name+'_Ranking', this.name+'_TSNE', ];
-            menu_name = ['Selection', 'Ranking', 'TSNE'];
+            menu = [this.name+'_Selection', this.name+'_Ranking', this.name+'_Parallel'];
+            menu_name = ['Selection', 'Ranking', 'Parallel'];
         }
         else{
             menu = [this.name+'_Selection', this.name+'_Ranking'];
-            menu_name = ['Selection', 'Ranking',];
+            menu_name = ['Selection', 'Ranking'];
         }
         
-        this.menu = this.svg.append('g').selectAll('.layerview_menu_rect')
+        this.menu = this.svg.append('g')
+            .selectAll('.layerview_menu_rect')
             .data(menu)
             .enter()
             .append('rect')
@@ -157,12 +161,12 @@ class LayerView {
                 this.menu.classed("active_menu", true);
                 d3.selectAll('.' + i).classed("active_menu_active", true);
 
-                if (i.includes('TSNE'))
-                    this.display_option = 'TSNE';
+                if (i.includes('Parallel'))
+                    this.display_option = 'Parallel';
                 else if (i.includes('Ranking'))
                     this.display_option = 'Ranking';
                 else if(i.includes('Selection'))
-                this.display_option = 'Selection';
+                    this.display_option = 'Selection';
 
                 this.redraw();
             });
@@ -275,9 +279,7 @@ class LayerView {
                 .attr('cy', (d, i) => {
                     return this.y_axis(d[2]);
                 })
-                .attr('r', (d, i)=>{
-                        return 5;
-                })
+                .attr('r', 5)
                 .style('fill', (d, i) => {
                     if (this.dataManager.pattern[i] == 0)
                         return 'white';
@@ -369,7 +371,70 @@ class LayerView {
         this.svg.append("g")
             .attr("class", "brush")
             .call(brush);
-    }    
+    } 
+    
+    draw_parallel_pruning_criteria(){
+        let x = this.x + 20;
+        let y = this.y;
+        let width = this.width * 5;
+        let height = this.background_height * 0.7;
+
+        let y_axis = {};
+        let temp = this.dataManager.getPruningCriteria();
+        let columns_names = temp[0], criterias = temp[1];
+
+        for(let i = 0; i < columns_names.length; i++){
+            y_axis[columns_names[i]] = d3.scaleLinear()
+                .domain(d3.extent(criterias, (d)=>{
+                    return d[i];
+                })).range([y + height, y]);
+        }
+
+        let x_axis = d3.scalePoint()
+            .range([0, width])
+            .padding(1)
+            .domain(columns_names);
+
+        //The path function
+        function path(d) {
+            return d3.line()(columns_names.map(function(p, i) { return [x_axis(p), y_axis[p](d[i])]; }));
+        }
+
+        // Draw the lines
+        let paths = this.svg.append('g')
+            .selectAll("myPath")
+            .data(criterias)
+            .enter()
+            .append("path")
+            .attr("d", path)
+            .style("fill", "none")
+            .style("stroke", 'steelblue')
+            .style("opacity", 0.8);
+
+        // Draw the axis:
+        this.svg.selectAll("myAxis")
+            // For each dimension of the dataset I add a 'g' element:
+            .data(columns_names)
+            .enter()
+            .append("g")
+            // I translate this element to its right position on the x axis
+            .attr("transform", function (d) { return "translate(" + x_axis(d) + ")"; })
+            // And I build the axis with the call function
+            .each(function (d) {
+                d3.select(this).call(d3.axisLeft(y_axis[d]).ticks(5));
+            })
+            // Add axis title
+            .append("text")
+            .style("text-anchor", "middle")
+            .attr("y", y + height + 20)
+            .text(function (d) {
+                return d;
+            })
+            .style('font-size', '14px')
+            .style("fill", "black");
+        
+        return paths;
+    }
 
     redraw() {
         this.draw();
@@ -395,6 +460,14 @@ class LayerView {
 
     setActivation_Strength(strength) {
         this.dataManager.setActivation_Strength(strength);
+    }
+
+    setTaylor(taylor){
+        this.dataManager.setTaylor(taylor);
+    }
+
+    setSensitivity(sensitivity){
+        this.dataManager.setSensitivity(sensitivity);
     }
 
     setActivation_label_activation(data){

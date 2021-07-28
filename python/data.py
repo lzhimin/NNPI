@@ -49,8 +49,9 @@ def load_Model_Data_Summary():
     input_embedding = np.loadtxt('tsne.out',  delimiter=',')
 
     print('get activation')
-    activation_pattern = modelManager.train_model.activationPattern(
-        validation_summary[1])
+    activation_pattern = modelManager.fetch_activation_pattern(list(range(3000)))['activation_pattern']
+    # modelManager.train_model.activationPattern(
+    #   validation_summary[1])
 
     print('return result')
 

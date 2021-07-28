@@ -38,12 +38,20 @@ class NetworkArchitecture extends BasicView {
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
             this.architecture[layer_names[i]] = new LayerView(layer_names[i], this.dataManager.data[layer_names[i]], this.svg)
-            this.architecture[layer_names[i]].setActivation_pattern(this.dataManager.activation_pattern[layer_names[i]]);
-            this.architecture[layer_names[i]].set_embedding(this.dataManager.activation_pattern[layer_names[i]+"_embedding"]);
-            this.architecture[layer_names[i]].setActivation_Strength(this.dataManager.activation_pattern[layer_names[i]+"_strength"]);
+            this.architecture[layer_names[i]].setActivation_pattern(
+                this.dataManager.activation_pattern[layer_names[i]]);
+            
+            this.architecture[layer_names[i]].setActivation_Strength(
+                this.dataManager.activation_pattern[layer_names[i]+"_strength"]);
 
-            if (layer_names[i].includes('fc'))
-            this.architecture[layer_names[i]].setActivation_label_activation(this.dataManager.activation_pattern[layer_names[i]+"_0"])
+            this.architecture[layer_names[i]].setTaylor(
+                this.dataManager.activation_pattern[layer_names[i]+'_taylor']);
+            
+            this.architecture[layer_names[i]].setSensitivity(
+                this.dataManager.activation_pattern[layer_names[i]+'_sensitivity']);
+
+            this.architecture[layer_names[i]].set_embedding(
+                this.dataManager.activation_pattern[layer_names[i]+"_embedding"]);
         }
 
 

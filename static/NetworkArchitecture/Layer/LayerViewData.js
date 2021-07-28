@@ -8,18 +8,32 @@ class LayerViewData {
         
     }
 
+    getPruningCriteria(){
+        let columns = ['frequency', 'max_acttivation', 'taylor', 'sensitivity'];
+
+        let data = [];
+
+        for(let i = 0; i < this.pattern.length; i++){
+            data.push([this.pattern[i], this.strength[i], this.taylor[i], this.sensitivity[i]]);
+        }
+
+        return [columns, data];
+    }
+
     setActivation_Pattern(pattern) {
         this.pattern = pattern;
-
-        //this.countActivationBin();
     }
 
     setActivation_Strength(strength){
         this.strength = strength;
     }
 
-    setActivation_label_activation(labels_activation){
-        this.labels_activation = labels_activation;
+    setTaylor(taylor){
+        this.taylor = taylor;
+    }
+
+    setSensitivity(sensitivity){
+        this.sensitivity = sensitivity;
     }
 
     bining_2d(datax, datay, x_bin, y_bin) {

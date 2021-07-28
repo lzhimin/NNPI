@@ -21,7 +21,6 @@ class NetworkArchitectureData {
         fetch_selected_architecture_info(this.pruned_components);
     }
 
-
     setActivationPattern(data) {
         this.activation_pattern = data;
     }

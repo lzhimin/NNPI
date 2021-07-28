@@ -79,21 +79,30 @@ class ModelManager:
 
         for name, param in model._modules.items():
             if 'bias' not in name and 'mask' not in name and 'fc3' not in name:
-                param.register_forward_hook(self.forward_hook)
-                param.register_backward_hook(self.backward_hook)
+                self.hooks = [param.register_forward_hook(self.forward_hook), param.register_backward_hook(self.backward_hook)]
 
         return model
     
-    def forward_hook(self, m, i, o): 
-        m._tp_activation = o.detach().clone()
+    def forward_hook(self, m, i, o):
+        with torch.no_grad(): 
+            m._tp_activation = o.detach().clone()
         
-        print(m._tp_activation)
-
     def backward_hook(self, m, i, o):
         taylor = -1. * (o[0] * m._tp_activation)
-        print(taylor.shape)
-        
-        
+        taylor = taylor.abs()
+        sensitivity = o[0].abs()
+
+        if not hasattr(m, '_tp_sensitivity'):
+            m._tp_sensitivity = sensitivity
+        else:
+            m._tp_sensitivity = np.concatenate((m._tp_sensitivity, sensitivity.detach().cpu().numpy()), 0)
+
+
+        if not hasattr(m, '_tp_taylor'):
+            m._tp_taylor = taylor.detach().cpu().numpy()
+        else:
+            m._tp_taylor = np.concatenate((m._tp_taylor, taylor.detach().cpu().numpy()), 0)
+              
     def loadValidationData(self):
         # load dataset
         data = None
@@ -117,7 +126,6 @@ class ModelManager:
         subset = []
         subset_label = []
 
-
         for data, target in test_loader:
             data = data.view(-1, 1, 28, 28)
             device_data = data.to('cpu')
@@ -127,8 +135,19 @@ class ModelManager:
             subset.append(device_data.tolist())
             subset_label.append(target.to('cpu').item())
         
+        rs = {}
+        # get taylor expansion criteria for each neuron
+        for name, param in self.train_model._modules.items():
+            if 'bias' not in name and 'mask' not in name and 'fc3' not in name:
+                rs[name+"_taylor"] = np.sum(param._tp_taylor, axis=0).tolist()
+                rs[name+"_sensitivity"] = np.sum(param._tp_sensitivity, axis=0).tolist()
+
+        for h in self.hooks:
+            h.remove()
 
         result = self.train_model.activationPattern(subset)
+        result.update(rs)
+
         return {'activation_pattern': result, 'selectedData': subset}
 
     def mapping_neuron_activation_to_input(self, neuron_info):

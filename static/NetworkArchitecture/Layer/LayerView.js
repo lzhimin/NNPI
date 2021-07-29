@@ -44,10 +44,11 @@ class LayerView {
             this.draw_neuron_feature_selection();
         else if(this.display_option == 'Ranking')
             this.draw_neuron_feature_ranking();
-        else 
+        else {
             this.draw_parallel_pruning_criteria();
             //this.draw_neuron_feature_ranking();
             //this.draw_activation_neuron_embedding(this.embedding);
+        }
 
         //draw menu
         this.draw_menu();
@@ -288,8 +289,8 @@ class LayerView {
                 })
                 .style('fill-opacity', 0.5)
                 .on('click', (event, d, nodes) =>{
-                    d3.selectAll('.architecture_embedding_points').attr('r', 5);
-                    d3.select(this.points["_groups"][0][d[1]]).attr('r', 10);
+                    d3.selectAll('.architecture_embedding_points').attr('r', 5).style('fill','steelblue');
+                    d3.select(this.points["_groups"][0][d[1]]).attr('r', 10).style('fill','orange');
                     fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
                     fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
                 });
@@ -374,11 +375,11 @@ class LayerView {
     } 
     
     draw_parallel_pruning_criteria(){
-        let x = this.x + 20;
+        let x = this.x - 50;
         let y = this.y;
         let width = this.width * 5;
         let height = this.background_height * 0.7;
-
+        let brush_width = 16, padding = 2;
         let y_axis = {};
         let temp = this.dataManager.getPruningCriteria();
         let columns_names = temp[0], criterias = temp[1];
@@ -397,11 +398,23 @@ class LayerView {
 
         //The path function
         function path(d) {
-            return d3.line()(columns_names.map(function(p, i) { return [x_axis(p), y_axis[p](d[i])]; }));
+            return d3.line()(columns_names.map(function(p, i) { 
+                return [x_axis(p), y_axis[p](d[i])]; 
+            }));
         }
 
-        // Draw the lines
-        let paths = this.svg.append('g')
+        // Draw background lines
+        this.svg.append('g')
+            .selectAll("myPath")
+            .data(criterias)
+            .enter()
+            .append("path")
+            .attr("d", path)
+            .style("fill", "none")
+            .style("stroke", 'gray')
+            .style("stroke-opacity", 0.8)
+
+        let foreground_paths = this.svg.append('g')
             .selectAll("myPath")
             .data(criterias)
             .enter()
@@ -409,22 +422,64 @@ class LayerView {
             .attr("d", path)
             .style("fill", "none")
             .style("stroke", 'steelblue')
-            .style("opacity", 0.8);
+            .style("stroke-opacity", 0.8);
 
         // Draw the axis:
-        this.svg.selectAll("myAxis")
-            // For each dimension of the dataset I add a 'g' element:
+        let gs = this.svg.selectAll("myAxis")
             .data(columns_names)
             .enter()
             .append("g")
-            // I translate this element to its right position on the x axis
-            .attr("transform", function (d) { return "translate(" + x_axis(d) + ")"; })
-            // And I build the axis with the call function
+            .attr("transform", function (d) {
+                 return "translate(" + x_axis(d) + ", 0)";
+            })
             .each(function (d) {
                 d3.select(this).call(d3.axisLeft(y_axis[d]).ticks(5));
-            })
-            // Add axis title
-            .append("text")
+            });
+
+        const filters = {};
+        const brushEventHandler = function(event, feature){
+            if(event.selection != null){
+                filters[feature] = event.selection.map(d=>y_axis[feature].invert(d));
+            }else{
+                if(feature in filters)
+                    delete(filters[feature]);
+            }
+            applyFilters();
+        }
+
+        const applyFilters = function(){
+           foreground_paths.style('display', d=>(selected(d) ? null:'none'));
+        }
+
+        const selected = function(d){
+            const _filters = Object.entries(filters);
+            return _filters.every((f, i)=>{
+               return f[1][1] <= d[i] && d[i] <= f[1][0];
+            });
+        }
+            
+        const yBrushes = {};
+        Object.entries(y_axis).map(d=>{
+            let extent = [
+                [-(brush_width/2), y],
+                [(brush_width/2), y + height]
+            ];
+
+            yBrushes[d[0]]= d3.brushY()
+                .extent(extent)
+                .on('brush', (event)=>brushEventHandler(event,d[0]))
+                .on('end', (event)=>brushEventHandler(event, d[0]));
+        });
+
+        gs.each(function(d){
+            d3.select(this)
+              .append('g')
+              .attr('class','brush')
+              .call(yBrushes[d]);
+        });
+
+        // Add axis title
+        gs.append("text")
             .style("text-anchor", "middle")
             .attr("y", y + height + 20)
             .text(function (d) {
@@ -433,7 +488,7 @@ class LayerView {
             .style('font-size', '14px')
             .style("fill", "black");
         
-        return paths;
+        return foreground_paths;
     }
 
     redraw() {

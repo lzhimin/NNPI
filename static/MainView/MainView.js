@@ -15,6 +15,9 @@ class MainView extends BasicView {
         //color encoding
         this.color_encoding_option = 'label';
 
+        //visualization view
+        this.view_options = 'tsne';
+
         //subscribe('MainVis', this.setData.bind(this))
         subscribe("input_summary", this.setData.bind(this));
         subscribe("input_activation_pattern", this.set_Neuron_Activation_Mapping.bind(this));
@@ -50,7 +53,11 @@ class MainView extends BasicView {
         // the size of embedding
         this.embedding_width = 550;
         this.embedding_height = 350;
-        this.draw_embedding(this.margin.left, this.margin.top, this.embedding_width, this.embedding_height, this.dataManager.embedding)
+
+        if(this.view_options == 'tsne')
+            this.draw_embedding(this.margin.left, this.margin.top, this.embedding_width, this.embedding_height, this.dataManager.embedding)
+        else
+            this.draw_confusion_matrix(this.margin.left, this.margin.top, this.embedding_width, this.embedding_height,this.dataManager.preduction_summary);
     }
 
     draw_embedding(x, y, width, height, data) {
@@ -125,6 +132,56 @@ class MainView extends BasicView {
             .attr('text-anchor', 'middle')
             .attr('writing-mode', 'vertical-rl');
         
+    }
+
+    draw_confusion_matrix(x, y, width, height, data){
+       let padding =  75;
+       x = x+padding;
+       y = y+padding;
+
+       let w = (width-padding)/data[0].length;
+       let h = (height-padding)/data.length;
+
+       let max = d3.max(data,(d)=>{
+           return d3.max(d);
+        });
+
+
+       let rg = this.svg.append('g')
+        .selectAll('.confusionmatrix_row')
+        .data(this.dataManager.preduction_summary)
+        .enter()
+        .append('g')
+        .attr('transform',(d, i)=>{
+            return 'translate('+x+','+ (y+(i * h)) +')';
+        });
+       
+       rg.selectAll('.confusionmatrix_rect')
+        .data((d)=>d)
+        .enter()
+        .append('rect')
+        .attr('x', (d, i)=>{
+            return i * w;
+        })
+        .attr('y', 0)
+        .attr('width', w)
+        .attr('height', h)
+        .attr('class', 'matrix_rect')
+        .style('fill', (d)=>{
+            if (d == 0)return 'white';
+            return d3.interpolateBlues(d/max);
+        });
+       
+
+        rg.selectAll('.confusionmatrix_rect')
+        .data((d)=>d)
+        .enter()
+        .append('text')
+        .attr('x', (d, i)=>{
+            return i * w + w/2;
+        })
+        .attr('y', h/2)
+        .text(d=>d);
     }
 
     draw_activation_score_hist(x, y, width, height, data){
@@ -246,6 +303,15 @@ class MainView extends BasicView {
 
     //binding the interactive event
     bindingEvent() {
+
+        //label color event
+        $("input[name='view_option']").off('change');
+        $("input[name='view_option']").on('change', () => {
+            this.view_options = $("input[type=radio][name='view_option']:checked").val();
+            this.draw();
+        });
+
+
         //lasso operation event
         $("input[name='lasso_selection_option']").off('change');
         $("input[name='lasso_selection_option']").on('change', () => {
@@ -259,6 +325,7 @@ class MainView extends BasicView {
             this.color_encoding_option = $("input[type=radio][name='color_encoding_option']:checked").val();
             this.draw();
         });
+
     }
 
     setData(msg, data) {
@@ -273,13 +340,19 @@ class MainView extends BasicView {
     }
 
     set_prediction_result(msg, data){
-        this.points.style('fill', (d, i) => {
-                return data[i] == 1 ? 'white' : 'red';
-        });
+
+        this.dataManager.prediction_result = data.predict_result;
+        this.dataManager.preduction_summary = data.confusionMatrix;
+        if(this.view_options == 'tsne')
+            this.points.style('fill', (d, i) => {
+                    return this.dataManager.prediction_result[i] == 1 ? 'white' : 'red';
+            });
+        else{
+            this.draw();
+        }
     }
 
-    //current selected neuron or filter's activation score
-    // and indexs
+    //current selected neuron or filter's activation score and indexs
     set_activation_score(msg, data){
         this.dataManager.setActivationScore(data);
 

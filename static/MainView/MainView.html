@@ -10,13 +10,20 @@
             </select>
         </div>
 
+        
+        <div class='main_view_menu_div'>
+            <label class='main_view_menu_label'>View</label>
+            <input type="radio" id="tsne_view_option_label" name="view_option" value="tsne" checked>
+            <label class='main_view_menu_label' for="tsne_view_option_label">Tsne</label>
+            
+            <input type="radio" id="matrxi_view_option_label" name="view_option" value="matrxi" >
+            <label class='main_view_menu_label' for="matrxi_view_option_label">Confusion Matrix</label>
+        </div>
+
         <div class='main_view_menu_div'>
             <label class='main_view_menu_label'>Color Encoding</label>
             <input type="radio" id="color_encoding_option_label" name="color_encoding_option" value="label" checked>
             <label class='main_view_menu_label' for="color_encoding_option_label">Label</label>
-            
-            <input type="radio" id="color_encoding_option_kmean" name="color_encoding_option" value="kmean">
-            <label class='main_view_menu_label' for="color_encoding_option_kmean">kmean</label>
             
             <input type="radio" id="color_encoding_option_error" name="color_encoding_option" value="error" >
             <label class='main_view_menu_label' for="color_encoding_option_error">Error</label>

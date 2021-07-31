@@ -62,7 +62,7 @@ function lasso(x, y, width, height) {
         function handleDrag(event) {
             const point = d3.pointer(event);
             //point[0] -= x;
-            point[1] -= (y + 95);
+            point[1] -= (y + 118);
 
             lassoPolygon.push(point);
             lassoPath.attr('d', polygonToPath(lassoPolygon))

@@ -45,3 +45,8 @@
     stroke: gray;
     stroke-width: 1px;
 }
+
+.matrix_rect{
+    stroke: black;
+    stroke-width: 1px;
+}

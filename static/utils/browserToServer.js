@@ -7,7 +7,7 @@ function fetch_data(json) {
         dataType: 'json',
         success: function (data) {
             publish("model_summary", [data.model_summary, data.prediction_summary, data.embedding, data.embedding_label, data.activation_pattern])
-            publish("input_summary", [data.embedding, data.embedding_label, data.predict_result])
+            publish("input_summary", [data.embedding, data.embedding_label, data.predict_result, data.prediction_summary])
         }
     });
 }
@@ -62,7 +62,7 @@ function fetch_selected_architecture_info(json){
         data: JSON.stringify(json),
         dataType: 'json',
         success: function (data) {
-            publish("predict_summary", data.predict_summary);
+            publish("predict_summary", data);
         }
     });
 }

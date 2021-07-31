@@ -96,8 +96,6 @@ def validation(model, dataset, labels):
                 np.array(data.tolist()).flatten().tolist())
             subset_label.append(device_target[0].item())
 
-    #kmeans = KMeans(n_clusters=10, random_state=0).fit(flatten_subset)
-    #return confusionMatrix.tolist(), subset, kmeans.labels_.tolist(), flatten_subset, prediction_result
     return confusionMatrix.tolist(), subset, subset_label, flatten_subset, prediction_result
 
 def getActivation(indexs):
@@ -105,7 +103,7 @@ def getActivation(indexs):
 
 def selected_architecture_info(selected_neuron):
     predict_result = modelManager.prune_unselected_neuron_return_prediction_result(selected_neuron)
-    return {'predict_summary':predict_result}
+    return {'predict_result':predict_result[0], 'confusionMatrix':predict_result[1]}
     
 def mapping_neuron_activation_to_input(data):
     return modelManager.mapping_neuron_activation_to_input(data)

@@ -453,8 +453,10 @@ class LayerView {
 
         const selected = function(d){
             const _filters = Object.entries(filters);
+            
             return _filters.every((f, i)=>{
-               return f[1][1] <= d[i] && d[i] <= f[1][0];
+                let index = columns_names.indexOf(f[0])
+                return f[1][1] <= d[index] && d[index] <= f[1][0];
             });
         }
             

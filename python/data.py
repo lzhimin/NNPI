@@ -87,9 +87,9 @@ def validation(model, dataset, labels):
             confusionMatrix[device_target[0]][pred[0][0]] += 1
 
             if device_target[0] == pred[0][0]:
-                prediction_result.append(1)
+                prediction_result.append(torch.exp(output)[0][pred[0][0]].item())
             else:
-                prediction_result.append(0)
+                prediction_result.append(-torch.exp(output)[0][pred[0][0]].item())
 
             subset.append(data.tolist())
             flatten_subset.append(

@@ -22,7 +22,6 @@ class MainView extends BasicView {
         subscribe("input_summary", this.setData.bind(this));
         subscribe("input_activation_pattern", this.set_Neuron_Activation_Mapping.bind(this));
         subscribe("predict_summary", this.set_prediction_result.bind(this));
-
         subscribe('Activation_Score', this.set_activation_score.bind(this));
     }
 
@@ -97,12 +96,17 @@ class MainView extends BasicView {
             .style('fill', (d, i) => {
                 //define different color encoding
                 if (this.color_encoding_option == 'error') {
-                    return this.dataManager.prediction_result[i] == 1 ? 'white' : 'red';
+                    return this.dataManager.prediction_result[i] > 0 ? 'white' : 'red';
+                } else if(this.color_encoding_option == 'confident'){
+                    if (this.dataManager.prediction_result[i] > 0)
+                        return d3.interpolateYlGnBu(this.dataManager.prediction_result[i]);
+                    else 
+                        return d3.interpolateYlOrBr(-this.dataManager.prediction_result[i]);
                 } else {
                     return this.colormap(d[1]);
                 }
             })
-            .style('fill-opacity', 0.5)
+            .style('fill-opacity', 0.3)
             .on('click', function(event, d) {
                 d3.selectAll('.embedding_points').attr('r', 5);
                 d3.select(this).attr('r', 10);
@@ -135,7 +139,7 @@ class MainView extends BasicView {
     }
 
     draw_confusion_matrix(x, y, width, height, data){
-       let padding =  75;
+       let padding = 40;
        x = x+padding;
        y = y+padding;
 
@@ -170,9 +174,12 @@ class MainView extends BasicView {
         .style('fill', (d)=>{
             if (d == 0)return 'white';
             return d3.interpolateBlues(d/max);
-        });
+        }).on('mouseover', function(event){
+            d3.select(this).style('stroke', 'orange').style('stroke-width', '4px');
+        }).on('mouseout', function(event){
+            d3.select(this).style('stroke', 'black').style('stroke-width', '1px');;
+        })
        
-
         rg.selectAll('.confusionmatrix_rect')
         .data((d)=>d)
         .enter()
@@ -181,7 +188,8 @@ class MainView extends BasicView {
             return i * w + w/2;
         })
         .attr('y', h/2)
-        .text(d=>d);
+        .text(d=>d)
+        .style("pointer-events","none");
     }
 
     draw_activation_score_hist(x, y, width, height, data){
@@ -345,7 +353,16 @@ class MainView extends BasicView {
         this.dataManager.preduction_summary = data.confusionMatrix;
         if(this.view_options == 'tsne')
             this.points.style('fill', (d, i) => {
-                    return this.dataManager.prediction_result[i] == 1 ? 'white' : 'red';
+                if (this.color_encoding_option == 'error') {
+                    return this.dataManager.prediction_result[i] > 0 ? 'white' : 'red';
+                } else if(this.color_encoding_option == 'confident'){
+                    if (this.dataManager.prediction_result[i] > 0)
+                        return d3.interpolateBlues(this.dataManager.prediction_result[i]);
+                    else 
+                        return d3.interpolateReds(-this.dataManager.prediction_result[i]);
+                } else {
+                    return this.colormap(d[1]);
+                }
             });
         else{
             this.draw();

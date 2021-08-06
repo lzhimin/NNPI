@@ -156,7 +156,7 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=args.lr,
                           momentum=0.9, weight_decay=5e-4)
 
-    train(10, model, device, optimizer)
+    train(30, model, device, optimizer)
 
     # test(model, device)
     # print(model.parameters)

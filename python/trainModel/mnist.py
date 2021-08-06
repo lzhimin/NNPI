@@ -124,8 +124,8 @@ def main():
     # model
     model = LeNet(mask=True).to(device)
 
-    model.load_state_dict(torch.load(
-        '../../data/model/LetNet/letnet300_trained.pkl'))
+    #model.load_state_dict(torch.load(
+    #    '../../data/model/LetNet/letnet300_trained.pkl'))
     test(model, device)
 
     print("pruned the model")
@@ -149,7 +149,7 @@ def main():
     #model.fc3.bias.requires_grad = False
     #test(model, device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
-    train(50, model, device, optimizer)
+    train(30, model, device, optimizer)
 
     test(model, device)
     # print(model.parameters)

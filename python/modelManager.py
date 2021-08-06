@@ -187,15 +187,15 @@ class ModelManager:
             for data, target in data_loader:
                 device_data, device_target = data.to('cpu'), target.to('cpu')
                 output = self.train_model(device_data)
+                
                 # get the index of the max log-probability
                 pred = output.data.max(1, keepdim=True)[1]
-
                 confusionMatrix[device_target[0]][pred[0][0]] += 1
 
                 if device_target[0] == pred[0][0]:
-                    prediction_result.append(1)
+                    prediction_result.append(torch.exp(output)[0][pred[0][0]].item())
                 else:
-                    prediction_result.append(0)
+                    prediction_result.append(-torch.exp(output)[0][pred[0][0]].item())
         return prediction_result, confusionMatrix.tolist()
 
     def getTop10ActiveSample(self, model, layer, index):

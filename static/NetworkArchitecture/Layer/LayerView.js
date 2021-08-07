@@ -207,12 +207,12 @@ class LayerView {
         this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x, x + width]);
         this.y_axis = d3.scaleLinear().domain([y_max, y_min]).range([y + height/8, y + height/1.2]);
 
-        this.svg.append('g')
+        this.x_axis_g = this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(0" + ',' + (y + height/1.2) + ")")
             .call(d3.axisBottom(this.x_axis).ticks(3));
         
-        this.svg.append('g')
+        this.y_axis_g = this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(" + x + ",0)")
             .call(d3.axisLeft(this.y_axis).ticks(3));
@@ -494,7 +494,63 @@ class LayerView {
     }
 
     redraw() {
-        this.draw();
+        if (this.display_option == 'Parallel')
+            this.draw_parallel_pruning_criteria();
+        else {
+
+            let x = this.x + 20;
+            let y = this.y - 20;
+            let width = this.width * 2;
+            let height = this.background_height * 0.9;
+
+            let x_max, x_min;
+            let y_max, y_min;
+
+            [x_min, x_max] = d3.extent(this.dataManager.pattern);
+            [y_min, y_max] = d3.extent(this.dataManager.strength);
+            
+            this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x, x + width]);
+            this.y_axis = d3.scaleLinear().domain([y_max, y_min]).range([y + height/8, y + height/1.2]);
+    
+            this.x_axis_g
+                .transition()
+                .duration(2000)
+                .call(d3.axisBottom(this.x_axis).ticks(3));
+            
+            this.y_axis_g
+                .transition()
+                .duration(2000)
+                .call(d3.axisLeft(this.y_axis).ticks(3));
+
+            //ranking data
+            let data_activation_pattern = [];
+            for (let i = 0; i < this.dataManager.pattern.length; i++){
+                data_activation_pattern.push([this.dataManager.pattern[i], i, this.dataManager.strength[i]]);
+            }  
+
+            this.points.data(data_activation_pattern).enter();
+
+            if(this.name.includes('fc')){
+                this.points.transition()
+                    .duration(2000)
+                    .attr('cx', (d, i) => {
+                        return this.x_axis(d[0]);
+                    })
+                    .attr('cy', (d, i) => {
+                        return this.y_axis(d[2]);
+                    });
+            }else{
+                this.points.transition()
+                    .duration(2000)
+                    .attr('x', (d, i) => {
+                        return this.x_axis(d[0]);
+                    })
+                    .attr('y', (d, i) => {
+                        return this.y_axis(d[2]);
+                    });
+            }
+            this.points.exit().remove();
+        }
     }
     
     setlocation(x, y) {

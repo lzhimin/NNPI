@@ -28,7 +28,7 @@ class MainView extends BasicView {
     init() {
         super.init();
 
-        this.margin = { 'left': 100, 'right': 20, 'top': 20 };
+        this.margin = { 'left': 100, 'right': 20, 'top': 80 };
 
         d3.select("#main_view_panel").html("");
 
@@ -106,7 +106,13 @@ class MainView extends BasicView {
                     return this.colormap(d[1]);
                 }
             })
-            .style('fill-opacity', 0.3)
+            .style('fill-opacity', (d, i)=>{
+                //define different color encoding
+                if (this.color_encoding_option == 'error') {
+                    return this.dataManager.prediction_result[i] > 0 ? 0 : 0.9;
+                } 
+                return 0.3;
+            })
             .on('click', function(event, d) {
                 d3.selectAll('.embedding_points').attr('r', 5);
                 d3.select(this).attr('r', 10);
@@ -157,7 +163,9 @@ class MainView extends BasicView {
                 .style('fill', (d)=>{
                     return d=='correct' ? 'white':'red';
                 })
-                .style('fill-opacity', 0.3);
+                .style('fill-opacity', (d, i)=>{
+                    return d=='correct' ? 0 : 0.8;
+                });
             
             let tg = this.svg.append('g');
             tg.selectAll('.main_view_error_label')
@@ -246,7 +254,42 @@ class MainView extends BasicView {
                 .attr('text-anchor', 'middle')
                 .attr('dominant-baseline', 'central');
         } else if (this.color_encoding_option == 'label'){
+            let rg = this.svg.append('g');
+            let d = [];
+            for(let i = 0; i < 10; i++){
+                d.push(i);
+            }
 
+            rg.selectAll('.main_view_rect')
+                .data(d)
+                .enter()
+                .append('rect')
+                .attr('width', 20)
+                .attr('height', 20)
+                .attr('class', 'annotation_rect')
+                .attr('x', (d, i)=>{
+                    return x + width + padding;
+                })
+                .attr('y', (d, i)=>{
+                    return y + i * a_h * 1.8;
+                })
+                .style('fill', (d)=>{
+                    return this.colormap(d);
+                });
+
+            rg.selectAll('.main_view_label')
+                .data(d)
+                .enter()
+                .append('text')
+                .text(d=>d)
+                .attr('x', (d, i)=>{
+                    return x + width + padding + a_w * 1.5;
+                })
+                .attr('y', (d, i)=>{
+                    return y + i * a_h * 1.8 + a_h/2;
+                })
+                .attr('text-anchor', 'middle')
+                .attr('dominant-baseline', 'central');                
         }
         
     }
@@ -270,7 +313,7 @@ class MainView extends BasicView {
         .enter()
         .append('g')
         .attr('transform',(d, i)=>{
-            return 'translate('+x+','+ (y+(i * h)) +')';
+            return 'translate('+x+','+ (y+(i * (h+2))) +')';
         });
        
        rg.selectAll('.confusionmatrix_rect')
@@ -278,7 +321,7 @@ class MainView extends BasicView {
         .enter()
         .append('rect')
         .attr('x', (d, i)=>{
-            return i * w;
+            return i * (w+2);
         })
         .attr('y', 0)
         .attr('width', w)
@@ -291,7 +334,9 @@ class MainView extends BasicView {
             d3.select(this).style('stroke', 'orange').style('stroke-width', '4px');
         }).on('mouseout', function(event){
             d3.select(this).style('stroke', 'black').style('stroke-width', '1px');;
-        })
+        }).on('click', function(event){
+
+        });
        
         rg.selectAll('.confusionmatrix_rect')
         .data((d)=>d)
@@ -476,7 +521,14 @@ class MainView extends BasicView {
                 } else {
                     return this.colormap(d[1]);
                 }
-            });
+            })
+            .style('fill-opacity', (d, i)=>{
+                //define different color encoding
+                if (this.color_encoding_option == 'error') {
+                    return this.dataManager.prediction_result[i] > 0 ? 0.1 : 0.9;
+                } 
+                return 0.3;
+            })
         else{
             this.draw();
         }

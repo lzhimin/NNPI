@@ -135,6 +135,119 @@ class MainView extends BasicView {
             .attr('y', y + height/2)
             .attr('text-anchor', 'middle')
             .attr('writing-mode', 'vertical-rl');
+
+
+        //draw annotation rect
+        let a_w = 20;
+        let a_h = 20;
+        let padding = 50;
+        if(this.color_encoding_option == 'error'){
+            let rg = this.svg.append('g');
+            rg.selectAll('.main_view_error_label')
+                .data(['correct', 'wrong'])
+                .enter()
+                .append('rect')
+                .attr('width', a_w)
+                .attr('height', a_h)
+                .attr('x', x + width + padding)
+                .attr('y', (d, i)=>{
+                    return y + height/5 + i * a_h * 2;
+                })
+                .attr('class', 'annotation_rect')
+                .style('fill', (d)=>{
+                    return d=='correct' ? 'white':'red';
+                })
+                .style('fill-opacity', 0.3);
+            
+            let tg = this.svg.append('g');
+            tg.selectAll('.main_view_error_label')
+            .data(['correct', 'wrong'])
+            .enter()
+            .append('text')
+            .text(d=>d)
+            .attr('x', x + width + padding + a_w * 1.5)
+            .attr('y', (d, i)=>{
+                return y + height/5 + i * a_h * 2 + a_h/2;
+            });
+
+        } else if (this.color_encoding_option == 'confident'){
+            let rg = this.svg.append('g');
+            let datas = [0];
+            for(let i = 0; i < 25; i++){
+                datas.push((i+1)/25.0);
+            }
+
+            rg.selectAll('.main_view_confident_bar')
+                .data(datas)
+                .enter()
+                .append('rect')
+                .attr('width', a_w)
+                .attr('height', 4)
+                .attr('x', (d, i)=>{
+                    return x + width + padding 
+                })
+                .attr('y', (d, i)=>{
+                    return y + height/5 + i * 4;
+                })
+                .style('fill', (d)=>{
+                    return d3.interpolateYlGnBu(d);
+                });
+
+            rg.selectAll('.main_view_confident_bar')
+                .data(datas)
+                .enter()
+                .append('rect')
+                .attr('width', a_w)
+                .attr('height', 4)
+                .attr('x', (d, i)=>{
+                    return x + width + padding 
+                })
+                .attr('y', (d, i)=>{
+                    return y + height/1.5 + i * 4;
+                })
+                .style('fill', (d)=>{
+                    return d3.interpolateYlOrBr(d);
+                });
+            
+            let tg = this.svg.append('g');
+            tg.selectAll('.main_view_error_label')
+                .data(['correct', 'wrong'])
+                .enter()
+                .append('text')
+                .text(d=>d)
+                .attr('x', x + width + padding + a_w/2)
+                .attr('y', (d, i)=>{
+                    return i == 0 ? (y + height/5 - a_h) : ( y + height/1.5 - a_h);
+                })
+                .attr('text-anchor', 'middle')
+                .attr('dominant-baseline', 'central');
+
+            tg.selectAll('.main_view_error_label')
+                .data(['0%', '0%'])
+                .enter()
+                .append('text')
+                .text(d=>d)
+                .attr('x', x + width + padding + a_w * 2)
+                .attr('y', (d, i)=>{
+                    return i == 0 ? (y + height/5 + a_h) : ( y + height/1.5 + a_h);
+                })
+                .attr('text-anchor', 'middle')
+                .attr('dominant-baseline', 'central');
+
+            tg.selectAll('.main_view_error_label')
+                .data(['100%', '100%'])
+                .enter()
+                .append('text')
+                .text(d=>d)
+                .attr('x', x + width + padding + a_w * 2)
+                .attr('y', (d, i)=>{
+                    return i == 0 ? (y + height/5 + 100) : ( y + height/1.5 + 100);
+                })
+                .attr('text-anchor', 'middle')
+                .attr('dominant-baseline', 'central');
+        } else if (this.color_encoding_option == 'label'){
+
+        }
         
     }
 

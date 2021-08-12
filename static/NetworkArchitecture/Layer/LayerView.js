@@ -169,7 +169,7 @@ class LayerView {
                 else if(i.includes('Selection'))
                     this.display_option = 'Selection';
 
-                this.redraw();
+                this.draw();
             });
         
         this.svg.selectAll('.layerview_menu')
@@ -352,6 +352,7 @@ class LayerView {
                     this.points.style('fill', (d, i)=>{
                         let x_in = extent[0][0] < this.x_axis(d[0]) && extent[1][0] > this.x_axis(d[0])
                         let y_in = extent[0][1] < this.y_axis(d[2]) && extent[1][1] > this.y_axis(d[2]);
+                        
                         if(x_in && y_in){
                             if (this.dataManager.pattern[i] == 0)
                                 return 'white';
@@ -379,7 +380,7 @@ class LayerView {
         let y = this.y;
         let width = this.width * 5;
         let height = this.background_height * 0.7;
-        let brush_width = 16, padding = 2;
+        let brush_width = 16;
         let y_axis = {};
         let temp = this.dataManager.getPruningCriteria();
         let columns_names = temp[0], criterias = temp[1];
@@ -495,7 +496,7 @@ class LayerView {
 
     redraw() {
         if (this.display_option == 'Parallel')
-            this.draw_parallel_pruning_criteria();
+            this.draw();
         else {
 
             let x = this.x + 20;

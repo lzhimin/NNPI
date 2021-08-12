@@ -1,10 +1,34 @@
 <div>
     <div id='network_architecture_panel_menu'>
-        <!---div class="network_architecture_menu_div">
+        <!--div class="network_architecture_menu_div">
             <label class='network_architecture_menu_label' id='pruning_precentage_label'> Pruning Percentage (0%)</label>
             <input type="range" min="0" max="100" value="0" id="pruning_precentage" step='0.05'>
         </div-->
 
+
+        <div class="network_architecture_menu_div">
+            <label for="architecture_view" class='network_architecture_menu_label'>View Options</label>
+            <select name="architecture_view" id="architecture_view" >
+                <option value="activation">activation</option>
+                <option value="subnetwork">subnetwork</option>
+            </select>
+        </div>
+
+
+
+        <div class="network_architecture_menu_div">
+            <label for="epoch_num" class='network_architecture_menu_label'>Choose a epoch:</label>
+            <select name="epoch_num" id="epoch_num" >
+                <option value="9">default</option>
+                <option value="1">epoch 1</option>
+                <option value="2">epoch 2</option>
+                <option value="3">epoch 3</option>
+                <option value="4">epoch 4</option>
+                <option value="5">epoch 5</option>
+                <option value="6">epoch 6</option>
+                <option value="7">epoch 7</option>
+            </select>
+        </div>
     </div>
     
     <div id='network_architecture_panel'>

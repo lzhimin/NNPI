@@ -26,7 +26,7 @@ class ModelManager:
         #)
 
         self.train_model = self.loadModel(
-            'data/model/LetNet/model_odd.pkl'
+            'data/model/letnet_bias/model_0.pkl'
         )
 
         # self.train_model.prune_by_percentile(float(90))
@@ -37,19 +37,17 @@ class ModelManager:
         #   'data/model/DrawNet/googledraw_trained.pkl')
         
         self.untrain_model = self.loadModel(
-            'data/model/LetNet/model_odd.pkl'
+            'data/model/letnet_bias/model_0.pkl'
         )
-
-
 
         self.datasets = self.loadValidationData()
 
-    def config(self, percentage, model):
+    def config(self, percentage, model, epoch=9):
 
         self.percentage = percentage
 
         if model == 'mnist1':
-            self.path = 'data/model/LetNet/model_odd.pkl'
+            self.path = 'data/model/letnet_bias/model_'+str(epoch)+'.pkl'
             self.model = 'letnet300'
         elif model == 'mnist2':
             self.path = 'data/model/LetNet/letnet_5_trained.pkl'
@@ -179,6 +177,9 @@ class ModelManager:
         for key in selected_neuron:
             self.train_model.pruned_unselected_neuron(key, selected_neuron[key])
 
+
+        
+
         prediction_result = []
         confusionMatrix = np.zeros((10, 10))
 
@@ -214,6 +215,9 @@ class ModelManager:
             rs.append((getSaliencyGradientWithNode(model, layer, index, img).transpose()).tolist())
 
         return {'featureVis':rs, 'scores':scores}
+
+    def generateAdversialExample(self, model, data):
+        pass
 
 class QD_Dataset(data.Dataset):
 

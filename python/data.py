@@ -11,9 +11,12 @@ modelManager = ModelManager(device=device)
 
 def getdata(json_request):    
     percentage = json_request['percentage']
-    print(percentage)
     model = json_request['dataset']
-    modelManager.config(percentage, model)
+
+    if 'epoch' in json_request:
+        modelManager.config(percentage, model, json_request['epoch'])
+    else:
+        modelManager.config(percentage, model)
 
     return load_Model_Data_Summary()
 
@@ -165,5 +168,4 @@ def fetch_activation_feature_samples(json):
     layername = json['layername']
     #feature = getFeatureVisualization(modelManager.train_model, layername, indexs)
     return modelManager.getTop10ActiveSample(modelManager.train_model, layername, index)
-
 

@@ -11,6 +11,10 @@ class NetworkArchitecture extends BasicView {
 
         this.model_summary = undefined;
 
+        //1. activation
+        //2. subnetwork
+        this.architecture_view = 'activation';
+
         subscribe('model_summary', this.setData.bind(this));
         subscribe('activation_pattern', this.setActivationPattern.bind(this));
     }
@@ -73,30 +77,39 @@ class NetworkArchitecture extends BasicView {
         let height = 120;
         let padding = 150;
 
-        this.model_summary.draw();
 
-        //draw input data distribution
-        //this.draw_menu(x - 20, y);
 
-        //draw innere layer
-        let layer_names = Object.keys(this.dataManager.data);
-        for (let i = 0; i < layer_names.length; i++){
-            let key = layer_names[i];
+        if (this.architecture_view == 'activation'){
+            this.model_summary.draw();
 
-            this.architecture[key].setlocation(x, y + (height + padding) * i + padding * 0.3);
-            this.architecture[key].setScale(width, height);
-            this.architecture[key].draw();
+            //draw input data distribution
+            //this.draw_menu(x - 20, y);
+
+            //draw innere layer
+            let layer_names = Object.keys(this.dataManager.data);
+            for (let i = 0; i < layer_names.length; i++){
+                let key = layer_names[i];
+
+                this.architecture[key].setlocation(x, y + (height + padding) * i + padding * 0.3);
+                this.architecture[key].setScale(width, height);
+                this.architecture[key].draw();
+            }
+        } else if ( this.architecture_view == 'subnetwork'){
+
         }
 
-        //draw output prediction
-        //this.draw_prediction_summary(x-width/4, y + (height + padding) * (layer_names.length) + padding, width, height);
     }
 
     redraw() {
-        let layer_names = Object.keys(this.dataManager.data);
-        for (let i = 0; i < layer_names.length; i++){
-            this.architecture[layer_names[i]].redraw();
-        }
+
+        if(this.architecture_view == 'activation'){
+            let layer_names = Object.keys(this.dataManager.data);
+            for (let i = 0; i < layer_names.length; i++){
+                this.architecture[layer_names[i]].redraw();
+            }
+        } else if(this.architecture_view == 'subnetwork'){
+            
+        }  
     }
 
     draw_menu(x, y) {
@@ -260,6 +273,14 @@ class NetworkArchitecture extends BasicView {
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
             this.architecture[layer_names[i]].setActivation_pattern(this.dataManager.activation_pattern[layer_names[i]]);
+            this.architecture[layer_names[i]].setActivation_Strength(
+                this.dataManager.activation_pattern[layer_names[i]+"_strength"]);
+
+            this.architecture[layer_names[i]].setTaylor(
+                this.dataManager.activation_pattern[layer_names[i]+'_taylor']);
+            
+            this.architecture[layer_names[i]].setSensitivity(
+                this.dataManager.activation_pattern[layer_names[i]+'_sensitivity']);
         }
 
         this.redraw();
@@ -267,11 +288,17 @@ class NetworkArchitecture extends BasicView {
 
     //binding the interactive event
     bindingEvent() {
-         //setup event
-        d3.select("#pruning_precentage").on('change', () => {
-            this.pruning_precentage = $("#pruning_precentage").val();
-            $('#pruning_precentage_label').html('Pruning Percentage (' + this.pruning_precentage + '%)');
-            fetch_data({'percentage':this.pruning_precentage});
+        //setup event
+        //d3.select("#pruning_precentage").on('change', () => {
+        //    this.pruning_precentage = $("#pruning_precentage").val();
+        //    $('#pruning_precentage_label').html('Pruning Percentage (' + this.pruning_precentage + '%)');
+        //    fetch_data({'percentage':this.pruning_precentage});
+        //});
+
+        d3.select('#epoch_num').on('change', ()=>{
+            this.epoch_num = $("#epoch_num").val();
+            let name = $('#data_file_selector').val();
+            fetch_data({'percentage':0, 'dataset':name, 'epoch':this.epoch_num});
         });
     }
 }

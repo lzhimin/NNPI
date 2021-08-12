@@ -12,9 +12,7 @@ import os
 
 sys.path.insert(0, os.path.abspath('..'))
 
-CHECKPOINT_DIR = '../../data/model/LetNet'  # model checkpoints
-# make checkpoint path directory
-os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+
 
 # Training settings
 parser = argparse.ArgumentParser(
@@ -82,7 +80,7 @@ def train(epochs, model, device, optimizer):
             loss.backward()
             optimizer.step()
         test(model, device)
-    save(model, str(epoch))
+        save(model, str(epoch))
         
 
 

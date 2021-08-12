@@ -1,14 +1,22 @@
+#network_architecture_panel_menu {
+    border: 1px solid gray;
+    width: 95%;
+    /*margin: 5px;*/
+    margin-top: 20px;
+    margin-left: 25px;
+    background-color: #dddddd1f;
+    border-radius: 10px;
+}
+
+
 .architectureMenu {
     border-radius: 25px;
     fill: white;
 }
 
-.network_architecture_menu_div {
-    margin-top: 20px;
-    margin-left: 25px;
-}
 
 .network_architecture_menu_label {
-    width: 20%;
+    width: 15%;
     display: inline-block;
+    margin:5px;
 }

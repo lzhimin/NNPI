@@ -34,10 +34,20 @@ class LeNet(PruningModule):
         for i in range(len(dataset)):
             x = F.relu(self.fc1(torch.tensor(
                 np.array(dataset[i]).flatten().tolist())))
-            layer1_activation.append(x.tolist())
+
+            x_t = np.array(x.tolist())
+            x_i = x_t < 1
+            x_t[x_i] = 0
+            layer1_activation.append(x_t.tolist())
+            #layer1_activation.append(x.tolist())
+            #x[x_i] = 0
 
             x = F.relu(self.fc2(x))
-            layer2_activation.append(x.tolist())
+            x_t = np.array(x.tolist())
+            x_i = x_t < 1
+            x_t[x_i] = 0
+            layer2_activation.append(x_t.tolist())
+            #layer2_activation.append(x.tolist())
 
         activation_summary = {}
         # T-sne embedding
@@ -203,12 +213,22 @@ class LeNet_5(PruningModule):
             x = x.view(x.shape[0], -1)
             x = self.fc1(x)
             x = F.relu(x)
-            fc1_activation.append(x.tolist())
+
+            x_t = np.array(x.tolist())
+            x_i = x_t < 1.5
+            x_t[x_i] = 0
+
+            fc1_activation.append(x_t.tolist())
 
             
             x = self.fc2(x)
             x = F.relu(x)
-            fc2_activation.append(x.tolist())
+
+            x_t = np.array(x.tolist())
+            x_i = x_t < 1.5
+            x_t[x_i] = 0
+
+            fc2_activation.append(x_t.tolist())
 
         activation_summary = {}
         activation_summary['conv1'] =np.mean(conv1_activation, axis=0).tolist()

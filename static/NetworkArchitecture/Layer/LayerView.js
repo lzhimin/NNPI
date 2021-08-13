@@ -449,7 +449,9 @@ class LayerView {
         }
 
         const applyFilters = function(){
-           foreground_paths.style('display', d=>(selected(d) ? null:'none'));
+           foreground_paths.style('display', (d, i)=>{
+               return selected(d) ? null:'none';
+           });
         }
 
         const selected = function(d){

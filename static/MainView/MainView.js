@@ -266,7 +266,7 @@ class MainView extends BasicView {
                 .append('rect')
                 .attr('width', 20)
                 .attr('height', 20)
-                .attr('class', 'annotation_rect')
+                .attr('class', 'label_annotation_rect')
                 .attr('x', (d, i)=>{
                     return x + width + padding;
                 })
@@ -275,6 +275,18 @@ class MainView extends BasicView {
                 })
                 .style('fill', (d)=>{
                     return this.colormap(d);
+                })
+                .on('click', (event, d)=>{
+                    d3.selectAll('.label_annotation_rect').attr('width', 20).attr('height', 20).style('stroke', 'black');
+                    d3.select($('.label_annotation_rect')[d]).attr('width', 30).attr('height', 30).style('stroke', 'orange');
+
+                    let indexes = [];
+                    for(let i =0; i < this.dataManager.embedding.length; i++){
+                        if(this.dataManager.embedding[i][1] == d)
+                            indexes.push(i);
+                    }
+
+                    fetch_activation({ 'indexs': indexes });
                 });
 
             rg.selectAll('.main_view_label')
@@ -283,13 +295,14 @@ class MainView extends BasicView {
                 .append('text')
                 .text(d=>d)
                 .attr('x', (d, i)=>{
-                    return x + width + padding + a_w * 1.5;
+                    return x + width + padding + a_w * 2;
                 })
                 .attr('y', (d, i)=>{
                     return y + i * a_h * 1.8 + a_h/2;
                 })
                 .attr('text-anchor', 'middle')
-                .attr('dominant-baseline', 'central');                
+                .attr('dominant-baseline', 'central')
+                .style('font-size', '16px');                
         }
         
     }

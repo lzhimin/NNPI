@@ -83,7 +83,6 @@ def train(epochs, model, device, optimizer):
         save(model, str(epoch))
         
 
-
 def test(model, device):
     model.eval()
     test_loss = 0

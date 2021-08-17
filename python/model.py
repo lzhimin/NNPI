@@ -36,7 +36,7 @@ class LeNet(PruningModule):
                 np.array(dataset[i]).flatten().tolist())))
 
             x_t = np.array(x.tolist())
-            x_i = x_t < 1
+            x_i = x_t < 0.5
             x_t[x_i] = 0
             layer1_activation.append(x_t.tolist())
             #layer1_activation.append(x.tolist())
@@ -44,7 +44,7 @@ class LeNet(PruningModule):
 
             x = F.relu(self.fc2(x))
             x_t = np.array(x.tolist())
-            x_i = x_t < 1
+            x_i = x_t < 0.5
             x_t[x_i] = 0
             layer2_activation.append(x_t.tolist())
             #layer2_activation.append(x.tolist())

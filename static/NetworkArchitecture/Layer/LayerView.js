@@ -32,14 +32,17 @@ class LayerView {
       
         // this.draw_activation_pattern();
         //draw the background 
-        this.svg.append('rect')
+        this.svg.selectAll('.layerview_'+this.name).data([this.name]).enter().append('rect')
             .attr('class', 'layerview_background')
             .attr('x', this.x)
             .attr('y', this.y - 15)
             .attr('width', this.background_width)
             .attr('height', this.background_height)
-            .on('click', ()=>{
-                
+            .on('click', function(event, d){
+                //redraw the main layer.
+                d3.selectAll('.layerview_background').style('stroke', 'gray');
+                d3.select(this).style('stroke', 'orange');
+                publish('layer_selection_event', d); 
             });
         
         //draw activation
@@ -331,10 +334,10 @@ class LayerView {
                 })
                 .style('fill-opacity', 0.4)
                 .on('click', (event, d, nodes) =>{
-                    d3.selectAll('.architecture_embedding_points').attr('r', 5).style('fill','steelblue');
-                    d3.select(this.points["_groups"][0][d[1]]).attr('r', 10).style('fill','orange');
-                    fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
-                    fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
+                    //d3.selectAll('.architecture_embedding_points').attr('r', 5).style('fill','steelblue');
+                    //d3.select(this.points["_groups"][0][d[1]]).attr('r', 10).style('fill','orange');
+                    //fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
+                    //fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
                 });
         }
         else{
@@ -357,10 +360,10 @@ class LayerView {
                 })
                 .style('fill-opacity', 0.4)
                 .on('click', (event, d, nodes) =>{
-                    d3.selectAll('.architecture_embedding_filter').attr('width', 10).attr('height', 10);
-                    d3.select(this.points["_groups"][0][d[1]]).attr('width', 20).attr('height', 20);
+                    //d3.selectAll('.architecture_embedding_filter').attr('width', 10).attr('height', 10);
+                    //d3.select(this.points["_groups"][0][d[1]]).attr('width', 20).attr('height', 20);
                     //select a filter 
-                    fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
+                    //fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
                     //fetch_sample_activation({'indexs': [d[1]], 'layername': this.name });
                 })
         }

@@ -17,6 +17,9 @@ class NetworkArchitecture extends BasicView {
 
         subscribe('model_summary', this.setData.bind(this));
         subscribe('activation_pattern', this.setActivationPattern.bind(this));
+
+        //GUI Event
+        subscribe('layer_selection_event',this.layerSelectionEvent.bind(this));
     }
 
     init() {
@@ -80,24 +83,35 @@ class NetworkArchitecture extends BasicView {
         let height = 120;
         let padding = 100;
 
+        //draw innere layer
+        let layer_names = Object.keys(this.dataManager.data);
+        for (let i = 0; i < layer_names.length; i++){
+            let key = layer_names[i];
 
-
-        if (this.architecture_view == 'activation'){
-
-            //draw innere layer
-            let layer_names = Object.keys(this.dataManager.data);
-            for (let i = 0; i < layer_names.length; i++){
-                let key = layer_names[i];
-
-                this.architecture[key].setlocation(x+ (width + padding) * i + padding * 0.3, y );
-                this.architecture[key].setScale(width, height);
-                this.architecture[key].draw();
-            }
-        } else if ( this.architecture_view == 'subnetwork'){
-
-
+            this.architecture[key].setlocation(x + (width + padding) * i, y);
+            this.architecture[key].setScale(width, height);
+            this.architecture[key].draw();
         }
 
+        //draw path connection
+        let path_init_x = this.margin.left - 100;
+        let path_init_y = y + width/2;
+        let path_width = 100;
+        let path_height = 10;
+
+        this.svg.selectAll('.component_paths')
+            .data(layer_names)
+            .enter()
+            .append('rect')
+            .attr('x', (d, i)=>{
+                return path_init_x + i * (width + path_width);
+            })
+            .attr('y', (d, i)=>{
+                return path_init_y;
+            })
+            .attr('width', path_width)
+            .attr('height', path_height)
+            .style('fill', 'gray');
     }
 
     redraw() {
@@ -288,6 +302,10 @@ class NetworkArchitecture extends BasicView {
         }
 
         this.redraw();
+    }
+
+    layerSelectionEvent(msg, data){
+       
     }
 
     //binding the interactive event

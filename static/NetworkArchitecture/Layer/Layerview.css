@@ -2,8 +2,7 @@
     stroke: gray;
     fill: gray;
     fill-opacity: 0.1;
-    border: solid 1px;
-    border-radius: 25px;
+    stroke-width: 3px;
 }
 
 .layer_label {

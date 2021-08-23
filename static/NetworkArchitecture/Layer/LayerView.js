@@ -22,8 +22,8 @@ class LayerView {
 
         
         //backgroud
-        this.background_width = this.width * 4;
-        this.background_height = this.height * 1.8;
+        this.background_width = this.width;
+        this.background_height = this.height;
     }
 
     draw() {
@@ -34,24 +34,63 @@ class LayerView {
         //draw the background 
         this.svg.append('rect')
             .attr('class', 'layerview_background')
-            .attr('x', this.x - this.width/2)
+            .attr('x', this.x)
             .attr('y', this.y - 15)
             .attr('width', this.background_width)
-            .attr('height', this.background_height);
+            .attr('height', this.background_height)
+            .on('click', ()=>{
+                
+            });
         
         //draw activation
         if (this.display_option == 'Selection')
             this.draw_neuron_feature_selection();
         else if(this.display_option == 'Ranking')
             this.draw_neuron_feature_ranking();
-        else {
+        else if(this.display_option == 'Parallel'){
             this.draw_parallel_pruning_criteria();
-            //this.draw_neuron_feature_ranking();
-            //this.draw_activation_neuron_embedding(this.embedding);
-        }
+        } else if(this.display_option == 'Sub'){
+            this.draw_activation_subnetwork();
+        } 
+
 
         //draw menu
-        this.draw_menu();
+        //this.draw_menu();
+    }
+
+    draw_activation_subnetwork(){
+        let g = this.svg.append('g');
+
+        let x = this.x - 50;
+        let y = this.y;
+        let width = this.width * 3.5;
+        let height = this.background_height * 0.7;
+
+
+        let rect_w = width/this.dataManager.pattern.length;
+        let rect_h = height/5;
+
+        g.selectAll('.activationrect')
+            .data(this.dataManager.pattern)
+            .enter()
+            .append('rect')
+            .attr('x',(d, i)=>{
+                return rect_w * i  + x;
+            })
+            .attr('y', y)
+            .attr('width', (d)=>{
+                return rect_w;
+            })
+            .attr('height', (d)=>{
+                return rect_h
+            })
+            .style('fill', (d)=>{
+                if(d > 200)
+                    return 'steelblue';
+                else 
+                    return 'white';
+            });
+
     }
 
     draw_activation_neuron_embedding(data) {
@@ -124,8 +163,8 @@ class LayerView {
         let menu_name = undefined;
 
         if(this.name.includes('fc')){
-            menu = [this.name+'_Selection', this.name+'_Ranking', this.name+'_Parallel'];
-            menu_name = ['Selection', 'Ranking', 'Parallel'];
+            menu = [this.name+'_Selection', this.name+'_Ranking', this.name+'_Parallel', this.name+'_Sub'];
+            menu_name = ['Selection', 'Ranking', 'Parallel', 'Sub'];
         }
         else{
             menu = [this.name+'_Selection', this.name+'_Ranking'];
@@ -168,6 +207,8 @@ class LayerView {
                     this.display_option = 'Ranking';
                 else if(i.includes('Selection'))
                     this.display_option = 'Selection';
+                else if(i.includes('Sub'))
+                    this.display_option = 'Sub';
 
                 this.draw();
             });
@@ -189,8 +230,8 @@ class LayerView {
     draw_neuron_feature_ranking() { 
         let x = this.x + 20;
         let y = this.y - 20;
-        let width = this.width * 2;
-        let height = this.background_height * 0.9;
+        let width = this.width * 0.8;
+        let height = this.background_height;
 
         let x_max, x_min;
         let y_max, y_min;
@@ -210,12 +251,12 @@ class LayerView {
         this.x_axis_g = this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(0" + ',' + (y + height/1.2) + ")")
-            .call(d3.axisBottom(this.x_axis).ticks(3));
+            .call(d3.axisBottom(this.x_axis).ticks(2));
         
         this.y_axis_g = this.svg.append('g')
             .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(" + x + ",0)")
-            .call(d3.axisLeft(this.y_axis).ticks(3));
+            .call(d3.axisLeft(this.y_axis).ticks(2));
 
         //ranking data
         let data_activation_pattern = [];
@@ -223,7 +264,7 @@ class LayerView {
              data_activation_pattern.push([this.dataManager.pattern[i], i, this.dataManager.strength[i]]);
         }   
         
-
+        /*
         this.svg.append('g')
             .append('text')
             .text((d)=>{
@@ -250,6 +291,7 @@ class LayerView {
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central')
             .attr('writing-mode', 'vertical-rl');
+        */
 
         /*this.hist = this.svg.selectAll(".neuron_activation_rect_"+this.name)
             .data(bins)
@@ -280,14 +322,14 @@ class LayerView {
                 .attr('cy', (d, i) => {
                     return this.y_axis(d[2]);
                 })
-                .attr('r', 5)
+                .attr('r', 2)
                 .style('fill', (d, i) => {
-                    if (this.dataManager.pattern[i] == 0)
-                        return 'white';
-                    else
+                    //if (this.dataManager.pattern[i] == 0)
+                    //    return 'white';
+                    //else
                         return 'steelblue';
                 })
-                .style('fill-opacity', 0.5)
+                .style('fill-opacity', 0.4)
                 .on('click', (event, d, nodes) =>{
                     d3.selectAll('.architecture_embedding_points').attr('r', 5).style('fill','steelblue');
                     d3.select(this.points["_groups"][0][d[1]]).attr('r', 10).style('fill','orange');
@@ -308,15 +350,12 @@ class LayerView {
                 .attr('y', (d) => {
                     return this.y_axis(d[2]);
                 })
-                .attr('width', 10)
-                .attr('height', 10)
+                .attr('width', 5)
+                .attr('height', 5)
                 .style('fill', (d, i) => {
-                    if (this.dataManager.pattern[i] == 0)
-                        return 'white';
-                    else
                         return 'steelblue';
                 })
-                .style('fill-opacity', 0.5)
+                .style('fill-opacity', 0.4)
                 .on('click', (event, d, nodes) =>{
                     d3.selectAll('.architecture_embedding_filter').attr('width', 10).attr('height', 10);
                     d3.select(this.points["_groups"][0][d[1]]).attr('width', 20).attr('height', 20);
@@ -330,9 +369,9 @@ class LayerView {
     draw_neuron_feature_selection() {
         this.draw_neuron_feature_ranking();
         
-        let x = this.x + 20;
+        /*let x = this.x + 20;
         let y = this.y - 20;
-        let width = this.width * 3;
+        let width = this.width * 0.9;
         let height = this.background_height * 0.9;
 
         let brush = d3.brush()
@@ -372,7 +411,7 @@ class LayerView {
          // Add the brushing
         this.svg.append("g")
             .attr("class", "brush")
-            .call(brush);
+            .call(brush);*/
     } 
     
     draw_parallel_pruning_criteria(){
@@ -499,12 +538,15 @@ class LayerView {
     redraw() {
         if (this.display_option == 'Parallel')
             this.draw();
+
+        else if (this.display_option == 'Sub')
+            this.draw();
         else {
 
             let x = this.x + 20;
             let y = this.y - 20;
-            let width = this.width * 2;
-            let height = this.background_height * 0.9;
+            let width = this.width * 0.8;
+            let height = this.background_height;
 
             let x_max, x_min;
             let y_max, y_min;

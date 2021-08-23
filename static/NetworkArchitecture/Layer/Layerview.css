@@ -1,7 +1,9 @@
 .layerview_background {
     stroke: gray;
-    fill: white;
+    fill: gray;
     fill-opacity: 0.1;
+    border: solid 1px;
+    border-radius: 25px;
 }
 
 .layer_label {
@@ -29,20 +31,20 @@
     stroke-opacity: 0.2;
 }
 
-.architecture_labels_rect {
+/**.architecture_labels_rect {
     fill: white;
     stroke: gray;
-}
+}**/
 
-.architecture_embedding_points{
+/**.architecture_embedding_points{
     stroke: gray;
     stroke-width: 1px;
-}
+}**/
 
-.architecture_embedding_filter{
+/**.architecture_embedding_filter{
     stroke: gray;
     stroke-width: 1px;
-}
+}**/
 
 .neuron_activation_rect{
     stroke: gray;

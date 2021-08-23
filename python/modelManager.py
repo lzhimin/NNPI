@@ -135,13 +135,13 @@ class ModelManager:
         
         rs = {}
         # get taylor expansion criteria for each neuron
-        for name, param in self.train_model._modules.items():
-            if 'bias' not in name and 'mask' not in name and 'fc3' not in name:
-                rs[name+"_taylor"] = np.sum(param._tp_taylor, axis=0).tolist()
-                rs[name+"_sensitivity"] = np.sum(param._tp_sensitivity, axis=0).tolist()
+        #for name, param in self.train_model._modules.items():
+        #    if 'bias' not in name and 'mask' not in name and 'fc3' not in name:
+        #        rs[name+"_taylor"] = np.sum(param._tp_taylor, axis=0).tolist()
+        #        rs[name+"_sensitivity"] = np.sum(param._tp_sensitivity, axis=0).tolist()
 
-        for h in self.hooks:
-            h.remove()
+        #for h in self.hooks:
+        #    h.remove()
 
         result = self.train_model.activationPattern(subset)
         result.update(rs)

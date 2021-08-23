@@ -24,7 +24,8 @@ class NetworkArchitecture extends BasicView {
         super.init();
 
         //clean the panel
-        d3.select("#network_architecture_panel").html("");
+        if (this.svg != undefined)
+            this.svg.remove();
 
         //add svg 
         this.svg = d3.select('#network_architecture_panel')
@@ -32,11 +33,14 @@ class NetworkArchitecture extends BasicView {
             .attr('width', this.width)
             .attr("height", 1800)
 
-        this.model_summary = new ModelManager(this.svg);
+        //this.model_summary = new ModelManager(this.svg);
+
+
+        this.modeloverview = new ModelOverview(this.svg);
         
         //margin
-        this.margin.left = 100;
-        this.margin.top = 200;
+        this.margin.left = 120;
+        this.margin.top = 50;
         
         // construct data for each neural network layer
         let layer_names = Object.keys(this.dataManager.data);
@@ -58,7 +62,6 @@ class NetworkArchitecture extends BasicView {
                 this.dataManager.activation_pattern[layer_names[i]+"_embedding"]);
         }
 
-
         //dataset 
         let colordomain = Array.from(new Set(this.dataManager.embedding_labels))
         this.colormap = d3.scaleOrdinal().domain(colordomain).range(d3.schemeSet3);
@@ -75,26 +78,23 @@ class NetworkArchitecture extends BasicView {
         let y = this.margin.top;
         let width = 120;
         let height = 120;
-        let padding = 150;
+        let padding = 100;
 
 
 
         if (this.architecture_view == 'activation'){
-            this.model_summary.draw();
-
-            //draw input data distribution
-            //this.draw_menu(x - 20, y);
 
             //draw innere layer
             let layer_names = Object.keys(this.dataManager.data);
             for (let i = 0; i < layer_names.length; i++){
                 let key = layer_names[i];
 
-                this.architecture[key].setlocation(x, y + (height + padding) * i + padding * 0.3);
+                this.architecture[key].setlocation(x+ (width + padding) * i + padding * 0.3, y );
                 this.architecture[key].setScale(width, height);
                 this.architecture[key].draw();
             }
         } else if ( this.architecture_view == 'subnetwork'){
+
 
         }
 
@@ -270,6 +270,10 @@ class NetworkArchitecture extends BasicView {
 
     setActivationPattern(msg, data) {
         this.dataManager.setActivationPattern(data);
+
+        //update the model overview dataset.
+        this.modeloverview.dataManager.setData(data);
+
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
             this.architecture[layer_names[i]].setActivation_pattern(this.dataManager.activation_pattern[layer_names[i]]);
@@ -299,6 +303,11 @@ class NetworkArchitecture extends BasicView {
             this.epoch_num = $("#epoch_num").val();
             let name = $('#data_file_selector').val();
             fetch_data({'percentage':0, 'dataset':name, 'epoch':this.epoch_num});
+        });
+
+        d3.select('#architecture_view').on('change', ()=>{
+            this.architecture_view = $("#architecture_view").val();
+            this.draw();
         });
     }
 }

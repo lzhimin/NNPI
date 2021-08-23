@@ -6,16 +6,12 @@ let config = {
             width: 45,
             content: [{
                 type: 'stack',
-                height: 70,
+                height: 97,
                 content: [{
                     type: 'component',
                     componentName: 'MainView',
                     title: 'Main View'
-                }]
-            },{
-                type: 'row',
-                width: 50,
-                content:[{
+                },{
                     type: 'component',
                     componentName: 'SelectedSampleView',
                     title: 'Selected Samples'

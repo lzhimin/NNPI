@@ -131,6 +131,49 @@ class NetworkArchitecture extends BasicView {
         let pattern = this.dataManager.activation_pattern[layer];
         let strength= this.dataManager.activation_pattern[layer+"_strength"];
 
+        //reset the scale
+        [x_min, x_max] = d3.extent(pattern);
+        [y_min, y_max] = d3.extent(strength);
+            
+        //axis
+        this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x + width * 0.1, x + width * 0.9]);
+        this.y_axis = d3.scaleLinear().domain([y_max, y_min]).range([y + height/8, y + height/1.2]);
+
+        //ranking data
+        let data_activation_pattern = [];
+        for (let i = 0; i < pattern.length; i++){
+            data_activation_pattern.push([pattern[i], i, strength[i]]);
+        }   
+
+        //animation update the same view
+        if(this.main_view_g != undefined && layer == this.current_view_layer){
+            this.x_axis_g
+                .transition()
+                .duration(2000)
+                .call(d3.axisBottom(this.x_axis).ticks(3));
+            
+            this.y_axis_g
+                .transition()
+                .duration(2000)
+                .call(d3.axisLeft(this.y_axis).ticks(3));
+
+            this.points.data(data_activation_pattern).enter();
+
+            this.points.transition()
+                .duration(2000)
+                .attr('cx', (d, i) => {
+                    return this.x_axis(d[0]);
+                })
+                .attr('cy', (d, i) => {
+                    return this.y_axis(d[2]);
+                });
+            
+            this.points.exit().remove();
+
+            return;
+        }
+
+        //remove the g
         if(this.main_view_g != undefined)
             this.main_view_g.remove();
 
@@ -142,37 +185,24 @@ class NetworkArchitecture extends BasicView {
             .attr('y', y)
             .attr('width', width)
             .attr('height', height);
-
-        //reset the scale
-        [x_min, x_max] = d3.extent(pattern);
-        [y_min, y_max] = d3.extent(strength);
-            
-        this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x + width * 0.1, x + width * 0.9]);
-        this.y_axis = d3.scaleLinear().domain([y_max, y_min]).range([y + height/8, y + height/1.2]);
     
         this.x_axis_g = this.main_view_g.append('g')
             .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(0" + ',' + (y + height/1.2) + ")")
-            .call(d3.axisBottom(this.x_axis).ticks(2));
+            .call(d3.axisBottom(this.x_axis).ticks(8));
         
         this.y_axis_g = this.main_view_g.append('g')
             .attr('class', 'architecture_embedding_axis')
             .attr("transform", "translate(" + (x + width * 0.1)+ ",0)")
-            .call(d3.axisLeft(this.y_axis).ticks(2));
-
-        //ranking data
-        let data_activation_pattern = [];
-        for (let i = 0; i < pattern.length; i++){
-            data_activation_pattern.push([pattern[i], i, strength[i]]);
-        }   
+            .call(d3.axisLeft(this.y_axis).ticks(8));
     
         if(layer.includes('fc')){
             this.points = this.main_view_g.append('g')
-                .selectAll('.architecture_embedding_points')
+                .selectAll('.main_view_embedding_points')
                 .data(data_activation_pattern)
                 .enter()
                 .append('circle')
-                .attr('class', 'architecture_embedding_points')
+                .attr('class', 'main_view_embedding_points')
                 .attr('cx', (d) => {
                     return this.x_axis(d[0]);
                 })
@@ -184,21 +214,20 @@ class NetworkArchitecture extends BasicView {
                     return 'steelblue';
                 })
                 .style('fill-opacity', 0.4)
-                .style('pointer-events', 'none')
                 .on('click', (event, d, nodes) =>{
-                    //d3.selectAll('.architecture_embedding_points').attr('r', 5).style('fill','steelblue');
-                    //d3.select(this.points["_groups"][0][d[1]]).attr('r', 10).style('fill','orange');
-                    //fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
-                    //fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
+                    d3.selectAll('.main_view_embedding_points').attr('r', 5).style('fill','steelblue');
+                    d3.select(this.points["_groups"][0][d[1]]).attr('r', 10).style('fill','orange');
+                    fetch_sample_activation({ 'indexs': [d[1]], 'layername': layer});
+                    fetch_fitler_visualization({'indexs':[d[1]], 'layername': layer})
                 });
-            }
+        }
         else{
             this.points = this.main_view_g.append('g')
-                .selectAll('.architecture_embedding_filter')
+                .selectAll('.main_view_embedding_filter')
                 .data(data_activation_pattern)
                 .enter()
                 .append('rect')
-                .attr('class', 'architecture_embedding_filter')
+                .attr('class', 'main_view_embedding_filter')
                 .attr('x', (d) => {
                     return this.x_axis(d[0]);
                 })
@@ -211,16 +240,44 @@ class NetworkArchitecture extends BasicView {
                         return 'steelblue';
                 })
                 .style('fill-opacity', 0.4)
-                .style('pointer-events', 'none')
                 .on('click', (event, d, nodes) =>{
-                    //d3.selectAll('.architecture_embedding_filter').attr('width', 10).attr('height', 10);
-                    //d3.select(this.points["_groups"][0][d[1]]).attr('width', 20).attr('height', 20);
+                    d3.selectAll('.main_view_embedding_filter').attr('width', 10).attr('height', 10);
+                    d3.select(this.points["_groups"][0][d[1]]).attr('width', 20).attr('height', 20);
                     //select a filter 
-                    //fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
-                    //fetch_sample_activation({'indexs': [d[1]], 'layername': this.name });
+                    fetch_fitler_visualization({'indexs':[d[1]], 'layername':layer})
+                    fetch_sample_activation({'indexs': [d[1]], 'layername': layer });
                 });
-            }
-            
+        }
+        
+        //text axis lable
+        {
+            this.main_view_g.append('g')
+            .append('text')
+            .text((d)=>{
+                if(layer.includes('fc'))
+                    return 'activation frequency';
+                else
+                    return 'mean activation value';
+            })
+            .attr('x', x + width/2)
+            .attr('y', y + height/1.1)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+
+            this.main_view_g.append('g')
+            .append('text')
+            .text((d)=>{
+                if(layer.includes('fc'))
+                    return 'max activation value';
+                else
+                    return 'max activation value';
+            })
+            .attr('x', x + 20)
+            .attr('y', y + height/2)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('writing-mode', 'vertical-rl');
+        }
     }
 
     redraw() {
@@ -296,6 +353,10 @@ class NetworkArchitecture extends BasicView {
         //update the model overview dataset.
         this.modeloverview.dataManager.setData(data);
 
+        // if the main layer view is undefined
+        if(this.current_view_layer != undefined)
+            this.draw_main_view(this.current_view_layer);
+
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
             this.architecture[layer_names[i]].setActivation_pattern(this.dataManager.activation_pattern[layer_names[i]]);
@@ -313,7 +374,8 @@ class NetworkArchitecture extends BasicView {
     }
 
     layerSelectionEvent(msg, data){
-       this.draw_main_view(data);
+        this.draw_main_view(data);
+        this.current_view_layer = data;
     }
 
     //binding the interactive event

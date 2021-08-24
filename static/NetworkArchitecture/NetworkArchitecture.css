@@ -8,6 +8,12 @@
     border-radius: 10px;
 }
 
+.main_view_background{
+    stroke: gray;
+    fill: gray;
+    fill-opacity: 0.1;
+    stroke-width: 3px;
+}
 
 .architectureMenu {
     border-radius: 25px;

@@ -103,6 +103,7 @@ class NetworkArchitecture extends BasicView {
             .data(layer_names)
             .enter()
             .append('rect')
+            .attr('class', 'componet_connection_path')
             .attr('x', (d, i)=>{
                 return path_init_x + i * (width + path_width);
             })
@@ -111,7 +112,115 @@ class NetworkArchitecture extends BasicView {
             })
             .attr('width', path_width)
             .attr('height', path_height)
-            .style('fill', 'gray');
+            .style('fill', 'gray')
+            .on('click', function(event){
+                d3.selectAll('.componet_connection_path').style('fill', 'gray');
+                d3.select(this).style('fill', 'orange');
+            });
+    }
+
+    draw_main_view(layer){
+        let x = this.margin.left + this.width/6;
+        let y = this.margin.top + this.height/4;
+        let width = this.width/2;
+        let height = this.height/2;
+
+        let x_max, x_min;
+        let y_max, y_min;
+
+        let pattern = this.dataManager.activation_pattern[layer];
+        let strength= this.dataManager.activation_pattern[layer+"_strength"];
+
+        if(this.main_view_g != undefined)
+            this.main_view_g.remove();
+
+        this.main_view_g = this.svg.append('g');
+
+        this.main_view_g.selectAll('.main_view_' + layer).data([layer]).enter().append('rect')
+            .attr('class', 'main_view_background')
+            .attr('x', x)
+            .attr('y', y)
+            .attr('width', width)
+            .attr('height', height);
+
+        //reset the scale
+        [x_min, x_max] = d3.extent(pattern);
+        [y_min, y_max] = d3.extent(strength);
+            
+        this.x_axis = d3.scaleLinear().domain([x_min, x_max * 1.1]).range([x + width * 0.1, x + width * 0.9]);
+        this.y_axis = d3.scaleLinear().domain([y_max, y_min]).range([y + height/8, y + height/1.2]);
+    
+        this.x_axis_g = this.main_view_g.append('g')
+            .attr('class', 'architecture_embedding_axis')
+            .attr("transform", "translate(0" + ',' + (y + height/1.2) + ")")
+            .call(d3.axisBottom(this.x_axis).ticks(2));
+        
+        this.y_axis_g = this.main_view_g.append('g')
+            .attr('class', 'architecture_embedding_axis')
+            .attr("transform", "translate(" + (x + width * 0.1)+ ",0)")
+            .call(d3.axisLeft(this.y_axis).ticks(2));
+
+        //ranking data
+        let data_activation_pattern = [];
+        for (let i = 0; i < pattern.length; i++){
+            data_activation_pattern.push([pattern[i], i, strength[i]]);
+        }   
+    
+        if(layer.includes('fc')){
+            this.points = this.main_view_g.append('g')
+                .selectAll('.architecture_embedding_points')
+                .data(data_activation_pattern)
+                .enter()
+                .append('circle')
+                .attr('class', 'architecture_embedding_points')
+                .attr('cx', (d) => {
+                    return this.x_axis(d[0]);
+                })
+                .attr('cy', (d, i) => {
+                    return this.y_axis(d[2]);
+                })
+                .attr('r', 5)
+                .style('fill', (d, i) => {
+                    return 'steelblue';
+                })
+                .style('fill-opacity', 0.4)
+                .style('pointer-events', 'none')
+                .on('click', (event, d, nodes) =>{
+                    //d3.selectAll('.architecture_embedding_points').attr('r', 5).style('fill','steelblue');
+                    //d3.select(this.points["_groups"][0][d[1]]).attr('r', 10).style('fill','orange');
+                    //fetch_sample_activation({ 'indexs': [d[1]], 'layername': this.name });
+                    //fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
+                });
+            }
+        else{
+            this.points = this.main_view_g.append('g')
+                .selectAll('.architecture_embedding_filter')
+                .data(data_activation_pattern)
+                .enter()
+                .append('rect')
+                .attr('class', 'architecture_embedding_filter')
+                .attr('x', (d) => {
+                    return this.x_axis(d[0]);
+                })
+                .attr('y', (d) => {
+                    return this.y_axis(d[2]);
+                })
+                .attr('width', 10)
+                .attr('height', 10)
+                .style('fill', (d, i) => {
+                        return 'steelblue';
+                })
+                .style('fill-opacity', 0.4)
+                .style('pointer-events', 'none')
+                .on('click', (event, d, nodes) =>{
+                    //d3.selectAll('.architecture_embedding_filter').attr('width', 10).attr('height', 10);
+                    //d3.select(this.points["_groups"][0][d[1]]).attr('width', 20).attr('height', 20);
+                    //select a filter 
+                    //fetch_fitler_visualization({'indexs':[d[1]], 'layername':this.name})
+                    //fetch_sample_activation({'indexs': [d[1]], 'layername': this.name });
+                });
+            }
+            
     }
 
     redraw() {
@@ -127,7 +236,7 @@ class NetworkArchitecture extends BasicView {
     }
 
     draw_menu(x, y) {
-         
+         /*
         let width = 60;
         let height = 40;
         let labels = ['Full',  'Remain', 'Pruned'];
@@ -172,111 +281,10 @@ class NetworkArchitecture extends BasicView {
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central')
             .attr('pointer-events', 'none');
-            
+            */
         
     }
 
-    draw_prediction_summary(x, y, width, height) {
-
-        let bar_height = 100;
-        let bar_width = 15;
-        let padding = 10;
-
-        height = bar_height + padding;
-
-        //y-axis for the label bar chart
-        let stackbar_chart_axis = d3.scaleLinear()
-            .domain([0, d3.max(this.dataManager.confusionMatrix, (d) => { return d3.sum(d);})])
-            .range([0,bar_height]);
-
-        for (let i = 0; i < this.dataManager.confusionMatrix.length; i++){
-            let prediction_result = [0, 0];//[0] is correct prediction and [1] is wrong prediction
-            for (let j = 0; j < this.dataManager.confusionMatrix[i].length; j++) {
-                if (i == j)
-                    prediction_result[0] = this.dataManager.confusionMatrix[i][j];
-                else
-                    prediction_result[1] += this.dataManager.confusionMatrix[i][j];
-            }
-
-            //summary prediction bar for each label
-            let sum_of_prediction = d3.sum(prediction_result);
-            this.svg.append('g').selectAll('.confusionMatrix')
-                .data(prediction_result)
-                .enter()
-                .append('rect')
-                .attr('width', bar_width)
-                .attr('height', (d) => {
-                    return stackbar_chart_axis(d);
-                })
-                .attr('x', () => {
-                    return x + i * bar_width + i * padding;
-                })
-                .attr('y', (d, index) => {
-                    return index == 0 ? (y + bar_height - stackbar_chart_axis(d)) : (y + bar_height - stackbar_chart_axis(sum_of_prediction));
-                })
-                .style('fill', (d, index) => {
-                    return index == 0 ?'#4575b4':'#d73027';
-                });
-            
-            this.svg.append('text')
-                .attr('x', () => {
-                    return x + i * bar_width + i * padding + bar_width / 2;
-                })
-                .attr('y', () => {
-                    return y + bar_height + padding;
-                })
-                .text(i)
-                .attr('text-anchor', 'middle')
-                .attr('dominant-baseline', 'central')
-                .style('font-size', '15px');
-        }
-        
-        this.svg.append('g')
-            .attr('class', 'axis axis--x')
-            .attr("transform", "translate(" + x + "," + y + ")")
-            .call(d3.axisLeft(stackbar_chart_axis).ticks(5));
-        
-        //label annoatation
-        let annotation_rect_w = 10, annotation_rect_h = 10;
-        this.svg.selectAll('.predictionSummaryLabel')
-            .data(['correct', 'error'])
-            .enter()
-            .append('rect')
-            .attr('width', annotation_rect_w)
-            .attr('height', annotation_rect_h)
-            .attr('x', (d, i) => {
-                return x + (bar_width + padding) * (3 + i * 3);
-            })
-            .attr('y', (d, i) => {
-                return y - padding * 2;
-            })
-            .style('fill', (d, index) => {
-                return index == 0 ? '#4575b4' : '#d73027';
-            });
-            //.style('fill-opacity', 0.3);
-        
-        this.svg.selectAll('.predictionSummaryLabel')
-            .data(['correct', 'error'])
-            .enter()
-            .append('text')
-            .attr('x', (d, i) => {
-                return x + (bar_width + padding) * (3 + i * 3) + annotation_rect_w * 4;
-            })
-            .attr('y', (d, i) => {
-                return y - padding * 2 + annotation_rect_h/2;
-            })
-            .text(d => d)
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central');
-        
-        this.svg.append('rect')
-            .attr('x', x-40)
-            .attr('y', y-30)
-            .attr('width', width * 3.3)
-            .attr('height', height * 1.4)
-            .attr('class', 'layerview_background');
-    }
-  
     setData(msg, data) {
         this.dataManager.setData(data);
         this.draw();
@@ -305,7 +313,7 @@ class NetworkArchitecture extends BasicView {
     }
 
     layerSelectionEvent(msg, data){
-       
+       this.draw_main_view(data);
     }
 
     //binding the interactive event

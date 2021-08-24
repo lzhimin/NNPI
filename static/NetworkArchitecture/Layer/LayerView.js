@@ -20,7 +20,6 @@ class LayerView {
         //reset the drawing elements
         this.svg.html('');
 
-        
         //backgroud
         this.background_width = this.width;
         this.background_height = this.height;
@@ -55,10 +54,6 @@ class LayerView {
         } else if(this.display_option == 'Sub'){
             this.draw_activation_subnetwork();
         } 
-
-
-        //draw menu
-        //this.draw_menu();
     }
 
     draw_activation_subnetwork(){
@@ -327,12 +322,10 @@ class LayerView {
                 })
                 .attr('r', 2)
                 .style('fill', (d, i) => {
-                    //if (this.dataManager.pattern[i] == 0)
-                    //    return 'white';
-                    //else
-                        return 'steelblue';
+                    return 'steelblue';
                 })
                 .style('fill-opacity', 0.4)
+                .style('pointer-events', 'none')
                 .on('click', (event, d, nodes) =>{
                     //d3.selectAll('.architecture_embedding_points').attr('r', 5).style('fill','steelblue');
                     //d3.select(this.points["_groups"][0][d[1]]).attr('r', 10).style('fill','orange');
@@ -359,6 +352,7 @@ class LayerView {
                         return 'steelblue';
                 })
                 .style('fill-opacity', 0.4)
+                .style('pointer-events', 'none')
                 .on('click', (event, d, nodes) =>{
                     //d3.selectAll('.architecture_embedding_filter').attr('width', 10).attr('height', 10);
                     //d3.select(this.points["_groups"][0][d[1]]).attr('width', 20).attr('height', 20);

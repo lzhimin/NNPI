@@ -256,7 +256,7 @@ class MainView extends BasicView {
         } else if (this.color_encoding_option == 'label'){
             let rg = this.svg.append('g');
             let d = [];
-            for(let i = 0; i < 10; i++){
+            for(let i = 0; i <= 10; i++){
                 d.push(i);
             }
 
@@ -273,8 +273,8 @@ class MainView extends BasicView {
                 .attr('y', (d, i)=>{
                     return y + i * a_h * 1.8;
                 })
-                .style('fill', (d)=>{
-                    return this.colormap(d);
+                .style('fill', (d, i)=>{
+                    return i==10?'white':this.colormap(d);
                 })
                 .on('click', (event, d)=>{
                     d3.selectAll('.label_annotation_rect').attr('width', 20).attr('height', 20).style('stroke', 'black');
@@ -282,7 +282,9 @@ class MainView extends BasicView {
 
                     let indexes = [];
                     for(let i =0; i < this.dataManager.embedding.length; i++){
-                        if(this.dataManager.embedding[i][1] == d)
+                        if (d == 10)
+                            indexes.push(i)
+                        else if(this.dataManager.embedding[i][1] == d)
                             indexes.push(i);
                     }
 
@@ -293,7 +295,9 @@ class MainView extends BasicView {
                 .data(d)
                 .enter()
                 .append('text')
-                .text(d=>d)
+                .text((d)=>{
+                    return d==10?'all':d;
+                })
                 .attr('x', (d, i)=>{
                     return x + width + padding + a_w * 2;
                 })

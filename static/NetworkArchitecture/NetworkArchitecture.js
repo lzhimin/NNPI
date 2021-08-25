@@ -120,7 +120,7 @@ class NetworkArchitecture extends BasicView {
     }
 
     draw_main_view(layer){
-        let x = this.margin.left + this.width/6;
+        let x = this.margin.left + this.width/3;
         let y = this.margin.top + this.height/4;
         let width = this.width/2;
         let height = this.height/2;
@@ -150,12 +150,12 @@ class NetworkArchitecture extends BasicView {
             this.x_axis_g
                 .transition()
                 .duration(2000)
-                .call(d3.axisBottom(this.x_axis).ticks(3));
+                .call(d3.axisBottom(this.x_axis).ticks(8));
             
             this.y_axis_g
                 .transition()
                 .duration(2000)
-                .call(d3.axisLeft(this.y_axis).ticks(3));
+                .call(d3.axisLeft(this.y_axis).ticks(8));
 
             this.points.data(data_activation_pattern).enter();
 
@@ -280,6 +280,74 @@ class NetworkArchitecture extends BasicView {
         }
     }
 
+    draw_overlap_view(){
+        let d = [];
+        let a_h = 20;
+        let a_w = 20;
+        let x = this.margin.left;
+        let y = this.margin.top + this.height/4;
+
+        if(this.overlap_g != undefined){
+            this.overlap_g.remove();
+        }
+
+        this.overlap_g = this.svg.append('g');
+
+        for(let i = 0; i < 10; i++){
+            d.push(i);
+        }
+
+        this.overlap_g.selectAll('.overlap_view_label_rect')
+            .data(d)
+            .enter()
+            .append('rect')
+            .attr('width', 20)
+            .attr('height', 20)
+            .attr('class', 'overlap_view_label_rect')
+            .attr('x', (d, i)=>{
+                return x ;
+            })
+            .attr('y', (d, i)=>{
+                return y + i * a_h * 1.8;
+            })
+            .style('fill', (d, i)=>{
+                return i==10?'white':this.colormap(d);
+            })
+            .on('click', (event, d)=>{
+
+                //fetch activation overlap
+
+
+                /*
+                d3.selectAll('.label_annotation_rect').attr('width', 20).attr('height', 20).style('stroke', 'black');
+                d3.select($('.label_annotation_rect')[d]).attr('width', 30).attr('height', 30).style('stroke', 'orange');
+                let indexes = [];
+                for(let i =0; i < this.dataManager.embedding.length; i++){
+                    if (d == 10)
+                        indexes.push(i)
+                    else if(this.dataManager.embedding[i][1] == d)
+                        indexes.push(i);
+                }
+                fetch_activation({ 'indexs': indexes });
+                */
+            });
+
+        this.overlap_g.selectAll('.overlap_view_label')
+            .data(d)
+            .enter()
+            .append('text')
+            .text((d)=>d)
+            .attr('x', (d, i)=>{
+                return x + a_w * 2;
+            })
+            .attr('y', (d, i)=>{
+                return y + i * a_h * 1.8 + a_h/2;
+            })
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .style('font-size', '16px');   
+    }
+
     redraw() {
 
         if(this.architecture_view == 'activation'){
@@ -290,56 +358,6 @@ class NetworkArchitecture extends BasicView {
         } else if(this.architecture_view == 'subnetwork'){
             
         }  
-    }
-
-    draw_menu(x, y) {
-         /*
-        let width = 60;
-        let height = 40;
-        let labels = ['Full',  'Remain', 'Pruned'];
-        this.svg.append('g')
-            .selectAll('.architectureMenu')
-            .data(labels)
-            .enter()
-            .append('rect')
-            .attr('class', 'architectureMenu')
-            .attr('x', (d, i) => {
-                return x + i * 80;
-            })
-            .attr('y', (d, i) => {
-                return y;
-            })
-            .attr('width', width)
-            .attr('height', height)
-            .style('rx', 10)
-            .style('fill', (d, i) =>{
-                return d == 'Full' ? "orange" : 'white';
-            })
-            .on('click', function (d) {
-                d3.selectAll('.architectureMenu').style('fill', 'white');
-                d3.select(this).style('fill', 'orange');
-            })
-            .attr('stroke', '#2378ae')
-            .attr('stroke-width', '1')
-        
-            
-        this.svg.append('g').selectAll('.architectureMenuLabels')
-            .data(labels)
-            .enter()
-            .append('text')
-            .attr('class', 'architectureMenuLabels')
-            .attr('x', (d, i) => {
-                return x + i * 80 + width / 2;
-            })
-            .attr('y', (d, i) => {
-                return y + height / 2;
-            })
-            .text((d) => { return d; })
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central')
-            .attr('pointer-events', 'none');
-            */
-        
     }
 
     setData(msg, data) {
@@ -354,8 +372,10 @@ class NetworkArchitecture extends BasicView {
         this.modeloverview.dataManager.setData(data);
 
         // if the main layer view is undefined
-        if(this.current_view_layer != undefined)
+        if(this.current_view_layer != undefined){
             this.draw_main_view(this.current_view_layer);
+            this.draw_overlap_view();
+        }
 
         let layer_names = Object.keys(this.dataManager.data);
         for (let i = 0; i < layer_names.length; i++){
@@ -375,6 +395,7 @@ class NetworkArchitecture extends BasicView {
 
     layerSelectionEvent(msg, data){
         this.draw_main_view(data);
+        this.draw_overlap_view();
         this.current_view_layer = data;
     }
 

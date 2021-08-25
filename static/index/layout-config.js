@@ -3,7 +3,7 @@ let config = {
         type: 'row',
         content: [{
             type: 'column',
-            width: 45,
+            width: 35,
             content: [{
                 type: 'stack',
                 height: 97,

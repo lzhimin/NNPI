@@ -10,7 +10,7 @@
 
 .main_view_background{
     stroke: gray;
-    fill: gray;
+    fill: white;
     fill-opacity: 0.1;
     stroke-width: 3px;
 }
@@ -25,4 +25,9 @@
     width: 15%;
     display: inline-block;
     margin:5px;
+}
+
+.overlap_view_label_rect{
+    stroke: black;
+    stroke-width: 2px;
 }

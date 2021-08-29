@@ -40,6 +40,19 @@ function fetch_activation(json) {
     });
 }
 
+function fetch_activation_subnetwork(json) {
+    $.ajax({
+        url: '/_fetch_activation_subnetwork',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(json),
+        dataType: 'json',
+        success: function (data) {
+            publish("subnetwork_activation_patter", data.activation_pattern);
+        }
+    });
+}
+
 function fetch_sample_activation(json) {
     $.ajax({
         url: '/_fetch_sample_activation',

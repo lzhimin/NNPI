@@ -17,6 +17,7 @@ class NetworkArchitecture extends BasicView {
 
         subscribe('model_summary', this.setData.bind(this));
         subscribe('activation_pattern', this.setActivationPattern.bind(this));
+        subscribe('subnetwork_activation_patter', this.setSubnetworkActivation.bind(this));
 
         //GUI Event
         subscribe('layer_selection_event',this.layerSelectionEvent.bind(this));
@@ -314,22 +315,22 @@ class NetworkArchitecture extends BasicView {
                 return i==10?'white':this.colormap(d);
             })
             .on('click', (event, d)=>{
+                
+                //current selected label subnetwork index
+                this.current_select_subnetwork_index = d;
 
                 //fetch activation overlap
-
-
-                /*
-                d3.selectAll('.label_annotation_rect').attr('width', 20).attr('height', 20).style('stroke', 'black');
-                d3.select($('.label_annotation_rect')[d]).attr('width', 30).attr('height', 30).style('stroke', 'orange');
+                d3.selectAll('.overlap_view_label_rect').attr('width', 20).attr('height', 20).style('stroke', 'black');
+                d3.select($('.overlap_view_label_rect')[d]).attr('width', 30).attr('height', 30).style('stroke', 'orange');
                 let indexes = [];
-                for(let i =0; i < this.dataManager.embedding.length; i++){
+                for(let i =0; i < this.dataManager.embedding_labels.length; i++){
                     if (d == 10)
                         indexes.push(i)
-                    else if(this.dataManager.embedding[i][1] == d)
+                    else if(this.dataManager.embedding_labels[i] == d)
                         indexes.push(i);
                 }
-                fetch_activation({ 'indexs': indexes });
-                */
+                
+                fetch_activation_subnetwork({ 'indexs': indexes });
             });
 
         this.overlap_g.selectAll('.overlap_view_label')
@@ -393,6 +394,19 @@ class NetworkArchitecture extends BasicView {
         this.redraw();
     }
 
+    setSubnetworkActivation(msg, data){
+
+        let info = data[this.current_view_layer];
+
+        this.points.style('fill', (d,i)=>{
+            if(info[i] < 150)
+                return 'steelblue';
+            else if (info[i] > 150)
+                return this.colormap(this.current_select_subnetwork_index);
+        });
+
+    }
+
     layerSelectionEvent(msg, data){
         this.draw_main_view(data);
         this.draw_overlap_view();
@@ -418,5 +432,9 @@ class NetworkArchitecture extends BasicView {
             this.architecture_view = $("#architecture_view").val();
             this.draw();
         });
+    }
+
+    pin_html_component(){
+        
     }
 }

@@ -20,6 +20,12 @@ def _fetch_activation():
     json_request = request.get_json()
     return json.dumps(data.getActivation(json_request['indexs']))
 
+@app.route("/_fetch_activation_subnetwork", methods=["GET", "POST"])
+def _fetch_activation_subnetwork():
+    json_request = request.get_json()
+    return json.dumps(data.getActivation(json_request['indexs']))
+
+
 
 @app.route("/_fetch_sample_activation", methods=["GET", "POST"])
 def _fetch_sample_activation():

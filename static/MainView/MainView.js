@@ -437,6 +437,15 @@ class MainView extends BasicView {
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central');
 
+
+        //map color to the data points
+        let color_mapping = d3.scaleLinear().domain([0, x_max]).range([0, 1]);
+        this.points.style('fill', (d, i)=>{
+            if (data[i] == 0)
+                return 'white';
+            return d3.interpolateYlOrBr(color_mapping(data[i]));
+        });
+
     }
 
     handleLassoEnd(lassoPolygon) {
@@ -517,9 +526,9 @@ class MainView extends BasicView {
     }
 
     set_Neuron_Activation_Mapping(msg, data) {
-        this.points.style('fill', (d, i) => {
-            return data.includes(i) ? this.colormap(d[1]) : 'white';
-        });
+        //this.points.style('fill', (d, i) => {
+        //    return data.includes(i) ? this.colormap(d[1]) : 'white';
+        //});
     }
 
     set_prediction_result(msg, data){

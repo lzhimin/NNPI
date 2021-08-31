@@ -12,7 +12,9 @@ import os
 
 sys.path.insert(0, os.path.abspath('..'))
 
-
+CHECKPOINT_DIR = '../data/model/letnet_bias'  # model checkpoints
+# make checkpoint path directory
+os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
 # Training settings
 parser = argparse.ArgumentParser(
@@ -123,9 +125,9 @@ def main():
 
     #model.load_state_dict(torch.load(
     #    '../../data/model/LetNet/letnet300_trained.pkl'))
-    test(model, device)
+    #test(model, device)
 
-    print("pruned the model")
+    #print("pruned the model")
 
     #model.prune_by_percentile(99)
     #test(model, device)

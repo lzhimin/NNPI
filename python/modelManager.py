@@ -26,7 +26,7 @@ class ModelManager:
         #)
 
         self.train_model = self.loadModel(
-            'data/model/letnet_bias/model_0.pkl'
+            'data/model/letnet_bias/model_10.pkl'
         )
 
         # self.train_model.prune_by_percentile(float(90))
@@ -37,12 +37,12 @@ class ModelManager:
         #   'data/model/DrawNet/googledraw_trained.pkl')
         
         self.untrain_model = self.loadModel(
-            'data/model/letnet_bias/model_0.pkl'
+            'data/model/letnet_bias/model_10.pkl'
         )
 
         self.datasets = self.loadValidationData()
 
-    def config(self, percentage, model, epoch=9):
+    def config(self, percentage, model, epoch=10):
 
         self.percentage = percentage
 

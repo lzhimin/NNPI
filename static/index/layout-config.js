@@ -27,6 +27,10 @@ let config = {
                 type: 'component',
                 componentName: 'NetworkArchitecture',
                 title: 'Network Architecture'
+            },{
+                type: 'component',
+                componentName: 'SummaryView',
+                title: 'Summary View'
             }]
         }]
     }]

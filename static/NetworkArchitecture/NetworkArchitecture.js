@@ -39,8 +39,7 @@ class NetworkArchitecture extends BasicView {
             .attr('width', this.width)
             .attr("height", 1800)
 
-        //this.model_summary = new ModelManager(this.svg);
-
+        this.subnetwork_overlap_set = {};
 
         this.modeloverview = new ModelOverview(this.svg);
         
@@ -357,10 +356,15 @@ class NetworkArchitecture extends BasicView {
                 //current selected label subnetwork index
                 this.current_select_subnetwork_index = d;
 
-                //fetch activation overlap
-                d3.selectAll('.overlap_view_label_rect').attr('width', 20).attr('height', 20).style('stroke', 'black');
-                d3.select($('.overlap_view_label_rect')[d]).attr('width', 30).attr('height', 30).style('stroke', 'orange');
-                let indexes = [];
+                if(this.current_select_subnetwork_index in this.subnetwork_overlap_set){
+                    d3.select($('.overlap_view_label_rect')[d]).attr('width', 20).attr('height', 20).style('stroke', 'black');
+                }else{
+                     //fetch activation overlap
+                    //d3.selectAll('.overlap_view_label_rect').attr('width', 20).attr('height', 20).style('stroke', 'black');
+                    d3.select($('.overlap_view_label_rect')[d]).attr('width', 30).attr('height', 30).style('stroke', 'orange');
+                }
+
+               let indexes = [];
                 for(let i =0; i < this.dataManager.embedding_labels.length; i++){
                     if (d == 10)
                         indexes.push(i)
@@ -436,13 +440,27 @@ class NetworkArchitecture extends BasicView {
 
     setSubnetworkActivation(msg, data){
 
-        let info = data[this.current_view_layer];
+        if(this.current_select_subnetwork_index in this.subnetwork_overlap_set)
+            delete this.subnetwork_overlap_set[this.current_select_subnetwork_index];
+        else{
+            let info = data[this.current_view_layer];
+            this.subnetwork_overlap_set[this.current_select_subnetwork_index] = info;
+        }
 
         this.points.style('fill', (d,i)=>{
-            if(info[i] < 150)
+            let keys = Object.keys(this.subnetwork_overlap_set);
+            let flag = true;
+
+            for(let k = 0; k < keys.length; k++){
+                if(this.subnetwork_overlap_set[keys[k]][i] < 50){
+                    flag = false;
+                }
+            }
+
+            if(flag)
+                return '#5c0000';
+            else
                 return 'steelblue';
-            else if (info[i] > 150)
-                return this.colormap(this.current_select_subnetwork_index);
         });
 
     }

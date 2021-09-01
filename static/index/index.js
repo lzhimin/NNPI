@@ -5,6 +5,7 @@ let _main_view;
 let _network_architecture_view;
 let _selected_sample_view;
 let _feature_view;
+let _summary_view;
 
 myLayout.registerComponent('MainView', function (container, state) {
     $(container.getElement()[0]).load('../static/MainView/MainView.html');
@@ -29,6 +30,13 @@ myLayout.registerComponent('FeatureView', function(container, state){
     //program Tree view, subscribe to data event
     //_selected_sample_view = new SelectedSampleView(container);
     _feature_view = new FeatureView(container);
+})
+
+myLayout.registerComponent('SummaryView', function(container, state){
+    $(container.getElement()[0]).load('../static/SummaryView/SummaryView.html');
+    //program Tree view, subscribe to data event
+    //_selected_sample_view = new SelectedSampleView(container);
+    _summary_view = new SummaryView(container);
 })
 
 myLayout.on('itemCreated', (item) => {

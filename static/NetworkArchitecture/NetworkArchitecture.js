@@ -15,6 +15,8 @@ class NetworkArchitecture extends BasicView {
         //2. subnetwork
         this.architecture_view = 'activation';
 
+        this.subnetwork_option = 'no';
+
         subscribe('model_summary', this.setData.bind(this));
         subscribe('activation_pattern', this.setActivationPattern.bind(this));
         subscribe('subnetwork_activation_patter', this.setSubnetworkActivation.bind(this));
@@ -279,6 +281,43 @@ class NetworkArchitecture extends BasicView {
             .attr('dominant-baseline', 'central')
             .attr('writing-mode', 'vertical-rl');
         }
+
+
+        if(this.subnetwork_option == 'yes'){
+            //brush
+            let brush = d3.brush()
+                .extent([[x - 20, y], [x + width + 20, y + height]])
+                .on("end", (event)=>{
+                    let extent = event.selection;
+                    let select_neurons = [];
+                    if(!extent){
+                        //fetch all the neurons
+                        this.points.style('fill', (d, i)=>{
+                            return 'steelblue';
+                        });
+                    }else{
+                        this.points.style('fill', (d, i)=>{
+                            let x_in = extent[0][0] < this.x_axis(d[0]) && extent[1][0] > this.x_axis(d[0])
+                            let y_in = extent[0][1] < this.y_axis(d[2]) && extent[1][1] > this.y_axis(d[2]);
+                            
+                            if(x_in && y_in){
+                                return 'steelblue';
+                            } else {
+                                select_neurons.push(i);
+                                return 'gray';   
+                            }
+                        });
+                    }
+                    
+                    publish('ComponentPruning', {'name':this.current_view_layer, 'pruned_neuron':select_neurons}); 
+                });
+
+            // add brush event
+            // Add the brushing
+            this.main_view_g.append("g")
+                .attr("class", "brush")
+                .call(brush);
+        }
     }
 
     draw_overlap_view(){
@@ -315,7 +354,6 @@ class NetworkArchitecture extends BasicView {
                 return i==10?'white':this.colormap(d);
             })
             .on('click', (event, d)=>{
-                
                 //current selected label subnetwork index
                 this.current_select_subnetwork_index = d;
 
@@ -346,7 +384,9 @@ class NetworkArchitecture extends BasicView {
             })
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'central')
-            .style('font-size', '16px');   
+            .style('font-size', '16px');
+            
+        
     }
 
     redraw() {
@@ -430,6 +470,14 @@ class NetworkArchitecture extends BasicView {
 
         d3.select('#architecture_view').on('change', ()=>{
             this.architecture_view = $("#architecture_view").val();
+            this.draw();
+        });
+
+
+        //label color event
+        $("input[name='subnetwork_option']").off('change');
+        $("input[name='subnetwork_option']").on('change', () => {
+            this.subnetwork_option = $("input[type=radio][name='subnetwork_option']:checked").val();
             this.draw();
         });
     }

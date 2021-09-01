@@ -53,7 +53,7 @@ class FeatureView extends BasicView {
         }
 
         for(let i = 0; i < this.dataManager.feature.length; i++){
-            this.draw_sample(x + i%5 * (width + padding) , y + parseInt(i/5) * (height + padding), w, h,this.dataManager.feature[i]);
+            this.draw_sample(x + i%5 * (width + padding) , y + parseInt(i/5) * (height + padding), w, h, this.dataManager.feature[i]);
         }
 
     }
@@ -61,13 +61,26 @@ class FeatureView extends BasicView {
     draw_sample(x, y, w, h, data) {
         for (let i = 0; i < data.length; i++){
             for (let j = 0; j < data[i].length; j++){
-                if (data[j][i] == 0){
+                
+                if (data[j][i] > 0){
+                    this.canvas.fillStyle = 'green';
+                    
+                }else if (data[j][i] < 0){
+                    this.canvas.fillStyle = 'red';
+                }else {
+                    this.canvas.fillStyle = 'white';
+                }
+
+                this.canvas.fillRect(x + i *  w, y + j * h, w, h);
+                
+                
+                /*if (data[j][i] == 0){
                     this.canvas.fillStyle = d3.interpolateRdYlBu(this.color_scale(data[i][j]));
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
                 }else{
                     this.canvas.fillStyle = d3.interpolateRdYlBu(this.color_scale(data[i][j]));
                     this.canvas.fillRect(x + i *  w, y + j * h, w, h);
-                }
+                }*/
             }
         }
     }

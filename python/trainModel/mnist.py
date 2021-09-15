@@ -6,9 +6,15 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
+#adversarial attack
+import torchattacks
+from torchattacks import PGD, FGSM
+
 import argparse
 import sys
 import os
+
+
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -65,8 +71,8 @@ test_loader = torch.utils.data.DataLoader(
                    transform=transforms.Compose([
                        transforms.ToTensor()
                    ])),
-    batch_size=args.test_batch_size, shuffle=False)
-
+    batch_size=1, shuffle=False)
+    #batch_size=args.test_batch_size, shuffle=False)
 
 def train(epochs, model, device, optimizer):
 
@@ -84,12 +90,10 @@ def train(epochs, model, device, optimizer):
         test(model, device)
         save(model, str(epoch))
         
-
 def test(model, device):
     model.eval()
     test_loss = 0
     correct = 0
-    flag = 0
 
     with torch.no_grad():
         for data, target in test_loader:
@@ -109,11 +113,71 @@ def test(model, device):
         return accuracy
 
 
+# FGSM attack code
+def fgsm_attack(image, epsilon, data_grad):
+    # Collect the element-wise sign of the data gradient
+    sign_data_grad = data_grad.sign()
+    # Create the perturbed image by adjusting each pixel of the input image
+    perturbed_image = image + epsilon*sign_data_grad
+    # Adding clipping to maintain [0,1] range
+    perturbed_image = torch.clamp(perturbed_image, 0, 1)
+    # Return the perturbed image
+    return perturbed_image
+
+def adversiral_test(model, device, epsilon=0.05):
+    model.eval()
+    correct = 0
+
+    for data, target in test_loader:
+
+        #send the data and lable to the device    
+        data, target = data.to(device), target.to(device)
+
+        # Set requires_grad attribute of tensor. Important for attack
+        data.requires_grad = True
+
+        #Forward pass the data through the model
+        output = model(data)
+        init_pred = output.max(1, keepdim=True)[1]
+
+        # if the initial prediction is wrong, don't bother attacking
+        # just move on
+        if init_pred.item() !=  target.item():
+            continue
+
+        # Calculate the loss
+        loss = F.nll_loss(output, target)
+
+        # Zero all existing gradients
+        model.zero_grad()
+
+        # Calculate gradients of model in backward pass
+        loss.backward()
+
+        # Collect datagrad
+        data_grad = data.grad.data
+
+        # Call FGSM Attack
+        perturbed_data = fgsm_attack(data, epsilon, data_grad)
+
+        # Re-classify the perturbed image
+        output = model(perturbed_data)
+
+        #check for success
+        final_pred = output.max(1, keepdim=True)[1]
+
+        if final_pred.item() == target.item():
+            correct += 1
+
+    # Calculate final accuracy for this epsilon
+    final_acc = correct/float(len(test_loader))
+    print("Epsilon: {}\tTest Accuracy = {} / {} = {}".format(epsilon, correct, len(test_loader), final_acc))
+    
+
 def save(model, name):
     path = os.path.join(
         CHECKPOINT_DIR, 'model_{}.pkl'.format(name))
     torch.save(model.state_dict(), path)
-
 
 def main():
 
@@ -123,13 +187,18 @@ def main():
     # model
     model = LeNet(mask=True).to(device)
 
-    #model.load_state_dict(torch.load(
-    #    '../../data/model/LetNet/letnet300_trained.pkl'))
-    #test(model, device)
+    model.load_state_dict(torch.load(
+        '../../data/model/LetNet/letnet300_trained.pkl'))
+    
 
     #print("pruned the model")
+    test(model, device)
+    adversiral_test(model, device)
 
-    #model.prune_by_percentile(99)
+    model.prune_by_percentile(95)
+    test(model, device)
+    adversiral_test(model, device)
+
     #test(model, device)
 
     #model.conv1.weight.requires_grad = False
@@ -146,12 +215,17 @@ def main():
 
     #model.fc3.weight.requires_grad = False
     #model.fc3.bias.requires_grad = False
-    #test(model, device)
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
-    train(30, model, device, optimizer)
 
-    test(model, device)
-    # print(model.parameters)
+
+
+
+    #test(model, device)
+    #optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
+
+
+    #train(30, model, device, optimizer)
+    #test(model, device)
+    #print(model.parameters)
 
 
 if __name__ == "__main__":

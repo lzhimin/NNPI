@@ -2,22 +2,14 @@ from torchvision import datasets, transforms
 from tqdm import tqdm
 from torch import nn
 import torch
-
 import torch.nn.functional as F
 import torch.optim as optim
-
-#adversarial attack
-import torchattacks
-from torchattacks import PGD, FGSM
 
 import argparse
 import sys
 import os
 
-
-
 sys.path.insert(0, os.path.abspath('..'))
-
 CHECKPOINT_DIR = '../data/model/letnet_bias'  # model checkpoints
 # make checkpoint path directory
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
@@ -49,12 +41,15 @@ args = parser.parse_args()
 use_cuda = True  # not args.no_cuda and torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else 'cpu')
 
-
 if use_cuda:
     print("Using CUDA")
     torch.cuda.manual_seed(args.seed)
 else:
     print("Not using Cuda")
+
+
+#### golden prediction summary ####
+summary = {'prediction':[]}
 
 
 # load the training data
@@ -90,7 +85,7 @@ def train(epochs, model, device, optimizer):
         test(model, device)
         save(model, str(epoch))
         
-def test(model, device):
+def accuracy(model, device, golden=False):
     model.eval()
     test_loss = 0
     correct = 0
@@ -103,7 +98,11 @@ def test(model, device):
             test_loss += F.nll_loss(output, target, reduction='sum').item()
             # get the index of the max log-probability
             pred = output.data.max(1, keepdim=True)[1]
-            correct += pred.eq(target.data.view_as(pred)).sum().item()
+            rs = pred.eq(target.data.view_as(pred)).sum().item()
+            correct += rs
+
+            if golden == True:
+                summary['prediction'].append(rs)
 
         test_loss /= len(test_loader.dataset)
         accuracy = 100. * correct / len(test_loader.dataset)
@@ -112,7 +111,7 @@ def test(model, device):
 
         return accuracy
 
-
+##############
 # FGSM attack code
 def fgsm_attack(image, epsilon, data_grad):
     # Collect the element-wise sign of the data gradient
@@ -127,6 +126,7 @@ def fgsm_attack(image, epsilon, data_grad):
 def adversiral_test(model, device, epsilon=0.05):
     model.eval()
     correct = 0
+    
 
     for data, target in test_loader:
 
@@ -172,61 +172,72 @@ def adversiral_test(model, device, epsilon=0.05):
     # Calculate final accuracy for this epsilon
     final_acc = correct/float(len(test_loader))
     print("Epsilon: {}\tTest Accuracy = {} / {} = {}".format(epsilon, correct, len(test_loader), final_acc))
+    return final_acc
     
+def label_flip_rate(model, device):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    index = 0
+    flips = []
+
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            # sum up batch loss
+            test_loss += F.nll_loss(output, target, reduction='sum').item()
+            # get the index of the max log-probability
+            pred = output.data.max(1, keepdim=True)[1]
+            rs = pred.eq(target.data.view_as(pred)).sum().item()
+            correct += rs
+
+            if rs != summary['prediction'][index]:
+                flips.append(1)
+            else:
+                flips.append(0)
+
+        test_loss /= len(test_loader.dataset)
+        accuracy = 100. * correct / len(test_loader.dataset)
+        print('Test set: Average loss:', test_loss,
+              'Accuracy', correct/len(test_loader.dataset))
+
+        return accuracy, flips
+    
+def activation_pattern():
+    pass
+
+def intepretability():
+    pass
+
+def innerstate():
+    pass
 
 def save(model, name):
     path = os.path.join(
         CHECKPOINT_DIR, 'model_{}.pkl'.format(name))
     torch.save(model.state_dict(), path)
 
+
 def main():
-
-    print("--- Initial Training ---")
+    print("--- Initial ---")
     from model import LeNet, LeNet_5
-
     # model
     model = LeNet(mask=True).to(device)
-
     model.load_state_dict(torch.load(
         '../../data/model/LetNet/letnet300_trained.pkl'))
     
-
-    #print("pruned the model")
-    test(model, device)
-    adversiral_test(model, device)
-
-    model.prune_by_percentile(95)
-    test(model, device)
-    adversiral_test(model, device)
-
-    #test(model, device)
-
-    #model.conv1.weight.requires_grad = False
-    #model.conv1.bias.requires_grad = False
-
-    ##model.conv2.weight.requires_grad = False
-    #model.conv2.bias.requires_grad = False
-
-    #model.fc1.weight.requires_grad = False
-    #model.fc1.bias.requires_grad = False
-
-    #model.fc2.weight.requires_grad = False
-    #model.fc2.bias.requires_grad = False
-
-    #model.fc3.weight.requires_grad = False
-    #model.fc3.bias.requires_grad = False
-
-
-
+    accuracy(model, device, golden=True)
+    model.model.prune_by_percentile_left(70)
+    acc, flip = label_flip_rate(model, device)
+    #adversiral_test(model, device)
 
     #test(model, device)
     #optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
 
-
     #train(30, model, device, optimizer)
     #test(model, device)
     #print(model.parameters)
-
 
 if __name__ == "__main__":
     main()

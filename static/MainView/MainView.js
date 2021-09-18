@@ -567,6 +567,6 @@ class MainView extends BasicView {
         let x = this.margin.left;
         let y = this.margin.top + this.embedding_height + 50;
 
-        this.draw_activation_score_hist(x, y, this.embedding_width, 80, data);
+        //this.draw_activation_score_hist(x, y, this.embedding_width, 80, data);
     }
 }

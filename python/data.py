@@ -168,4 +168,3 @@ def fetch_activation_feature_samples(json):
     layername = json['layername']
     #feature = getFeatureVisualization(modelManager.train_model, layername, indexs)
     return modelManager.getTop10ActiveSample(modelManager.train_model, layername, index)
-

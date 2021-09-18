@@ -4,10 +4,17 @@ from torch import nn
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-
+from torch.autograd import Variable
+import matplotlib.pyplot as plt
+import numpy as np
 import argparse
 import sys
 import os
+import json
+
+
+
+from captum.attr import IntegratedGradients
 
 sys.path.insert(0, os.path.abspath('..'))
 CHECKPOINT_DIR = '../data/model/letnet_bias'  # model checkpoints
@@ -47,10 +54,8 @@ if use_cuda:
 else:
     print("Not using Cuda")
 
-
 #### golden prediction summary ####
 summary = {'prediction':[]}
-
 
 # load the training data
 train_loader = torch.utils.data.DataLoader(
@@ -109,9 +114,10 @@ def accuracy(model, device, golden=False):
         print('Test set: Average loss:', test_loss,
               'Accuracy', correct/len(test_loader.dataset))
 
+        # return accuracy and the flip label rate
         return accuracy
 
-##############
+########################################################
 # FGSM attack code
 def fgsm_attack(image, epsilon, data_grad):
     # Collect the element-wise sign of the data gradient
@@ -123,7 +129,7 @@ def fgsm_attack(image, epsilon, data_grad):
     # Return the perturbed image
     return perturbed_image
 
-def adversiral_test(model, device, epsilon=0.05):
+def adversiral_test(model, device, epsilon=0.08):
     model.eval()
     correct = 0
     
@@ -174,7 +180,7 @@ def adversiral_test(model, device, epsilon=0.05):
     print("Epsilon: {}\tTest Accuracy = {} / {} = {}".format(epsilon, correct, len(test_loader), final_acc))
     return final_acc
     
-def label_flip_rate(model, device):
+def label_accuracy_and_flip_rate(model, device):
     model.eval()
     test_loss = 0
     correct = 0
@@ -196,14 +202,14 @@ def label_flip_rate(model, device):
                 flips.append(1)
             else:
                 flips.append(0)
+            index += 1
 
         test_loss /= len(test_loader.dataset)
         accuracy = 100. * correct / len(test_loader.dataset)
-        print('Test set: Average loss:', test_loss,
-              'Accuracy', correct/len(test_loader.dataset))
+        print('Accuracy', accuracy)
+        print('flip rate', np.sum(flips)/len(flips))
+    return accuracy, np.sum(flips)/len(flips)
 
-        return accuracy, flips
-    
 def activation_pattern():
     pass
 
@@ -218,19 +224,83 @@ def save(model, name):
         CHECKPOINT_DIR, 'model_{}.pkl'.format(name))
     torch.save(model.state_dict(), path)
 
+def model_evaluation_collection(model, device, path):
+
+    model.load_state_dict(torch.load(path))
+
+    # model pruning collection
+    mpc = {}
+
+    print('####################### original model ################################')
+    mpc['golden'] = {}
+    #add accuracy
+    mpc['golden']['accuracy'] =accuracy(model, device, True)
+    #add flip rate
+    mpc['golden']['flip'] =0
+    #add adverisal
+    mpc['golden']['adversiral'] = adversiral_test(model, device)
+
+    for m in ['scale']:
+        mpc[m] = {}
+        for p in [20, 40, 60, 80, 90, 95, 98, 99]:
+            # pruning ratio p
+            mpc[m][p] = {}
+            
+            # pruning model with certain amount weight or neuron
+            model.prune_by_percentile(p)
+            print('####################### prune '+ str(p) + '% ################################')
+
+            # mode accuracy verification, and flip rate of the label
+            acc, flip = label_accuracy_and_flip_rate(model, device)
+
+            mpc[m][p]['accuracy'] = acc
+            mpc[m][p]['flip'] = flip
+
+            # FGSM attack evaluation
+            mpc[m][p]['adversiral'] = adversiral_test(model, device)
+
+            # recover the model
+            model.load_state_dict(torch.load(path))
+    return mpc
 
 def main():
-    print("--- Initial ---")
+
     from model import LeNet, LeNet_5
+    print("--- Initial ---")
+
+    _data = {}
+
     # model
     model = LeNet(mask=True).to(device)
-    model.load_state_dict(torch.load(
-        '../../data/model/LetNet/letnet300_trained.pkl'))
+    path = '../../data/model/LetNet/letnet300_trained.pkl'
+    mec1 = model_evaluation_collection(model, device, path)
+    _data['letnet300'] = mec1
+
+    model = LeNet_5(mask=True).to(device)
+    path = '../../data/model/LetNet/letnet_5_trained.pkl'
+    mec2 = model_evaluation_collection(model, device, path)
+    _data['letnet5'] = mec2
+
+    with open('data.json', 'w') as outfile:
+        json.dump(_data, outfile)
     
-    accuracy(model, device, golden=True)
-    model.model.prune_by_percentile_left(70)
-    acc, flip = label_flip_rate(model, device)
+
+        
+        
+    #ig = IntegratedGradients(model)
+    #input = Variable(train_loader.dataset[10][0],requires_grad=True).to(device)
+    #attribution = ig.attribute(input, target=3).cpu().detach().numpy()[0]
+    #plt.imshow(attribution)
+    #plt.colorbar()
+    #plt.show()
+
+    #print(attribution)
+    #accuracy(model, device, golden=True)
     #adversiral_test(model, device)
+    #model.prune_by_percentile(97)
+    
+    
+    
 
     #test(model, device)
     #optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)

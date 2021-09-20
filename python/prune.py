@@ -80,9 +80,6 @@ class PruningModule(Module):
                       threshold, "for layer", name)
                 module.prune(threshold)
 
-
-
-
 class MaskedLinear(Module):
 
     def __init__(self, in_features, out_features, bias=True):

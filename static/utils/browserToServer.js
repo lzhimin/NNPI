@@ -8,6 +8,7 @@ function fetch_data(json) {
         success: function (data) {
             publish("model_summary", [data.model_summary, data.prediction_summary, data.embedding, data.embedding_label, data.activation_pattern])
             publish("input_summary", [data.embedding, data.embedding_label, data.predict_result, data.prediction_summary])
+            publish('evaluation_table', data.evaluation_table);
         }
     });
 }

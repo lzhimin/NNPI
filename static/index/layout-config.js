@@ -22,7 +22,7 @@ let config = {
                 }]
             }]
         },{
-            type: 'stack',
+            type: 'column',
             content: [{
                 type: 'component',
                 componentName: 'NetworkArchitecture',

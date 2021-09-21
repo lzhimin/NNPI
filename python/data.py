@@ -1,6 +1,7 @@
 from app import index
 import torch
 import numpy as np
+import json
 from python.modelManager import ModelManager
 from sklearn.manifold import TSNE
 from python.FeatureVisualization import getFeatureVisualization
@@ -58,7 +59,14 @@ def load_Model_Data_Summary():
 
     print('return result')
 
+    #get evaluation table
+    path ='data/pruning/mnist.json'
+    
+
     result = {}
+
+    result['evaluation_table'] = json.load(open(path))
+
     result['model_summary'] = getModelSummary(
         modelManager.train_model, modelManager.untrain_model)
     result['prediction_summary'] = validation_summary[0]

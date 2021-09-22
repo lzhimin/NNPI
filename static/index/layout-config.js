@@ -29,6 +29,7 @@ let config = {
                 title: 'Network Architecture'
             },{
                 type: 'component',
+                height: 65,
                 componentName: 'SummaryView',
                 title: 'Summary View'
             }]

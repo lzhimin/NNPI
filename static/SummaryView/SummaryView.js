@@ -45,7 +45,8 @@ class SummaryView extends BasicView {
 
     draw_node(key, data, x, y, width, height, g){
         let c_h = 0;
-        if('accuracy' in data){
+        if('20' in data){
+            //c_h += this.draw_expand_leaf(x + this.plot_padding + width, y, width, height, data, g);
             c_h += this.draw_leaf(x + this.plot_padding + width, y, width, height, data, g);
         }else{
             
@@ -74,9 +75,10 @@ class SummaryView extends BasicView {
         return c_h;
     }
 
-    draw_leaf(x, y, width, height, data, g){
+    draw_expand_leaf(x, y, width, height, data, g){
         
         let padding = this.plot_padding;
+        
         g.selectAll('.table_element')
             .data(Object.values(data))
             .enter()
@@ -90,8 +92,73 @@ class SummaryView extends BasicView {
             })
             .attr('height', height - 5)
             .style('fill', 'steelblue');
+        
 
         return height;
+    }
+
+    draw_leaf(x, y, width, height, data, g){
+        let padding = this.plot_padding;
+        let dataset = {};
+        let ratios = Object.keys(data);//pruning ratio
+
+        // update the height for the distribution view
+        height = height * 2.5;
+
+        //extracting the data for each evaluation metric
+        Object.keys(data[ratios[0]]).forEach((m)=>{
+            dataset[m] = [];
+        });
+
+        ratios.forEach((r)=>{
+            //current model with pruning ratio r
+            let r_m_info = data[r]; // pruned model info.
+            Object.keys(r_m_info).forEach((m)=>{
+
+                if(m=='accuracy')
+                    dataset[m].push([r, r_m_info[m]/100.0]);
+                else
+                    dataset[m].push([r, r_m_info[m]]);
+            });
+        });
+
+        Object.keys(dataset).forEach((m, i)=>{
+            this.draw_leaf_helper(x + i * (width + padding) + width, y, width, height * 0.7, dataset[m], g, m);
+        });
+
+        //setup the y-axis
+        let y_axis = d3.scaleLinear().domain([0, 100]).range([y, y + height* 0.7]);
+        g.append('g')
+            .attr('class', 'embedding_axis')
+            .attr("transform", "translate(" + (x + width) + " ,0)")
+            .call(d3.axisLeft(y_axis).ticks(5));
+
+        return height;
+    }
+
+    draw_leaf_helper(x, y, width, height, data, g, m){
+        let x_axis = d3.scaleLinear().domain([0, 1]).range([x, x + width]);
+        let y_axis = d3.scaleLinear().domain([0, 100]).range([y, y + height]);
+                
+        g.append('g')
+            .selectAll('.metrics_points')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('class', 'table_points')
+            .attr('cx', (d) => {
+                return x_axis(d[1]);
+            })
+            .attr('cy', (d) => {
+                return y_axis(+d[0]);
+            })
+            .attr('r', 2)
+            .style('fill', (d,i)=>{
+                if ((m=='accuracy' || m=='adversial') && d[1] > data[0][1])
+                    return 'tomato';
+                else 
+                    return  'steelblue';
+            });
     }
 
     draw_label(x, y, width, height, g){
@@ -106,8 +173,8 @@ class SummaryView extends BasicView {
                 return i == 0 ? x + i * (width + padding) + width/2 : x + i * (width + padding) + width/2 + this.plot_padding;
             })
             .attr('y', y)
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'central');
+            .style('text-anchor', 'middle')
+            .style('dominant-baseline', 'central');
 
         //add axis for each dimension
         for(let i = 1; i < labels.length; i++){

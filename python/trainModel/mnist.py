@@ -12,9 +12,8 @@ import sys
 import os
 import json
 
-
-
-from captum.attr import IntegratedGradients
+from numpy import linalg as LA
+from captum.attr import Saliency
 
 sys.path.insert(0, os.path.abspath('..'))
 CHECKPOINT_DIR = '../data/model/letnet_bias'  # model checkpoints
@@ -110,7 +109,7 @@ def accuracy(model, device, golden=False):
                 summary['prediction'].append(rs)
 
         test_loss /= len(test_loader.dataset)
-        accuracy = 100. * correct / len(test_loader.dataset)
+        accuracy = correct / len(test_loader.dataset)
         print('Test set: Average loss:', test_loss,
               'Accuracy', correct/len(test_loader.dataset))
 
@@ -133,9 +132,7 @@ def adversiral_test(model, device, epsilon=0.08):
     model.eval()
     correct = 0
     
-
     for data, target in test_loader:
-
         #send the data and lable to the device    
         data, target = data.to(device), target.to(device)
 
@@ -213,8 +210,22 @@ def label_accuracy_and_flip_rate(model, device):
 def activation_pattern():
     pass
 
-def intepretability():
-    pass
+# intepretability section
+def saliency(model, prune_model, device):
+    m = Saliency(model)
+    p_m = Saliency(prune_model)
+    l2_norms = []
+
+    for data, target in test_loader:
+        #send the data and lable to the device    
+        data, target = data.to(device), target.to(device)
+        input = Variable(data, requires_grad=True)
+        m_att = m.attribute(input, target=target).cpu().detach().numpy()[0]
+        p_m_att = p_m.attribute(input, target=target).cpu().detach().numpy()[0]
+        l2_norms.append(LA.norm(m_att - p_m_att))
+    
+    #max, third quartile, median, first quartile, min
+    return np.percentile(l2_norms, [0, 25, 50, 75, 100])
 
 def innerstate():
     pass
@@ -224,9 +235,10 @@ def save(model, name):
         CHECKPOINT_DIR, 'model_{}.pkl'.format(name))
     torch.save(model.state_dict(), path)
 
-def model_evaluation_collection(model, device, path):
+def model_evaluation_collection(model, prune_model, device, path):
 
     model.load_state_dict(torch.load(path))
+    prune_model.load_state_dict(torch.load(path))
 
     # model pruning collection
     mpc = {}
@@ -236,7 +248,7 @@ def model_evaluation_collection(model, device, path):
     #add accuracy
     mpc['golden']['accuracy'] =accuracy(model, device, True)
     #add flip rate
-    mpc['golden']['flip'] =0
+    mpc['golden']['flip'] = 0
     #add adverisal
     mpc['golden']['adversiral'] = adversiral_test(model, device)
 
@@ -247,20 +259,25 @@ def model_evaluation_collection(model, device, path):
             mpc[m][p] = {}
             
             # pruning model with certain amount weight or neuron
-            model.prune_by_percentile(p)
+            prune_model.prune_by_percentile(p)
             print('####################### prune '+ str(p) + '% ################################')
 
+            # Saliency Different Evaluation
+            mpc[m][p]['saliency'] = saliency(model, prune_model, device)
+
             # mode accuracy verification, and flip rate of the label
-            acc, flip = label_accuracy_and_flip_rate(model, device)
+            acc, flip = label_accuracy_and_flip_rate(prune_model, device)
 
             mpc[m][p]['accuracy'] = acc
             mpc[m][p]['flip'] = flip
 
             # FGSM attack evaluation
-            mpc[m][p]['adversiral'] = adversiral_test(model, device)
+            mpc[m][p]['adversiral'] = adversiral_test(prune_model, device)
 
             # recover the model
-            model.load_state_dict(torch.load(path))
+            prune_model.load_state_dict(torch.load(path))
+
+
     return mpc
 
 def main():
@@ -272,20 +289,19 @@ def main():
 
     # model
     model = LeNet(mask=True).to(device)
+    prune_model = LeNet(mask=True).to(device)
     path = '../../data/model/LetNet/letnet300_trained.pkl'
-    mec1 = model_evaluation_collection(model, device, path)
+    mec1 = model_evaluation_collection(model, prune_model, device, path)
     _data['letnet300'] = mec1
 
     model = LeNet_5(mask=True).to(device)
+    prune_model = LeNet_5(mask=True).to(device)
     path = '../../data/model/LetNet/letnet_5_trained.pkl'
-    mec2 = model_evaluation_collection(model, device, path)
+    mec2 = model_evaluation_collection(model, prune_model, device, path)
     _data['letnet5'] = mec2
 
     with open('data.json', 'w') as outfile:
         json.dump(_data, outfile)
-    
-
-        
         
     #ig = IntegratedGradients(model)
     #input = Variable(train_loader.dataset[10][0],requires_grad=True).to(device)
@@ -299,9 +315,6 @@ def main():
     #adversiral_test(model, device)
     #model.prune_by_percentile(97)
     
-    
-    
-
     #test(model, device)
     #optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=0.0001)
 

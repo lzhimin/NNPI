@@ -225,7 +225,7 @@ def saliency(model, prune_model, device):
         l2_norms.append(LA.norm(m_att - p_m_att))
     
     #max, third quartile, median, first quartile, min
-    return np.percentile(l2_norms, [0, 25, 50, 75, 100])
+    return float(np.mean(l2_norms))
 
 def innerstate():
     pass

@@ -14,6 +14,8 @@ import json
 
 from numpy import linalg as LA
 from captum.attr import Saliency
+import torchvision.transforms as transforms
+
 
 sys.path.insert(0, os.path.abspath('..'))
 CHECKPOINT_DIR = '../data/model/letnet_bias'  # model checkpoints
@@ -227,6 +229,60 @@ def saliency(model, prune_model, device):
     #max, third quartile, median, first quartile, min
     return float(np.mean(l2_norms))
 
+#gaussian
+def gaussian_blur(model, device):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    blurrer = transforms.GaussianBlur(kernel_size=(5,9), sigma=(0.1, 5))
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            data = blurrer(data)
+
+            output = model(data)
+            # sum up batch loss
+            test_loss += F.nll_loss(output, target, reduction='sum').item()
+            # get the index of the max log-probability
+            pred = output.data.max(1, keepdim=True)[1]
+            rs = pred.eq(target.data.view_as(pred)).sum().item()
+            correct += rs
+
+
+        test_loss /= len(test_loader.dataset)
+        accuracy = correct / len(test_loader.dataset)
+        print('gaussian_blur Accuracy', correct/len(test_loader.dataset))
+
+        # return accuracy and the flip label rate
+        return accuracy
+
+#rotatio
+def rotation(model, device):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    blurrer = transforms.RandomRotation(degrees=(0, 90))
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            data = blurrer(data)
+
+            output = model(data)
+            # sum up batch loss
+            test_loss += F.nll_loss(output, target, reduction='sum').item()
+            # get the index of the max log-probability
+            pred = output.data.max(1, keepdim=True)[1]
+            rs = pred.eq(target.data.view_as(pred)).sum().item()
+            correct += rs
+
+
+        test_loss /= len(test_loader.dataset)
+        accuracy = correct / len(test_loader.dataset)
+        print('rotation Accuracy', correct/len(test_loader.dataset))
+
+        # return accuracy and the flip label rate
+        return accuracy
+
 def innerstate():
     pass
 
@@ -240,6 +296,8 @@ def model_evaluation_collection(model, prune_model, device, path):
     model.load_state_dict(torch.load(path))
     prune_model.load_state_dict(torch.load(path))
 
+    rotation(model, device)
+
     # model pruning collection
     mpc = {}
 
@@ -251,6 +309,8 @@ def model_evaluation_collection(model, prune_model, device, path):
     mpc['golden']['flip'] = 0
     #add adverisal
     mpc['golden']['adversiral'] = adversiral_test(model, device)
+    #guassian blur
+    mpc['golden']['gaussian_blur'] = gaussian_blur(model, device)
 
     for m in ['scale']:
         mpc[m] = {}
@@ -274,6 +334,9 @@ def model_evaluation_collection(model, prune_model, device, path):
             # FGSM attack evaluation
             mpc[m][p]['adversiral'] = adversiral_test(prune_model, device)
 
+            #gussian blur
+            mpc[m][p]['gaussian_blur'] = gaussian_blur(prune_model, device)
+
             # recover the model
             prune_model.load_state_dict(torch.load(path))
 
@@ -288,21 +351,25 @@ def main():
     _data = {}
 
     # model
-    model = LeNet(mask=True).to(device)
-    prune_model = LeNet(mask=True).to(device)
-    path = '../../data/model/LetNet/letnet300_trained.pkl'
-    mec1 = model_evaluation_collection(model, prune_model, device, path)
-    _data['letnet300'] = mec1
+    #model = LeNet(mask=True).to(device)
+
+
+    #prune_model = LeNet(mask=True).to(device)
+    #path = '../../data/model/LetNet/letnet300_trained.pkl'
+    #mec1 = model_evaluation_collection(model, prune_model, device, path)
+    #_data['letnet300'] = mec1
 
     model = LeNet_5(mask=True).to(device)
     prune_model = LeNet_5(mask=True).to(device)
     path = '../../data/model/LetNet/letnet_5_trained.pkl'
     mec2 = model_evaluation_collection(model, prune_model, device, path)
-    _data['letnet5'] = mec2
+    #_data['letnet5'] = mec2
 
-    with open('data.json', 'w') as outfile:
-        json.dump(_data, outfile)
+    #with open('data.json', 'w') as outfile:
+    #    json.dump(_data, outfile)
         
+
+
     #ig = IntegratedGradients(model)
     #input = Variable(train_loader.dataset[10][0],requires_grad=True).to(device)
     #attribution = ig.attribute(input, target=3).cpu().detach().numpy()[0]
